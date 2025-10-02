@@ -1,0 +1,30 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- 准备状态 - 锤子举起，稍微向后倾斜 -->
+  <g transform="translate(-2, -4) rotate(15 32 32)">
+    <!-- 锤柄 -->
+    <rect x="35" y="27" width="7" height="33" fill="#8B4513" rx="3"/>
+    <rect x="36" y="27" width="3" height="33" fill="#A0522D" opacity="0.5" rx="2"/>
+    
+    <!-- 锤头主体 -->
+    <rect x="19" y="11" width="29" height="21" fill="#FFD700" stroke="#FFA500" stroke-width="2.5" rx="4"/>
+    
+    <!-- 锤头高光 -->
+    <rect x="21" y="13" width="24" height="7" fill="#FFF8DC" opacity="0.6" rx="3"/>
+    
+    <!-- 锤头阴影 -->
+    <rect x="19" y="27" width="29" height="4" fill="#DAA520" opacity="0.7" rx="3"/>
+    
+    <!-- 锤头金属边缘 -->
+    <rect x="19" y="11" width="29" height="3" fill="#FFEC8B" rx="2"/>
+    
+    <!-- 锤柄底部 -->
+    <ellipse cx="38.5" cy="58" rx="4" ry="3" fill="#654321"/>
+    
+    <!-- 锤柄握把纹理 -->
+    <line x1="35" y1="33" x2="42" y2="33" stroke="#654321" stroke-width="0.8" opacity="0.3"/>
+    <line x1="35" y1="40" x2="42" y2="40" stroke="#654321" stroke-width="0.8" opacity="0.3"/>
+    <line x1="35" y1="47" x2="42" y2="47" stroke="#654321" stroke-width="0.8" opacity="0.3"/>
+    <line x1="35" y1="53" x2="42" y2="53" stroke="#654321" stroke-width="0.8" opacity="0.3"/>
+  </g>
+</svg>
+
