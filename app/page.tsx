@@ -47,7 +47,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ vote: type }),
       })
       
       if (response.ok) {
@@ -74,7 +74,7 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          type: 'copy', 
+          action: 'copy', 
           inviteCodeId: codeId 
         }),
       })
