@@ -111,6 +111,12 @@ export default function Home() {
 
     fetchInviteCodes()
 
+    // 🔥 添加定时刷新机制，确保数据同步
+    const refreshInterval = setInterval(() => {
+      console.log('[Page] Periodic refresh triggered')
+      fetchInviteCodes()
+    }, 8000) // 每8秒刷新一次
+
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
     
@@ -145,6 +151,7 @@ export default function Home() {
 
     return () => {
       eventSource.close()
+      clearInterval(refreshInterval)
     }
   }, [])
 

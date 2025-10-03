@@ -40,11 +40,11 @@ export default function CommunityImpact() {
 
     fetchStats()
     
-    // 每10秒更新一次数据
+    // 🔥 每5秒更新一次数据，确保更及时的数据同步
     const interval = setInterval(() => {
       console.log('[CommunityImpact] Auto-refresh triggered')
       fetchStats()
-    }, 10000)
+    }, 5000)
     
     // 🔥 监听自定义事件，立即刷新
     const handleStatsUpdate = () => {

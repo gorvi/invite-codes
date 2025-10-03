@@ -120,17 +120,16 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(code)}`}>
                     {getStatusText(code)}
                   </span>
+                  <div className="flex items-center space-x-1 text-sm text-gray-600">
+                    <Clock className="h-4 w-4" />
+                    <span>{calculateLastCodeTime(code)}</span>
+                  </div>
                 </div>
                 
                 <div className="bg-gray-50 rounded-lg p-4 mb-3">
                   <code className="text-lg font-mono font-bold text-gray-900 break-all">
                     {code.code}
                   </code>
-                </div>
-
-                <div className="flex items-center space-x-1 text-sm text-gray-600 mb-4">
-                  <Clock className="h-4 w-4" />
-                  <span>{calculateLastCodeTime(code)}</span>
                 </div>
               </div>
             </div>
