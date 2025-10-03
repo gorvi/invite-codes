@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, Gift } from 'lucide-react'
+import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function CommunityImpact() {
   const [totalSubmissions, setTotalSubmissions] = useState<number>(0)
@@ -9,54 +10,38 @@ export default function CommunityImpact() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        console.log('[CommunityImpact] Fetching stats...')
-        const response = await fetch('/api/analytics')
-        if (response.ok) {
-          const data = await response.json()
-          console.log('[CommunityImpact] Stats received:', {
-            submitCount: data.submitCount,
-            totalCodeCount: data.totalCodeCount
-          })
-          // 🔥 使用 submitCount（历史累计提交次数）
-          // 这代表社区的总贡献，即使代码被删除也保留历史记录
-          setTotalSubmissions(data.submitCount || 0)
-          setTotalCodes(data.totalCodeCount || 0)
-          
-          console.log('[CommunityImpact] Data consistency check:', {
-            submitCount: data.submitCount,
-            totalCodeCount: data.totalCodeCount,
-            activeCodeCount: data.activeCodeCount,
-            consistencyReport: data.dataConsistency
-          })
-        }
-      } catch (error) {
-        console.error('Failed to fetch community stats:', error)
-      } finally {
-        setLoading(false)
-      }
+    // 🔥 使用全局数据管理器，避免重复 API 调用
+    const handleDataUpdate = (data: GlobalData) => {
+      console.log('[CommunityImpact] Data updated via DataManager:', {
+        submitCount: data.submitCount,
+        totalCodeCount: data.totalCodeCount
+      })
+      setTotalSubmissions(data.submitCount)
+      setTotalCodes(data.totalCodeCount)
+      setLoading(false)
     }
 
-    fetchStats()
-    
-    // 🔥 每5秒更新一次数据，确保更及时的数据同步
-    const interval = setInterval(() => {
-      console.log('[CommunityImpact] Auto-refresh triggered')
-      fetchStats()
-    }, 5000)
-    
-    // 🔥 监听自定义事件，立即刷新
-    const handleStatsUpdate = () => {
-      console.log('[CommunityImpact] Manual refresh triggered by event')
-      fetchStats()
+    // 注册数据监听器
+    dataManager.addListener(handleDataUpdate)
+
+    // 初始加载数据
+    dataManager.getData(true).then((data) => {
+      if (data) {
+        handleDataUpdate(data)
+      }
+    })
+
+    // 🔥 监听手动刷新事件
+    const handleManualRefresh = () => {
+      console.log('[CommunityImpact] Manual refresh triggered')
+      dataManager.triggerRefresh()
     }
-    window.addEventListener('statsUpdate', handleStatsUpdate)
+    window.addEventListener('statsUpdate', handleManualRefresh)
     
     return () => {
-      console.log('[CommunityImpact] Cleanup interval')
-      clearInterval(interval)
-      window.removeEventListener('statsUpdate', handleStatsUpdate)
+      console.log('[CommunityImpact] Cleanup')
+      dataManager.removeListener(handleDataUpdate)
+      window.removeEventListener('statsUpdate', handleManualRefresh)
     }
   }, [])
 

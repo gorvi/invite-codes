@@ -2,65 +2,41 @@
 
 import { useState, useEffect } from 'react'
 import { Gift, TrendingUp } from 'lucide-react'
+import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function ActiveCodeStats() {
   const [activeCodeCount, setActiveCodeCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        console.log('[ActiveCodeStats] Fetching stats...')
-        // 🔥 优化：只调用一个接口，减少网络请求
-        const response = await fetch('/api/analytics')
-        if (response.ok) {
-          const data = await response.json()
-          
-          // 使用实际代码列表计算活跃数量（更准确）
-          const actualActiveCount = data.allInviteCodes 
-            ? data.allInviteCodes.filter((code: any) => code.status === 'active').length
-            : data.activeCodeCount || 0
-          
-          const reportedActiveCount = data.activeCodeCount || 0
-          
-          console.log('[ActiveCodeStats] Reported active codes:', reportedActiveCount)
-          console.log('[ActiveCodeStats] Actual active codes:', actualActiveCount)
-          
-          // 使用实际计算的数量，确保数据一致性
-          setActiveCodeCount(actualActiveCount)
-          
-          // 如果数据不一致，记录警告
-          if (actualActiveCount !== reportedActiveCount) {
-            console.warn(`[ActiveCodeStats] Data inconsistency detected! Reported: ${reportedActiveCount}, Actual: ${actualActiveCount}`)
-            console.log('[ActiveCodeStats] Consistency report:', data.dataConsistency)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch active code count:', error)
-      } finally {
-        setLoading(false)
-      }
+    // 🔥 使用全局数据管理器，避免重复 API 调用
+    const handleDataUpdate = (data: GlobalData) => {
+      console.log('[ActiveCodeStats] Data updated via DataManager:', data.activeCodeCount)
+      setActiveCodeCount(data.activeCodeCount)
+      setLoading(false)
     }
 
-    fetchStats()
-    
-    // 🔥 每5秒更新一次数据，确保更及时的数据同步
-    const interval = setInterval(() => {
-      console.log('[ActiveCodeStats] Auto-refresh triggered')
-      fetchStats()
-    }, 5000)
-    
-    // 🔥 监听自定义事件，立即刷新
-    const handleStatsUpdate = () => {
-      console.log('[ActiveCodeStats] Manual refresh triggered by event')
-      fetchStats()
+    // 注册数据监听器
+    dataManager.addListener(handleDataUpdate)
+
+    // 初始加载数据
+    dataManager.getData(true).then((data) => {
+      if (data) {
+        handleDataUpdate(data)
+      }
+    })
+
+    // 🔥 监听手动刷新事件
+    const handleManualRefresh = () => {
+      console.log('[ActiveCodeStats] Manual refresh triggered')
+      dataManager.triggerRefresh()
     }
-    window.addEventListener('statsUpdate', handleStatsUpdate)
+    window.addEventListener('statsUpdate', handleManualRefresh)
     
     return () => {
-      console.log('[ActiveCodeStats] Cleanup interval')
-      clearInterval(interval)
-      window.removeEventListener('statsUpdate', handleStatsUpdate)
+      console.log('[ActiveCodeStats] Cleanup')
+      dataManager.removeListener(handleDataUpdate)
+      window.removeEventListener('statsUpdate', handleManualRefresh)
     }
   }, [])
 

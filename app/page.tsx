@@ -18,6 +18,7 @@ import SubmitCodeModal from '@/components/SubmitCodeModal'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
 import { InviteCode } from '@/lib/data'
+import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function Home() {
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
@@ -25,25 +26,10 @@ export default function Home() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-  // Manually refresh invite codes data - 使用统一的 analytics 接口
+  // Manually refresh invite codes data - 使用全局数据管理器
   const handleRefresh = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/analytics')
-      if (response.ok) {
-        const data = await response.json()
-        // 🔥 从 analytics 接口获取 allInviteCodes，确保数据一致性
-        const codes = data.allInviteCodes || []
-        setInviteCodes(codes)
-        console.log('[Page] Manual refresh from analytics API:', codes.length)
-        // 🔥 触发统计更新事件，确保数据同步
-        window.dispatchEvent(new CustomEvent('statsUpdate'))
-      }
-    } catch (error) {
-      console.error('Failed to refresh invite codes:', error)
-    } finally {
-      setLoading(false)
-    }
+    console.log('[Page] Manual refresh triggered')
+    await dataManager.triggerRefresh()
   }
 
   // Handle voting
@@ -58,10 +44,8 @@ export default function Home() {
       })
       
       if (response.ok) {
-        // Refresh data after successful vote
-        await handleRefresh()
-        // 🔥 触发统计更新事件
-        window.dispatchEvent(new CustomEvent('statsUpdate'))
+        // 🔥 使用数据管理器统一刷新所有数据
+        await dataManager.triggerRefresh()
       } else {
         console.error('Failed to vote:', response.statusText)
       }
@@ -97,31 +81,22 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Fetch invite codes data - 使用统一的 analytics 接口
-    const fetchInviteCodes = async () => {
-      try {
-        const response = await fetch('/api/analytics')
-        if (response.ok) {
-          const data = await response.json()
-          // 🔥 从 analytics 接口获取 allInviteCodes，确保数据一致性
-          const codes = data.allInviteCodes || []
-          setInviteCodes(codes)
-          console.log('[Page] Fetched codes from analytics API:', codes.length)
-        }
-      } catch (error) {
-        console.error('Failed to fetch invite codes:', error)
-      } finally {
-        setLoading(false)
-      }
+    // 🔥 使用全局数据管理器，避免重复 API 调用
+    const handleDataUpdate = (data: GlobalData) => {
+      console.log('[Page] Data updated via DataManager:', data.inviteCodes.length, 'codes')
+      setInviteCodes(data.inviteCodes)
+      setLoading(false)
     }
 
-    fetchInviteCodes()
+    // 注册数据监听器
+    dataManager.addListener(handleDataUpdate)
 
-    // 🔥 添加定时刷新机制，确保数据同步
-    const refreshInterval = setInterval(() => {
-      console.log('[Page] Periodic refresh triggered')
-      fetchInviteCodes()
-    }, 8000) // 每8秒刷新一次
+    // 初始加载数据
+    dataManager.getData(true).then((data) => {
+      if (data) {
+        handleDataUpdate(data)
+      }
+    })
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
@@ -135,16 +110,16 @@ export default function Home() {
           setInviteCodes(prev => [data.inviteCode, ...prev])
           // Show new invite code notification
           showNewCodeNotification(data.inviteCode.code)
-          // 🔥 Trigger stats refresh
-          window.dispatchEvent(new CustomEvent('statsUpdate'))
+          // 🔥 使用数据管理器统一刷新
+          dataManager.triggerRefresh()
         } else if (data.type === 'initial') {
           console.log('[SSE] Initial data received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
         } else if (data.type === 'update') {
           console.log('[SSE] Update received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
-          // 🔥 Trigger stats refresh
-          window.dispatchEvent(new CustomEvent('statsUpdate'))
+          // 🔥 使用数据管理器统一刷新
+          dataManager.triggerRefresh()
         }
       } catch (error) {
         console.error('[SSE] Parse error:', error)
@@ -157,7 +132,7 @@ export default function Home() {
 
     return () => {
       eventSource.close()
-      clearInterval(refreshInterval)
+      dataManager.removeListener(handleDataUpdate)
     }
   }, [])
 
