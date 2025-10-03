@@ -133,10 +133,9 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                     <Clock className="h-4 w-4" />
                     <span>{calculateLastCodeTime(code)}</span>
                   </div>
-                  {/* Temporarily hidden submitter name, as InviteCode interface doesn't have this property */}
                   <div className="flex items-center space-x-1">
                     <Copy className="h-4 w-4" />
-                    <span>Copied {code.copiedCount || 0} times</span>
+                    <span>Copied {code.uniqueCopiedCount || 0} times</span>
                   </div>
                 </div>
               </div>
@@ -171,7 +170,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                   title="This invite code worked"
                 >
                   <ThumbsUp className="h-4 w-4" />
-                  <span className="text-sm font-medium">{code.votes.worked || 0}</span>
+                  <span className="text-sm font-medium">{code.votes.uniqueWorked || 0}</span>
                 </button>
 
                 <button
@@ -180,7 +179,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                   title="This invite code didn't work"
                 >
                   <ThumbsDown className="h-4 w-4" />
-                  <span className="text-sm font-medium">{code.votes.didntWork || 0}</span>
+                  <span className="text-sm font-medium">{code.votes.uniqueDidntWork || 0}</span>
                 </button>
               </div>
             </div>
