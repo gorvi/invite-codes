@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { inviteCodes, addInviteCode } from '@/lib/data'
+import { initializeData, inviteCodes, addInviteCode } from '@/lib/data'
 
 export async function GET() {
-  return NextResponse.json(inviteCodes.filter(code => code.status === 'active'))
+  try {
+    // 确保数据已初始化
+    await initializeData()
+    
+    return NextResponse.json(inviteCodes.filter(code => code.status === 'active'))
+  } catch (error) {
+    console.error('Error fetching invite codes:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch invite codes' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // 确保数据已初始化
+    await initializeData()
+    
     const { code, submitterName } = await request.json()
     
     if (!code || typeof code !== 'string') {

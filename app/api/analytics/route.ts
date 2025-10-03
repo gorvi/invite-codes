@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyticsData, getTodayString, getCurrentTimestamp, inviteCodes } from '@/lib/data'
-import { saveInviteCodes, saveAnalytics } from '@/lib/storage'
+import { initializeData, analyticsData, inviteCodes, saveData } from '@/lib/data'
 
 export async function GET() {
   try {
-    const today = getTodayString()
+    // 确保数据已初始化
+    await initializeData()
+    
+    const today = new Date().toISOString().split('T')[0]
     
     // 过滤出活跃的邀请码数量
     const activeCodeCount = inviteCodes.filter(code => code.status === 'active').length
@@ -49,6 +51,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // 确保数据已初始化
+    await initializeData()
+    
     const body = await request.json()
     const { action, inviteCodeId, inviteCode, userId } = body // 新增 userId 参数
 
@@ -196,9 +201,9 @@ export async function POST(request: NextRequest) {
         console.warn('Unknown analytics action:', action)
     }
 
-    // 🔥 保存 analyticsData 到文件
+    // 保存数据到持久化存储
     try {
-      saveAnalytics(analyticsData)
+      await saveData()
       console.log('[Analytics] Saved analytics data to storage')
     } catch (error) {
       console.error('[Analytics] Failed to save analytics data:', error)

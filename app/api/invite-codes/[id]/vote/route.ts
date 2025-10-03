@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { inviteCodes, analyticsData, getTodayString, sendSSENotification } from '@/lib/data'
+import { initializeData, inviteCodes, analyticsData, saveData, sendSSENotification } from '@/lib/data'
 import { saveInviteCodes, saveAnalytics } from '@/lib/storage'
 
 export async function POST(
@@ -7,6 +7,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    // 确保数据已初始化
+    await initializeData()
+    
     const body = await request.json()
     const { vote, userId } = body // 'worked' or 'didntWork', 以及 userId
     const { id } = params
@@ -111,10 +114,9 @@ export async function POST(
       inviteCode.status = 'invalid'
     }
 
-    // 🔥 持久化保存
+    // 保存数据到持久化存储
     try {
-      saveInviteCodes(inviteCodes)
-      saveAnalytics(analyticsData)
+      await saveData()
       console.log('[DATA] Saved vote update to storage')
     } catch (error) {
       console.error('[DATA] Failed to save vote update:', error)
