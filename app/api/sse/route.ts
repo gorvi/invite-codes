@@ -1,7 +1,14 @@
 import { NextRequest } from 'next/server'
 import { inviteCodes, analyticsData, addSSEClient, removeSSEClient } from '@/lib/data'
 
+// 强制动态渲染，避免静态生成
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
+  // 如果是静态导出模式（如 GitHub Pages），返回简单响应
+  if (process.env.NODE_ENV === 'production' && process.env.GITHUB_ACTIONS) {
+    return new Response('SSE not available in static export mode', { status: 404 });
+  }
   const encoder = new TextEncoder()
   
   const stream = new ReadableStream({
@@ -52,4 +59,3 @@ export async function GET(request: NextRequest) {
     }
   })
 }
-
