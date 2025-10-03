@@ -142,10 +142,10 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="space-y-3">
               <button
                 onClick={() => handleCopyCode(code.code, code.id)}
-                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   copiedCode === code.code
                     ? 'bg-green-500 text-white'
                     : 'bg-primary-600 text-white hover:bg-primary-700'
@@ -164,23 +164,25 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 )}
               </button>
 
-              <button
-                onClick={() => handleVote(code.id, 'worked')}
-                className="flex items-center space-x-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                title="This invite code worked"
-              >
-                <ThumbsUp className="h-4 w-4" />
-                <span className="text-sm font-medium">{code.votes.worked || 0}</span>
-              </button>
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => handleVote(code.id, 'worked')}
+                  className="flex items-center space-x-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  title="This invite code worked"
+                >
+                  <ThumbsUp className="h-4 w-4" />
+                  <span className="text-sm font-medium">{code.votes.worked || 0}</span>
+                </button>
 
-              <button
-                onClick={() => handleVote(code.id, 'didntWork')}
-                className="flex items-center space-x-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="This invite code didn't work"
-              >
-                <ThumbsDown className="h-4 w-4" />
-                <span className="text-sm font-medium">{code.votes.didntWork || 0}</span>
-              </button>
+                <button
+                  onClick={() => handleVote(code.id, 'didntWork')}
+                  className="flex items-center space-x-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="This invite code didn't work"
+                >
+                  <ThumbsDown className="h-4 w-4" />
+                  <span className="text-sm font-medium">{code.votes.didntWork || 0}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
