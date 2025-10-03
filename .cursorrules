@@ -1,0 +1,152 @@
+# Sora 2 Invite Codes Project Rules
+
+## Project Overview
+This is a Next.js 14 application for sharing Sora 2 invite codes. The project uses:
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS
+- Vercel KV (Upstash Redis) for production data persistence
+- Local file storage for development
+
+## Code Style Guidelines
+
+### Naming Conventions
+- **Constants**: UPPER_CASE with underscores (e.g., `API_ENDPOINT`, `MAX_RETRY_COUNT`)
+- **Functions**: camelCase (e.g., `handleSubmit`, `calculateScore`)
+- **Components**: PascalCase (e.g., `InviteCodeDisplay`, `SubmitCodeModal`)
+- **Files**: kebab-case for pages, PascalCase for components (e.g., `how-it-works`, `InviteCodeDisplay.tsx`)
+
+### TypeScript Rules
+- Always use explicit types for function parameters and return values
+- Use interfaces for object shapes (e.g., `InviteCode`, `AnalyticsData`)
+- Prefer `type` for unions and primitives
+- Use strict null checks and optional chaining
+- Export types and interfaces from `lib/data.ts`
+
+### React/Next.js Patterns
+- Use 'use client' directive for client components
+- Prefer Server Components when possible
+- Use Next.js Image component for all images
+- Implement proper error boundaries and loading states
+- Use React hooks properly with dependency arrays
+
+### API Routes
+- Always validate request data
+- Use proper HTTP status codes
+- Implement error handling with try-catch
+- Log important operations for debugging
+- Use NextRequest and NextResponse types
+
+### Data Management
+- All data operations go through `lib/data.ts`
+- Use `persistenceManager` for storage operations
+- Implement proper data validation and sanitization
+- Handle async operations with proper error handling
+- Use consistent data structures across the app
+
+## File Structure Rules
+
+### Components
+- Place reusable components in `components/` directory
+- Use descriptive component names
+- Include proper TypeScript interfaces for props
+- Implement proper accessibility attributes
+- Use Tailwind CSS for styling
+
+### API Routes
+- Place API routes in `app/api/` directory
+- Use RESTful naming conventions
+- Implement proper request/response handling
+- Include proper error responses
+- Use environment variables for configuration
+
+### Data Layer
+- Core data types in `lib/data.ts`
+- Storage adapters in `lib/persistence.ts`
+- Utility functions in `lib/` directory
+- Keep data structures consistent and well-documented
+
+## Security Guidelines
+- Never expose sensitive data in client-side code
+- Validate all user inputs
+- Use proper authentication for admin routes
+- Implement rate limiting for API endpoints
+- Sanitize data before storing in database
+
+## Performance Guidelines
+- Use Next.js Image optimization
+- Implement proper caching strategies
+- Minimize bundle size with dynamic imports
+- Use React.memo for expensive components
+- Optimize database queries and storage operations
+
+## SEO and Accessibility
+- Use semantic HTML elements
+- Include proper meta tags and structured data
+- Implement proper ARIA labels
+- Ensure keyboard navigation works
+- Use descriptive alt text for images
+
+## Error Handling
+- Always wrap async operations in try-catch
+- Provide meaningful error messages
+- Log errors for debugging
+- Implement fallback UI for errors
+- Use proper HTTP status codes
+
+## Environment Configuration
+- Use environment variables for configuration
+- Different storage adapters for dev/prod
+- Proper error handling for missing env vars
+- Document required environment variables
+
+## Game Logic Rules
+- Global Best scores only update when new score is higher
+- Personal Best scores only update when new score is higher
+- Implement proper user identification for personal scores
+- Use consistent scoring algorithms
+- Handle edge cases in game logic
+
+## Database/Storage Rules
+- Use Vercel KV for production (Upstash Redis)
+- Use local file storage for development
+- Implement proper data serialization/deserialization
+- Use retry mechanisms for network operations
+- Implement proper data validation
+
+## Code Comments
+- Use Chinese comments for business logic explanations
+- Use English for technical implementation details
+- Comment complex algorithms and data transformations
+- Document API endpoints and their purposes
+- Include TODO comments for future improvements
+
+## Testing Considerations
+- Write testable code with pure functions
+- Mock external dependencies in tests
+- Test error scenarios and edge cases
+- Implement proper test data setup
+- Use consistent test naming conventions
+
+## Deployment Rules
+- Ensure production builds are optimized
+- Test all environment variables are set
+- Verify database connections work
+- Check all API endpoints are functional
+- Ensure proper error handling in production
+
+## Git and Version Control
+- Use descriptive commit messages
+- Follow conventional commit format when possible
+- Keep commits focused and atomic
+- Use meaningful branch names
+- Include relevant issue numbers in commits
+
+## Performance Monitoring
+- Log important operations for monitoring
+- Implement proper error tracking
+- Monitor database performance
+- Track user engagement metrics
+- Monitor API response times
+
+Remember: This project serves the Sora 2 community by providing a platform to share invite codes. Keep user experience as the top priority while maintaining code quality and security.

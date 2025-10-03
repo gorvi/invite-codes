@@ -40,6 +40,8 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
       if (response.ok) {
         setSuccess(true)
         setCode('')
+        // 🔥 立即触发统计更新
+        window.dispatchEvent(new CustomEvent('statsUpdate'))
         // Close modal and refresh after 2 seconds
         setTimeout(() => {
           setSuccess(false)

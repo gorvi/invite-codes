@@ -33,6 +33,8 @@ export default function Home() {
       if (response.ok) {
         const codes = await response.json()
         setInviteCodes(codes)
+        // 🔥 触发统计更新事件，确保数据同步
+        window.dispatchEvent(new CustomEvent('statsUpdate'))
       }
     } catch (error) {
       console.error('Failed to refresh invite codes:', error)
@@ -55,6 +57,8 @@ export default function Home() {
       if (response.ok) {
         // Refresh data after successful vote
         await handleRefresh()
+        // 🔥 触发统计更新事件
+        window.dispatchEvent(new CustomEvent('statsUpdate'))
       } else {
         console.error('Failed to vote:', response.statusText)
       }

@@ -52,6 +52,7 @@ export interface AnalyticsData {
     submitCount: number
     firstVisit: string
     lastVisit: string
+    personalBestScore: number // 个人最佳分数
   }>
   uniqueCopyStats: Record<string, {
     totalUniqueCopies: number

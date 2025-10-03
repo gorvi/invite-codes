@@ -11,11 +11,29 @@ export default function ActiveCodeStats() {
     const fetchStats = async () => {
       try {
         console.log('[ActiveCodeStats] Fetching stats...')
+        // 🔥 优化：只调用一个接口，减少网络请求
         const response = await fetch('/api/analytics')
         if (response.ok) {
           const data = await response.json()
-          console.log('[ActiveCodeStats] Active codes:', data.activeCodeCount)
-          setActiveCodeCount(data.activeCodeCount || 0)
+          
+          // 使用实际代码列表计算活跃数量（更准确）
+          const actualActiveCount = data.allInviteCodes 
+            ? data.allInviteCodes.filter((code: any) => code.status === 'active').length
+            : data.activeCodeCount || 0
+          
+          const reportedActiveCount = data.activeCodeCount || 0
+          
+          console.log('[ActiveCodeStats] Reported active codes:', reportedActiveCount)
+          console.log('[ActiveCodeStats] Actual active codes:', actualActiveCount)
+          
+          // 使用实际计算的数量，确保数据一致性
+          setActiveCodeCount(actualActiveCount)
+          
+          // 如果数据不一致，记录警告
+          if (actualActiveCount !== reportedActiveCount) {
+            console.warn(`[ActiveCodeStats] Data inconsistency detected! Reported: ${reportedActiveCount}, Actual: ${actualActiveCount}`)
+            console.log('[ActiveCodeStats] Consistency report:', data.dataConsistency)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch active code count:', error)

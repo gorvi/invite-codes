@@ -68,7 +68,8 @@ export async function POST(
         voteCount: 0,
         submitCount: 0,
         firstVisit: new Date().toISOString(),
-        lastVisit: new Date().toISOString()
+        lastVisit: new Date().toISOString(),
+        personalBestScore: 0
       }
     }
     analyticsData.userStats[userIdentifier].voteCount += 1

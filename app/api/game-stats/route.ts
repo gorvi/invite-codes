@@ -25,15 +25,36 @@ export async function POST(request: NextRequest) {
     await initializeData()
     
     const body = await request.json()
-    const { action, score, hamstersWhacked } = body
+    const { action, score, hamstersWhacked, userId } = body
 
     switch (action) {
       case 'submit_score':
         if (typeof score === 'number' && score > 0) {
-          // 更新全球最佳分数
+          // 更新全球最佳分数（只有更高分数才能覆盖）
           if (score > analyticsData.gameStats.globalBestScore) {
             analyticsData.gameStats.globalBestScore = score
             console.log(`[Game] New global best score: ${score}`)
+          }
+          
+          // 更新用户个人最佳分数（只有更高分数才能覆盖）
+          if (userId && typeof userId === 'string') {
+            if (!analyticsData.userStats[userId]) {
+              analyticsData.userStats[userId] = {
+                userId: userId,
+                copyCount: 0,
+                voteCount: 0,
+                submitCount: 0,
+                firstVisit: new Date().toISOString(),
+                lastVisit: new Date().toISOString(),
+                personalBestScore: 0
+              }
+            }
+            
+            if (score > analyticsData.userStats[userId].personalBestScore) {
+              analyticsData.userStats[userId].personalBestScore = score
+              analyticsData.userStats[userId].lastVisit = new Date().toISOString()
+              console.log(`[Game] New personal best score for user ${userId}: ${score}`)
+            }
           }
           
           // 增加游戏次数
@@ -65,6 +86,7 @@ export async function POST(request: NextRequest) {
       globalBestScore: analyticsData.gameStats.globalBestScore,
       totalGamesPlayed: analyticsData.gameStats.totalGamesPlayed,
       totalHamstersWhacked: analyticsData.gameStats.totalHamstersWhacked,
+      personalBestScore: userId ? (analyticsData.userStats[userId]?.personalBestScore || 0) : 0,
     })
   } catch (error) {
     return NextResponse.json(

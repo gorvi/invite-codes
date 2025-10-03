@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeData, analyticsData, inviteCodes, saveData, getTodayString, getCurrentTimestamp } from '@/lib/data'
+import { checkDataConsistency, logConsistencyIssue } from '@/lib/dataConsistency'
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
     const today = new Date().toISOString().split('T')[0]
     
     // 过滤出活跃的邀请码数量
-    const activeCodeCount = inviteCodes.filter(code => code.status === 'active').length
+    let activeCodeCount = inviteCodes.filter(code => code.status === 'active').length
     
     // 计算全量统计数据
     const totalCodeCount = inviteCodes.length
@@ -21,6 +22,14 @@ export async function GET() {
       code.votes.uniqueWorked >= 4
     ).length
 
+    // 🔥 检查数据一致性
+    const consistencyReport = checkDataConsistency(analyticsData, inviteCodes)
+    if (!consistencyReport.isConsistent) {
+      logConsistencyIssue(consistencyReport)
+      // 使用实际计算的活跃代码数量
+      activeCodeCount = consistencyReport.actualActiveCount
+    }
+
     // 返回统计数据
     const stats = {
       ...analyticsData,
@@ -29,6 +38,7 @@ export async function GET() {
       usedCodeCount: usedCodeCount, // 已使用的邀请码数量
       invalidCodeCount: invalidCodeCount, // 无效的邀请码数量
       successfullyUsedCount: successfullyUsedCount, // 成功使用的邀请码数量
+      dataConsistency: consistencyReport, // 添加数据一致性报告
       allInviteCodes: inviteCodes, // 返回所有邀请码数据
       todayStats: analyticsData.dailyStats[today] || {
         date: today,
@@ -100,7 +110,8 @@ export async function POST(request: NextRequest) {
         voteCount: 0,
         submitCount: 0,
         firstVisit: timestamp,
-        lastVisit: timestamp
+        lastVisit: timestamp,
+        personalBestScore: 0
       }
     }
 
