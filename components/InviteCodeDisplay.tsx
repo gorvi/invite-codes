@@ -180,36 +180,27 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
               </button>
             </div>
 
-            {/* 统计行 */}
-            <div className="grid grid-cols-3 gap-3">
-              {/* Copy 统计 */}
-              <div className="text-center">
-                <div className="text-xs text-gray-500 mb-1">Copy Stats</div>
-                <div className="flex justify-center space-x-2 text-sm">
-                  <span className="text-gray-600">Total: {code.copiedCount || 0}</span>
-                  <span className="text-gray-400">|</span>
-                  <span className="text-blue-600">Unique: {code.uniqueCopiedCount || 0}</span>
+            {/* 简洁统计行 */}
+            <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t border-gray-100">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <Copy className="h-3 w-3" />
+                  <span>{code.uniqueCopiedCount || 0} copied</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <ThumbsUp className="h-3 w-3 text-green-600" />
+                  <span className="text-green-600">{code.votes.uniqueWorked || 0}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <ThumbsDown className="h-3 w-3 text-red-600" />
+                  <span className="text-red-600">{code.votes.uniqueDidntWork || 0}</span>
                 </div>
               </div>
-
-              {/* Worked 统计 */}
-              <div className="text-center">
-                <div className="text-xs text-gray-500 mb-1">Worked Stats</div>
-                <div className="flex justify-center space-x-2 text-sm">
-                  <span className="text-gray-600">Total: {code.votes.worked || 0}</span>
-                  <span className="text-gray-400">|</span>
-                  <span className="text-green-600">Unique: {code.votes.uniqueWorked || 0}</span>
-                </div>
-              </div>
-
-              {/* Didn't Work 统计 */}
-              <div className="text-center">
-                <div className="text-xs text-gray-500 mb-1">Didn't Work Stats</div>
-                <div className="flex justify-center space-x-2 text-sm">
-                  <span className="text-gray-600">Total: {code.votes.didntWork || 0}</span>
-                  <span className="text-gray-400">|</span>
-                  <span className="text-red-600">Unique: {code.votes.uniqueDidntWork || 0}</span>
-                </div>
+              <div className="text-xs text-gray-400">
+                Success rate: {code.votes.uniqueWorked > 0 || code.votes.uniqueDidntWork > 0 
+                  ? `${Math.round((code.votes.uniqueWorked / (code.votes.uniqueWorked + code.votes.uniqueDidntWork)) * 100)}%`
+                  : 'N/A'
+                }
               </div>
             </div>
           </div>
