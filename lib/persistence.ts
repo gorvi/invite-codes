@@ -1,15 +1,12 @@
-/**
- * 持久化存储管理器
- * 统一管理不同环境下的数据存储策略
- */
-
-import { InviteCode, AnalyticsData } from './data'
+import { kv } from '@vercel/kv'
+import { InviteCode, AnalyticsData } from '@/lib/data'
 
 export interface StorageAdapter {
   saveInviteCodes(codes: InviteCode[]): Promise<void>
   loadInviteCodes(): Promise<InviteCode[]>
   saveAnalytics(analytics: AnalyticsData): Promise<void>
   loadAnalytics(): Promise<AnalyticsData | null>
+  getStorageType(): string
 }
 
 /**
@@ -141,6 +138,7 @@ export class VercelKVAdapter implements StorageAdapter {
     
     const key = this.getKey('analytics_data')
     const serialized = this.serializeAnalytics(analytics)
+    
     await this.kv.set(key, serialized)
     console.log(`[KV] Saved analytics data to ${key}`)
   }
@@ -150,9 +148,14 @@ export class VercelKVAdapter implements StorageAdapter {
     
     const key = this.getKey('analytics_data')
     const data = await this.kv.get(key)
+    
     if (!data) return null
     
     return this.deserializeAnalytics(data)
+  }
+
+  getStorageType(): string {
+    return 'vercel-kv'
   }
 
   private serializeAnalytics(analytics: AnalyticsData): any {
@@ -163,7 +166,7 @@ export class VercelKVAdapter implements StorageAdapter {
           key,
           {
             totalUniqueCopies: value.totalUniqueCopies,
-            uniqueCopiers: Array.from(value.uniqueCopiers),
+            uniqueCopiers: Array.from(value.uniqueCopiers || []),
           },
         ])
       ),
@@ -171,8 +174,8 @@ export class VercelKVAdapter implements StorageAdapter {
         Object.entries(analytics.uniqueVoteStats || {}).map(([key, value]) => [
           key,
           {
-            uniqueWorkedVoters: Array.from(value.uniqueWorkedVoters),
-            uniqueDidntWorkVoters: Array.from(value.uniqueDidntWorkVoters),
+            uniqueWorkedVoters: Array.from(value.uniqueWorkedVoters || []),
+            uniqueDidntWorkVoters: Array.from(value.uniqueDidntWorkVoters || []),
           },
         ])
       ),
@@ -320,6 +323,10 @@ export class LocalFileAdapter implements StorageAdapter {
     return this.deserializeAnalytics(data)
   }
 
+  getStorageType(): string {
+    return 'local-file'
+  }
+
   private serializeAnalytics(analytics: AnalyticsData): any {
     return {
       ...analytics,
@@ -328,7 +335,7 @@ export class LocalFileAdapter implements StorageAdapter {
           key,
           {
             totalUniqueCopies: value.totalUniqueCopies,
-            uniqueCopiers: Array.from(value.uniqueCopiers),
+            uniqueCopiers: Array.from(value.uniqueCopiers || []),
           },
         ])
       ),
@@ -336,8 +343,8 @@ export class LocalFileAdapter implements StorageAdapter {
         Object.entries(analytics.uniqueVoteStats || {}).map(([key, value]) => [
           key,
           {
-            uniqueWorkedVoters: Array.from(value.uniqueWorkedVoters),
-            uniqueDidntWorkVoters: Array.from(value.uniqueDidntWorkVoters),
+            uniqueWorkedVoters: Array.from(value.uniqueWorkedVoters || []),
+            uniqueDidntWorkVoters: Array.from(value.uniqueDidntWorkVoters || []),
           },
         ])
       ),
@@ -416,84 +423,37 @@ export class PersistenceManager {
   private adapter: StorageAdapter
 
   constructor() {
-    this.adapter = this.createAdapter()
-  }
-
-  private createAdapter(): StorageAdapter {
-    // 客户端跳过
-    if (typeof window !== 'undefined') {
-      return new LocalFileAdapter() // 占位符
+    // 根据环境选择存储适配器
+    if (typeof window === 'undefined' && (process.env.VERCEL === '1' || process.env.KV_REST_API_URL)) {
+      this.adapter = new VercelKVAdapter()
+    } else {
+      this.adapter = new LocalFileAdapter()
     }
-
-    // 检查环境并选择合适的存储
-    const env = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
     
-    console.log(`[Persistence] Environment: ${env}`)
-    
-    // Vercel 环境或配置了 KV 时使用 Vercel KV
-    if (process.env.VERCEL === '1' || process.env.KV_REST_API_URL) {
-      try {
-        const adapter = new VercelKVAdapter()
-        console.log(`[Persistence] Using Vercel KV for ${env} environment`)
-        return adapter
-      } catch (error) {
-        console.warn('[Persistence] Vercel KV not available, falling back to file storage:', error)
-      }
-    }
-
-    // 本地开发环境使用文件存储
-    console.log(`[Persistence] Using local file storage for ${env} environment`)
-    return new LocalFileAdapter()
+    console.log(`[Persistence] Environment: ${process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'}`)
+    console.log(`[Persistence] Using ${this.adapter.getStorageType()} storage for ${process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'} environment`)
   }
 
   async saveInviteCodes(codes: InviteCode[]): Promise<void> {
-    try {
-      await this.adapter.saveInviteCodes(codes)
-    } catch (error) {
-      console.error('[Persistence] Failed to save invite codes:', error)
-      throw error
-    }
+    return this.adapter.saveInviteCodes(codes)
   }
 
   async loadInviteCodes(): Promise<InviteCode[]> {
-    try {
-      return await this.adapter.loadInviteCodes()
-    } catch (error) {
-      console.error('[Persistence] Failed to load invite codes:', error)
-      return []
-    }
+    return this.adapter.loadInviteCodes()
   }
 
   async saveAnalytics(analytics: AnalyticsData): Promise<void> {
-    try {
-      await this.adapter.saveAnalytics(analytics)
-    } catch (error) {
-      console.error('[Persistence] Failed to save analytics:', error)
-      throw error
-    }
+    return this.adapter.saveAnalytics(analytics)
   }
 
   async loadAnalytics(): Promise<AnalyticsData | null> {
-    try {
-      return await this.adapter.loadAnalytics()
-    } catch (error) {
-      console.error('[Persistence] Failed to load analytics:', error)
-      return null
-    }
+    return this.adapter.loadAnalytics()
   }
 
-  /**
-   * 获取当前使用的存储类型
-   */
   getStorageType(): string {
-    if (this.adapter instanceof VercelKVAdapter) {
-      return 'vercel-kv'
-    } else if (this.adapter instanceof LocalFileAdapter) {
-      return 'local-file'
-    }
-    return 'unknown'
+    return this.adapter.getStorageType()
   }
 }
 
-// 单例实例
+// 导出单例实例
 export const persistenceManager = new PersistenceManager()
