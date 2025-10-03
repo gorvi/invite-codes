@@ -101,8 +101,8 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
         <div className="text-gray-500 mb-4">
           <Copy className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p className="text-lg">暂无可用的邀请码</p>
-          <p className="text-sm mt-2">请稍后再试，或提交新的邀请码</p>
+          <p className="text-lg">No available invite codes</p>
+          <p className="text-sm mt-2">Please try again later, or submit a new invite code</p>
         </div>
       </div>
     )

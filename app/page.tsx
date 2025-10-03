@@ -23,7 +23,7 @@ export default function Home() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-  // 手动刷新邀请码数据
+  // Manually refresh invite codes data
   const handleRefresh = async () => {
     setLoading(true)
     try {
@@ -39,7 +39,7 @@ export default function Home() {
     }
   }
 
-  // 处理投票
+  // Handle voting
   const handleVote = async (id: string, type: 'worked' | 'didntWork') => {
     try {
       const response = await fetch(`/api/invite-codes/${id}/vote`, {
@@ -51,7 +51,7 @@ export default function Home() {
       })
       
       if (response.ok) {
-        // 投票成功后刷新数据
+        // Refresh data after successful vote
         await handleRefresh()
       } else {
         console.error('Failed to vote:', response.statusText)
@@ -61,13 +61,13 @@ export default function Home() {
     }
   }
 
-  // 处理复制邀请码
+  // Handle copying invite code
   const handleCopyCode = async (code: string, codeId: string) => {
     try {
-      // 复制到剪贴板
+      // Copy to clipboard
       await navigator.clipboard.writeText(code)
       
-      // 记录复制事件（可选）
+      // Record copy event (optional)
       const response = await fetch('/api/analytics', {
         method: 'POST',
         headers: {
@@ -88,7 +88,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // 获取邀请码数据
+    // Fetch invite codes data
     const fetchInviteCodes = async () => {
       try {
         const response = await fetch('/api/invite-codes')
@@ -97,7 +97,7 @@ export default function Home() {
           setInviteCodes(codes)
         }
       } catch (error) {
-        console.error('获取邀请码失败:', error)
+        console.error('Failed to fetch invite codes:', error)
       } finally {
         setLoading(false)
       }
@@ -105,7 +105,7 @@ export default function Home() {
 
     fetchInviteCodes()
 
-    // 设置 SSE 连接进行实时更新
+    // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
     
     eventSource.onmessage = (event) => {
@@ -115,9 +115,9 @@ export default function Home() {
         if (data.type === 'new_code') {
           console.log('[SSE] New code received:', data.inviteCode.code)
           setInviteCodes(prev => [data.inviteCode, ...prev])
-          // 显示新邀请码通知
+          // Show new invite code notification
           showNewCodeNotification(data.inviteCode.code)
-          // 🔥 触发统计数据刷新
+          // 🔥 Trigger stats refresh
           window.dispatchEvent(new CustomEvent('statsUpdate'))
         } else if (data.type === 'initial') {
           console.log('[SSE] Initial data received:', data.inviteCodes.length, 'codes')
@@ -125,7 +125,7 @@ export default function Home() {
         } else if (data.type === 'update') {
           console.log('[SSE] Update received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
-          // 🔥 触发统计数据刷新
+          // 🔥 Trigger stats refresh
           window.dispatchEvent(new CustomEvent('statsUpdate'))
         }
       } catch (error) {
@@ -134,7 +134,7 @@ export default function Home() {
     }
 
     eventSource.onerror = (error) => {
-      console.error('SSE 连接错误:', error)
+      console.error('SSE connection error:', error)
     }
 
     return () => {
@@ -146,25 +146,25 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Header />
       
-      {/* 通知组件 */}
+      {/* Notification component */}
       <NotificationToast 
         notifications={notifications} 
         onRemove={removeNotification} 
       />
       
       <div className="container mx-auto px-4 py-8">
-        {/* 移动端：垂直布局，电脑端：左右分栏布局（左侧70%，右侧30%） */}
+        {/* Mobile: vertical layout, Desktop: left-right layout (left 70%, right 30%) */}
         <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl mx-auto">
-          {/* 左侧主内容区 */}
+          {/* Left main content area */}
           <div className="w-full lg:w-[70%] space-y-8">
             <CreatorNote />
             
-            {/* 可用邀请码统计 */}
+            {/* Available invite codes stats */}
             <ActiveCodeStats />
             
-            {/* 操作按钮区 - 固定吸附 */}
+            {/* Action buttons area - sticky */}
             <div className="sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4">
-              {/* Submit Code 按钮（主要操作） */}
+              {/* Submit Code button (main action) */}
               <button onClick={() => setIsSubmitModalOpen(true)} className="w-full">
                 <div className="bg-gradient-to-r from-primary-600 to-blue-600 text-white p-4 rounded-lg hover:from-primary-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer">
                   <div className="flex items-start space-x-3">
@@ -179,7 +179,7 @@ export default function Home() {
                 </div>
               </button>
               
-              {/* Support Creator 按钮已隐藏 */}
+              {/* Support Creator button is hidden */}
             </div>
             
             <InviteCodeDisplay 
@@ -188,7 +188,7 @@ export default function Home() {
               onCopy={handleCopyCode}
             />
             
-            {/* 移动端显示游戏 */}
+            {/* Mobile game display */}
             <div className="lg:hidden">
               <WhackHamsterGame />
             </div>
@@ -201,7 +201,7 @@ export default function Home() {
             </div>
           </div>
           
-          {/* 右侧游戏区（仅电脑端显示，固定在右侧） */}
+          {/* Right game area (desktop only, fixed on right) */}
           <div className="hidden lg:block lg:w-[30%]">
             <div className="sticky top-4">
               <WhackHamsterGame />

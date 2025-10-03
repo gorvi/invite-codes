@@ -34,13 +34,13 @@ function NotificationItem({ notification, onRemove }: { notification: Notificati
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // 显示动画
+    // Show animation
     const showTimer = setTimeout(() => setIsVisible(true), 100)
     
-    // 自动移除
+    // Auto remove
     const hideTimer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(() => onRemove(notification.id), 300) // 等待动画完成
+      setTimeout(() => onRemove(notification.id), 300) // Wait for animation to complete
     }, notification.duration || 5000)
 
     return () => {
@@ -132,8 +132,8 @@ export function useNotifications() {
   const showNewCodeNotification = (code: string) => {
     addNotification({
       type: 'info',
-      title: '🎉 新邀请码已添加！',
-      message: `邀请码 "${code}" 已成功提交到平台`,
+      title: '🎉 New invite code added!',
+      message: `Invite code "${code}" has been successfully submitted`,
       duration: 6000
     })
   }
@@ -141,7 +141,7 @@ export function useNotifications() {
   const showSuccessNotification = (message: string) => {
     addNotification({
       type: 'success',
-      title: '✅ 操作成功',
+      title: '✅ Operation successful',
       message,
       duration: 4000
     })
@@ -150,7 +150,7 @@ export function useNotifications() {
   const showErrorNotification = (message: string) => {
     addNotification({
       type: 'error',
-      title: '❌ 操作失败',
+      title: '❌ Operation failed',
       message,
       duration: 5000
     })
