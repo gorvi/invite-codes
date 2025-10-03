@@ -209,6 +209,7 @@ export const getDataManager = (): DataManager => {
   }
   
   if (!dataManagerInstance) {
+    console.log('[DataManager] Creating new instance')
     dataManagerInstance = new DataManager()
     
     // 页面卸载时清理
@@ -220,11 +221,13 @@ export const getDataManager = (): DataManager => {
   return dataManagerInstance
 }
 
-// 为了向后兼容，导出一个代理对象
-export const dataManager = new Proxy({} as DataManager, {
-  get(target, prop) {
-    const manager = getDataManager()
-    const value = (manager as any)[prop]
-    return typeof value === 'function' ? value.bind(manager) : value
-  }
-})
+// 导出全局实例访问器
+export const dataManager = {
+  getData: (forceRefresh = false) => getDataManager().getData(forceRefresh),
+  refreshData: () => getDataManager().refreshData(),
+  addListener: (listener: (data: GlobalData) => void) => getDataManager().addListener(listener),
+  removeListener: (listener: (data: GlobalData) => void) => getDataManager().removeListener(listener),
+  triggerRefresh: () => getDataManager().triggerRefresh(),
+  stopAutoRefresh: () => getDataManager().stopAutoRefresh(),
+  destroy: () => getDataManager().destroy()
+}
