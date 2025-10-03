@@ -24,8 +24,10 @@ class DataManager {
   private isRefreshing = false
 
   constructor() {
-    // 每 8 秒自动刷新一次
-    this.startAutoRefresh()
+    // 延迟启动自动刷新，确保组件已加载
+    setTimeout(() => {
+      this.startAutoRefresh()
+    }, 1000)
   }
 
   /**
@@ -37,6 +39,13 @@ class DataManager {
     // 如果已有数据，立即通知新监听器
     if (this.data) {
       listener(this.data)
+    } else {
+      // 如果没有数据，立即加载
+      this.getData(true).then((data) => {
+        if (data) {
+          listener(data)
+        }
+      })
     }
   }
 

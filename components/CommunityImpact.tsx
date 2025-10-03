@@ -21,15 +21,8 @@ export default function CommunityImpact() {
       setLoading(false)
     }
 
-    // 注册数据监听器
+    // 注册数据监听器（会自动触发数据加载）
     dataManager.addListener(handleDataUpdate)
-
-    // 初始加载数据
-    dataManager.getData(true).then((data) => {
-      if (data) {
-        handleDataUpdate(data)
-      }
-    })
 
     // 🔥 监听手动刷新事件
     const handleManualRefresh = () => {

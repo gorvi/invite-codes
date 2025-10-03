@@ -90,15 +90,8 @@ export default function Home() {
       setLoading(false)
     }
 
-    // 注册数据监听器
+    // 注册数据监听器（会自动触发数据加载）
     dataManager.addListener(handleDataUpdate)
-
-    // 初始加载数据
-    dataManager.getData(true).then((data) => {
-      if (data) {
-        handleDataUpdate(data)
-      }
-    })
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
