@@ -4,16 +4,16 @@ Allow: /
 # Sitemap location
 Sitemap: https://www.invitecodes.net/sitemap.xml
 
-# Disallow admin and debug pages
+# Disallow sensitive paths only
 Disallow: /admin/
-Disallow: /debug-env/
-Disallow: /local-env/
 Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
 
-# Allow important pages
+# Allow important pages for SEO
 Allow: /
 Allow: /how-it-works/
 Allow: /faq/
 
-# Crawl delay (optional)
+# Normal crawl delay
 Crawl-delay: 1

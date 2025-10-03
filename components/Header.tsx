@@ -7,7 +7,7 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
-        <Link href="/" className="flex items-center space-x-3">
+        <Link href="/" className="flex items-center space-x-3" data-protected>
           <Image 
             src="/logo_web.png" 
             alt="Sora 2 Invite Codes" 
@@ -15,6 +15,7 @@ export default function Header() {
             height={40}
             className="h-10 w-auto"
             priority
+            draggable={false}
           />
           <span className="text-xl font-bold text-gray-900">Sora 2 Invite Codes</span>
         </Link>

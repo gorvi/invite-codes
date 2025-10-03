@@ -43,6 +43,9 @@ export default function Footer() {
           <p className="text-gray-600 text-sm">
             Built with ❤️ for the Sora 2 community
           </p>
+          <p className="text-gray-500 text-xs mt-2">
+            © 2025 Sora 2 Invite Codes. All rights reserved. Unauthorized copying or reproduction is prohibited.
+          </p>
         </div>
       </div>
     </footer>
