@@ -16,6 +16,7 @@ import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
 import UserGuidance from '@/components/UserGuidance'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
 import { InviteCode } from '@/lib/data'
@@ -138,22 +139,23 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* SEO Structured Data */}
-      <WebsiteStructuredData />
-      <OrganizationStructuredData />
-      <WebPageStructuredData />
-      
-      <Header />
-      
-      {/* Notification component */}
-      <NotificationToast 
-        notifications={notifications} 
-        onRemove={removeNotification} 
-      />
-      
-      {/* User guidance component */}
-      <UserGuidance />
+    <ErrorBoundary>
+      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        {/* SEO Structured Data */}
+        <WebsiteStructuredData />
+        <OrganizationStructuredData />
+        <WebPageStructuredData />
+        
+        <Header />
+        
+        {/* Notification component */}
+        <NotificationToast 
+          notifications={notifications} 
+          onRemove={removeNotification} 
+        />
+        
+        {/* User guidance component */}
+        <UserGuidance />
       
       <div className="container mx-auto px-4 py-8">
         {/* Mobile: vertical layout, Desktop: left-right layout (left 70%, right 30%) */}
@@ -232,15 +234,15 @@ export default function Home() {
         </div>
       </div>
       
-      <Footer />
-      
-      
-      {/* Submit Code Modal */}
-      <SubmitCodeModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-        onSuccess={handleRefresh}
-      />
-    </main>
+        <Footer />
+        
+        {/* Submit Code Modal */}
+        <SubmitCodeModal
+          isOpen={isSubmitModalOpen}
+          onClose={() => setIsSubmitModalOpen(false)}
+          onSuccess={handleRefresh}
+        />
+      </main>
+    </ErrorBoundary>
   )
 }
