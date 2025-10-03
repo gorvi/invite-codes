@@ -58,10 +58,10 @@ export function middleware(request: NextRequest) {
   // 引用策略
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   
-  // 内容安全策略
+  // 内容安全策略（允许常见的外部资源）
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https://at.alicdn.com; connect-src 'self' https:;"
   )
   
   return response
