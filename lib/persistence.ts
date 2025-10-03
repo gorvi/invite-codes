@@ -69,21 +69,71 @@ export class VercelKVAdapter implements StorageAdapter {
       createdAt: code.createdAt.toISOString(),
     }))
     
-    await this.kv.set(key, serializableCodes)
-    console.log(`[KV] Saved invite codes to ${key}`)
+    try {
+      // 添加重试机制
+      let retries = 3
+      let success = false
+      
+      while (retries > 0 && !success) {
+        try {
+          await this.kv.set(key, serializableCodes)
+          success = true
+          console.log(`[KV] Successfully saved ${codes.length} invite codes to ${key}`)
+        } catch (error) {
+          console.error(`[KV] Save attempt ${4-retries} failed:`, error)
+          retries--
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒后重试
+          }
+        }
+      }
+      
+      if (!success) {
+        throw new Error(`Failed to save invite codes after 3 attempts`)
+      }
+    } catch (error) {
+      console.error(`[KV] Error saving invite codes:`, error)
+      throw error
+    }
   }
 
   async loadInviteCodes(): Promise<InviteCode[]> {
     if (!this.kv) throw new Error('Vercel KV not available')
     
     const key = this.getKey('invite_codes')
-    const data = await this.kv.get(key)
-    if (!data) return []
     
-    return data.map((code: any) => ({
-      ...code,
-      createdAt: new Date(code.createdAt),
-    }))
+    try {
+      // 添加重试机制
+      let data = null
+      let retries = 3
+      
+      while (retries > 0 && !data) {
+        try {
+          data = await this.kv.get(key)
+          if (data) break
+        } catch (error) {
+          console.error(`[KV] Load attempt ${4-retries} failed:`, error)
+          retries--
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒后重试
+          }
+        }
+      }
+      
+      if (!data) {
+        console.warn(`[KV] Failed to load invite codes after 3 attempts, key: ${key}`)
+        return []
+      }
+      
+      console.log(`[KV] Successfully loaded ${data.length} invite codes from ${key}`)
+      return data.map((code: any) => ({
+        ...code,
+        createdAt: new Date(code.createdAt),
+      }))
+    } catch (error) {
+      console.error(`[KV] Error loading invite codes:`, error)
+      return []
+    }
   }
 
   async saveAnalytics(analytics: AnalyticsData): Promise<void> {

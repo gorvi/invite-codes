@@ -104,10 +104,23 @@ export async function initializeData(): Promise<void> {
     
     console.log(`[DATA] Initializing data with storage type: ${persistenceManager.getStorageType()}`)
     
-    // 加载邀请码数据
+    // 加载邀请码数据 - 添加数据一致性检查
     const loadedCodes = await persistenceManager.loadInviteCodes()
     inviteCodes = loadedCodes
-    console.log(`[DATA] Loaded ${inviteCodes.length} invite codes`)
+    
+    // 数据一致性检查
+    if (inviteCodes.length > 0) {
+      console.log(`[DATA] ✅ Loaded ${inviteCodes.length} invite codes successfully`)
+      // 验证数据完整性
+      const validCodes = inviteCodes.filter(code => 
+        code.id && code.code && code.createdAt && code.status
+      )
+      if (validCodes.length !== inviteCodes.length) {
+        console.warn(`[DATA] ⚠️ Data integrity issue: ${inviteCodes.length - validCodes.length} invalid codes found`)
+      }
+    } else {
+      console.log(`[DATA] ℹ️ No invite codes found (empty database)`)
+    }
     
     // 加载分析数据
     const loadedAnalytics = await persistenceManager.loadAnalytics()
