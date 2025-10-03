@@ -211,13 +211,24 @@ export default function WhackHamsterGame() {
       setHitAnimations(prev => prev.filter(anim => anim.timestamp !== hitAnimation.timestamp))
     }, 350)
     
-    // 600ms后移除眩晕效果
+    // 1200ms后移除眩晕效果和地鼠
     setTimeout(() => {
       setDizzyHamsters(prev => prev.filter(dizzy => dizzy.timestamp !== dizzyHamster.timestamp))
+      
+      // 同时移除地鼠
+      setGameState(prev => {
+        const newHamsters = [...prev.hamsters]
+        newHamsters[index] = false
+        return {
+          ...prev,
+          hamsters: newHamsters
+        }
+      })
+      
       // 🔥 同时清除击中标记，允许同位置的新地鼠被点击（使用Ref，同步清除）
       hitHamstersRef.current.delete(index)
       console.log(`[HIT CLEAR] Hamster ${index} removed from hit list, remaining:`, Array.from(hitHamstersRef.current))
-    }, 600)
+    }, 1200)
     
     // 800ms后移除加分特效
     setTimeout(() => {
@@ -225,16 +236,12 @@ export default function WhackHamsterGame() {
     }, 800)
     
     setGameState(prev => {
-      // 🔥 关键修复：立即让地鼠从数组中消失，防止其他timeout误判
-      const newHamsters = [...prev.hamsters]
-      newHamsters[index] = false
-      
+      // 🔥 修复：不要立即移除地鼠，让眩晕特效显示
       const newScore = prev.score + points
       const newBestScore = Math.max(newScore, prev.bestScore)
       
       return {
         ...prev,
-        hamsters: newHamsters,  // 立即更新地鼠状态
         score: newScore,
         bestScore: newBestScore
       }
