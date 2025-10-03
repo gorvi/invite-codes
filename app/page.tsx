@@ -86,6 +86,7 @@ export default function Home() {
     // 🔥 使用全局数据管理器，避免重复 API 调用
     const handleDataUpdate = (data: GlobalData) => {
       console.log('[Page] Data updated via DataManager:', data.inviteCodes.length, 'codes')
+      console.log('[Page] Invite codes data:', data.inviteCodes)
       setInviteCodes(data.inviteCodes)
       setLoading(false)
     }

@@ -40,8 +40,8 @@ class DataManager {
     if (this.data) {
       listener(this.data)
     } else {
-      // 如果没有数据，立即加载
-      this.getData(true).then((data) => {
+      // 如果没有数据，立即刷新数据（避免递归调用 getData）
+      this.refreshData().then((data) => {
         if (data) {
           listener(data)
         }
@@ -146,6 +146,7 @@ class DataManager {
       })
 
       // 通知所有监听器
+      console.log('[DataManager] Notifying', this.listeners.length, 'listeners')
       this.notifyListeners()
       
       return this.data

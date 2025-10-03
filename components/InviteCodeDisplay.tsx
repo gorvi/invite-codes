@@ -120,6 +120,8 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     return 'text-gray-600 bg-gray-50'
   }
 
+  console.log('[InviteCodeDisplay] Rendering with codes:', codes.length, codes)
+
   if (codes.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
