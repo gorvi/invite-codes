@@ -76,7 +76,7 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-500 rounded-lg flex items-center justify-center">
               <Send className="h-5 w-5 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">Submit Invite Code</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Submit Sora 2 Code</h2>
           </div>
           <button
             onClick={handleClose}
@@ -96,21 +96,21 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-green-600 mb-2">Success!</h3>
-              <p className="text-gray-600">Your invite code has been submitted successfully.</p>
+              <p className="text-gray-600">Your Sora 2 invite code has been submitted successfully.</p>
             </div>
           ) : (
             // Form State
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Invite Code
+                  Sora 2 Invite Code
                 </label>
                 <input
                   type="text"
                   id="code"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="Enter your Sora invite code"
+                  placeholder="Enter your Sora 2 invite code"
                   disabled={submitting}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-lg font-mono"
                   autoFocus

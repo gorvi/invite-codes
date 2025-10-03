@@ -1,15 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { Gift } from 'lucide-react'
+import Image from 'next/image'
 
 export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
-        <Link href="/" className="flex items-center justify-center space-x-2">
-          <Gift className="h-8 w-8 text-primary-600" />
-          <span className="text-xl font-bold text-gray-900">Sora Invite Codes</span>
+        <Link href="/" className="flex items-center space-x-3">
+          <Image 
+            src="/logo_web.png" 
+            alt="Sora 2 Invite Codes" 
+            width={120} 
+            height={40}
+            className="h-10 w-auto"
+            priority
+          />
+          <span className="text-xl font-bold text-gray-900">Sora 2 Invite Codes</span>
         </Link>
       </div>
     </header>

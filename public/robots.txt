@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.invitecodes.net/sitemap.xml
+
+# Disallow admin and debug pages
+Disallow: /admin/
+Disallow: /debug-env/
+Disallow: /local-env/
+Disallow: /api/
+
+# Allow important pages
+Allow: /
+Allow: /how-it-works/
+Allow: /faq/
+
+# Crawl delay (optional)
+Crawl-delay: 1

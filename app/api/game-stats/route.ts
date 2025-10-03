@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyticsData } from '@/lib/data'
-import { saveAnalytics } from '@/lib/storage'
+import { initializeData, analyticsData, saveData } from '@/lib/data'
 
 export async function GET() {
   try {
+    // 确保数据已初始化
+    await initializeData()
+    
     return NextResponse.json({
       globalBestScore: analyticsData.gameStats.globalBestScore,
       totalGamesPlayed: analyticsData.gameStats.totalGamesPlayed,
@@ -19,6 +21,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // 确保数据已初始化
+    await initializeData()
+    
     const body = await request.json()
     const { action, score, hamstersWhacked } = body
 
@@ -39,9 +44,9 @@ export async function POST(request: NextRequest) {
             analyticsData.gameStats.totalHamstersWhacked += hamstersWhacked
           }
           
-          // 🔥 持久化保存游戏统计数据
+          // 🔥 使用新的持久化系统保存游戏统计数据
           try {
-            saveAnalytics(analyticsData)
+            await saveData()
             console.log('[Game] Game stats saved to storage')
           } catch (error) {
             console.error('[Game] Failed to save game stats:', error)

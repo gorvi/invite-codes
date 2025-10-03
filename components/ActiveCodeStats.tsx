@@ -65,7 +65,7 @@ export default function ActiveCodeStats() {
             <Gift className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Active Invite Codes</p>
+            <p className="text-sm text-gray-600">Active Sora 2 Codes</p>
             <p className="text-2xl font-bold text-blue-600">{activeCodeCount}</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function ActiveCodeStats() {
       {activeCodeCount === 0 && (
         <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-700">
-            ⚠️ No codes available. Please check back later or submit a new code.
+            ⚠️ No Sora 2 codes available. Please check back later or submit a new code.
           </p>
         </div>
       )}
@@ -87,7 +87,7 @@ export default function ActiveCodeStats() {
       {activeCodeCount > 0 && activeCodeCount <= 2 && (
         <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <p className="text-sm text-orange-700">
-            🔥 Limited codes available. Grab one quickly!
+            🔥 Limited Sora 2 codes available. Grab one quickly!
           </p>
         </div>
       )}
@@ -95,7 +95,7 @@ export default function ActiveCodeStats() {
       {activeCodeCount >= 5 && (
         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-700">
-            ✅ Plenty of codes available. Choose your favorite!
+            ✅ Plenty of Sora 2 codes available. Choose your favorite!
           </p>
         </div>
       )}

@@ -797,7 +797,7 @@ export default function WhackHamsterGame() {
           <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">🎮 How to Play</h4>
           <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
             <li>• Click on appearing hamsters 🐹 to score points</li>
-            <li>• Each hit gives you 10 × level points</li>
+            <li>• Each hit gives you {10 + (gameState.level - 1) * 2} points (base 10 + 2 per level)</li>
             <li>• Hamster appearance time decreases with level</li>
             <li>• Missing hamsters costs you a life ❤️</li>
             <li>• Game ends when you run out of lives</li>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import Header from '@/components/Header'
 import InviteCodeDisplay from '@/components/InviteCodeDisplay'
@@ -15,6 +16,7 @@ import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
 import EnvDebugger from '@/components/EnvDebugger'
+import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
 import { InviteCode } from '@/lib/data'
 
@@ -145,6 +147,11 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* SEO Structured Data */}
+      <WebsiteStructuredData />
+      <OrganizationStructuredData />
+      <WebPageStructuredData />
+      
       <Header />
       
       {/* Notification component */}
@@ -171,9 +178,9 @@ export default function Home() {
                   <div className="flex items-start space-x-3">
                     <Plus className="h-6 w-6 flex-shrink-0 mt-1" />
                     <div className="flex-1 text-left">
-                      <div className="font-bold text-lg mb-1">Submit Your Code</div>
+                      <div className="font-bold text-lg mb-1">Submit Your Sora 2 Code</div>
                       <div className="text-sm text-blue-100">
-                        Have an invite? Share it with the community!
+                        Have a Sora 2 invite? Share it with the community!
                       </div>
                     </div>
                   </div>
@@ -199,6 +206,25 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 mt-12">
               <HowItWorks />
               <CommunityImpact />
+            </div>
+            
+            {/* SEO Pages Navigation */}
+            <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Learn More</h3>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link 
+                  href="/how-it-works" 
+                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors border border-primary-200 shadow-sm"
+                >
+                  📖 How It Works
+                </Link>
+                <Link 
+                  href="/faq" 
+                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors border border-primary-200 shadow-sm"
+                >
+                  ❓ FAQ
+                </Link>
+              </div>
             </div>
           </div>
           
