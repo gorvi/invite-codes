@@ -15,53 +15,50 @@ export interface InviteCode {
   uniqueCopiedCount?: number // 独立用户复制次数（去重）
 }
 
-// 尝试从持久化存储加载数据
-let loadedCodes: InviteCode[] = []
-if (typeof window === 'undefined') {
-  // 服务器端才加载（避免客户端错误）
-  try {
-    const { loadInviteCodes } = require('./storage')
-    loadedCodes = loadInviteCodes()
-    console.log(`[DATA] Loaded ${loadedCodes.length} invite codes from storage`)
-  } catch (error) {
-    console.log('[DATA] Starting with empty invite codes (no storage file found)')
+// 初始化数据存储
+export let inviteCodes: InviteCode[] = []
+
+// 检测环境并加载数据
+async function initializeData() {
+  if (typeof window !== 'undefined') {
+    return // 客户端跳过
   }
-}
 
-// 从持久化存储加载，如果没有则从空开始
-export let inviteCodes: InviteCode[] = loadedCodes
-
-// 🔥 尝试从持久化存储加载 analyticsData
-let loadedAnalytics: any = null
-if (typeof window === 'undefined') {
   try {
-    const { loadAnalytics } = require('./storage')
-    loadedAnalytics = loadAnalytics()
-    if (loadedAnalytics) {
-      console.log('[DATA] Loaded analytics data from storage')
-      
-      // 🔥 修复历史数据：如果 submitCount 为 0 但有邀请码，则初始化 submitCount
-      if (loadedAnalytics.submitCount === 0 && loadedCodes.length > 0) {
-        loadedAnalytics.submitCount = loadedCodes.length
-        console.log(`[DATA] Fixed submitCount: initialized to ${loadedCodes.length} based on existing invite codes`)
-        
-        // 立即保存修复后的数据
-        try {
-          const { saveAnalytics } = require('./storage')
-          saveAnalytics(loadedAnalytics)
-          console.log('[DATA] Saved fixed analytics data')
-        } catch (error) {
-          console.error('[DATA] Failed to save fixed analytics:', error)
-        }
+    // 优先尝试 Vercel KV (生产环境)
+    if (process.env.VERCEL === '1' || process.env.KV_REST_API_URL) {
+      const { loadInviteCodes: loadCodesFromKV, loadAnalytics: loadAnalyticsFromKV } = await import('./vercel-storage')
+      inviteCodes = await loadCodesFromKV()
+      const loadedAnalytics = await loadAnalyticsFromKV()
+      if (loadedAnalytics) {
+        Object.assign(analyticsData, loadedAnalytics)
+        console.log('[DATA] Loaded analytics data from Vercel KV')
       }
+      console.log(`[DATA] Loaded ${inviteCodes.length} invite codes from Vercel KV`)
+    } else {
+      // 本地开发环境使用文件存储
+      const { loadInviteCodes: loadFromFile, loadAnalytics: loadAnalyticsFromFile } = require('./storage')
+      inviteCodes = loadFromFile()
+      const loadedAnalytics = loadAnalyticsFromFile()
+      if (loadedAnalytics) {
+        Object.assign(analyticsData, loadedAnalytics)
+        console.log('[DATA] Loaded analytics data from file storage')
+      }
+      console.log(`[DATA] Loaded ${inviteCodes.length} invite codes from file storage`)
     }
   } catch (error) {
-    console.log('[DATA] Starting with fresh analytics data (no storage file found)')
+    console.log('[DATA] Starting with empty data (no storage found)')
+    inviteCodes = []
   }
 }
 
-// 统计数据 - 从文件加载或使用默认值
-export let analyticsData = loadedAnalytics || {
+// 立即初始化数据
+if (typeof window === 'undefined') {
+  initializeData().catch(console.error)
+}
+
+// 初始化 analytics 数据
+export let analyticsData = {
   totalClicks: 0,
   copyClicks: 0,
   workedVotes: 0,
@@ -266,7 +263,7 @@ export function sendSSENotification(type: string, data: any) {
 }
 
 // 添加邀请码的简化函数
-export function addInviteCode(code: string, submitterName?: string) {
+export async function addInviteCode(code: string, submitterName?: string) {
   // 检查是否已存在相同的邀请码
   const existingCode = inviteCodes.find(inviteCode => 
     inviteCode.code.toLowerCase() === code.toLowerCase()
@@ -330,10 +327,19 @@ export function addInviteCode(code: string, submitterName?: string) {
   // 持久化保存
   if (typeof window === 'undefined') {
     try {
-      const { saveInviteCodes, saveAnalytics } = require('./storage')
-      saveInviteCodes(inviteCodes)
-      saveAnalytics(analyticsData)
-      console.log('[DATA] Saved invite codes and analytics to storage')
+      // 优先尝试 Vercel KV (生产环境)
+      if (process.env.VERCEL === '1' || process.env.KV_REST_API_URL) {
+        const { saveInviteCodes: saveToKV, saveAnalytics: saveAnalyticsToKV } = await import('./vercel-storage')
+        await saveToKV(inviteCodes)
+        await saveAnalyticsToKV(analyticsData)
+        console.log('[DATA] Saved invite codes and analytics to Vercel KV')
+      } else {
+        // 本地开发环境使用文件存储
+        const { saveInviteCodes, saveAnalytics } = require('./storage')
+        saveInviteCodes(inviteCodes)
+        saveAnalytics(analyticsData)
+        console.log('[DATA] Saved invite codes and analytics to file storage')
+      }
     } catch (error) {
       console.error('[DATA] Failed to save to storage:', error)
     }
