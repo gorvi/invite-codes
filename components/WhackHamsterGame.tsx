@@ -659,6 +659,25 @@ export default function WhackHamsterGame() {
                         </div>
                       </div>
                     </div>
+                  ) : isHitting ? (
+                    // 被击中状态的地鼠 - 显示眩晕特效
+                    <div className="relative">
+                      <span className="text-3xl sm:text-4xl dizzy-hamster">🐹</span>
+                      {/* 眩晕效果 - 旋转螺旋图案 + 星星 */}
+                      <div className="absolute -top-8 sm:-top-10 left-1/2 transform -translate-x-1/2">
+                        <div className="dizzy-spiral relative">
+                          <svg width="48" height="48" viewBox="0 0 64 64" className="dizzy-svg sm:w-16 sm:h-16">
+                            <circle cx="32" cy="32" r="26" fill="none" stroke="#9B59B6" strokeWidth="3.5" strokeDasharray="40 40" opacity="0.9"/>
+                            <circle cx="32" cy="32" r="18" fill="none" stroke="#3498DB" strokeWidth="3" strokeDasharray="28 28" opacity="0.85"/>
+                            <circle cx="32" cy="32" r="10" fill="none" stroke="#F39C12" strokeWidth="2.5" strokeDasharray="16 16" opacity="0.8"/>
+                          </svg>
+                          {/* 左边星星 */}
+                          <span className="absolute top-0 -left-1 sm:-left-2 text-xl sm:text-2xl dizzy-star-left">⭐</span>
+                          {/* 右边星星 */}
+                          <span className="absolute top-0 -right-1 sm:-right-2 text-xl sm:text-2xl dizzy-star-right">⭐</span>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     // 正常状态的地鼠
                     <span className="text-3xl sm:text-4xl animate-bounce">🐹</span>
