@@ -200,12 +200,31 @@ class DataManager {
   }
 }
 
-// 创建全局单例
-export const dataManager = new DataManager()
+// 创建全局单例（仅在客户端）
+let dataManagerInstance: DataManager | null = null
 
-// 页面卸载时清理
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    dataManager.destroy()
-  })
+export const getDataManager = (): DataManager => {
+  if (typeof window === 'undefined') {
+    throw new Error('DataManager can only be used in browser')
+  }
+  
+  if (!dataManagerInstance) {
+    dataManagerInstance = new DataManager()
+    
+    // 页面卸载时清理
+    window.addEventListener('beforeunload', () => {
+      dataManagerInstance?.destroy()
+    })
+  }
+  
+  return dataManagerInstance
 }
+
+// 为了向后兼容，导出一个代理对象
+export const dataManager = new Proxy({} as DataManager, {
+  get(target, prop) {
+    const manager = getDataManager()
+    const value = (manager as any)[prop]
+    return typeof value === 'function' ? value.bind(manager) : value
+  }
+})
