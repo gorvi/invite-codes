@@ -128,23 +128,19 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                   </code>
                 </div>
 
-                <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{calculateLastCodeTime(code)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Copy className="h-4 w-4" />
-                    <span>Copied {code.uniqueCopiedCount || 0} times</span>
-                  </div>
+                <div className="flex items-center space-x-1 text-sm text-gray-600 mb-4">
+                  <Clock className="h-4 w-4" />
+                  <span>{calculateLastCodeTime(code)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3">
+            {/* 操作按钮行 */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              {/* Copy Code 按钮 */}
               <button
                 onClick={() => handleCopyCode(code.code, code.id)}
-                className={`w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all ${
                   copiedCode === code.code
                     ? 'bg-green-500 text-white'
                     : 'bg-primary-600 text-white hover:bg-primary-700'
@@ -153,34 +149,67 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 {copiedCode === code.code ? (
                   <>
                     <CheckCircle className="h-4 w-4" />
-                    <span>Copied</span>
+                    <span className="text-sm">Copied</span>
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    <span>Copy Code</span>
+                    <span className="text-sm">Copy Code</span>
                   </>
                 )}
               </button>
 
-              <div className="flex items-center justify-center space-x-3">
-                <button
-                  onClick={() => handleVote(code.id, 'worked')}
-                  className="flex items-center space-x-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  title="This invite code worked"
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  <span className="text-sm font-medium">{code.votes.uniqueWorked || 0}</span>
-                </button>
+              {/* Worked 按钮 */}
+              <button
+                onClick={() => handleVote(code.id, 'worked')}
+                className="flex items-center justify-center space-x-2 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-green-200"
+                title="This invite code worked"
+              >
+                <ThumbsUp className="h-4 w-4" />
+                <span className="text-sm font-medium">Worked</span>
+              </button>
 
-                <button
-                  onClick={() => handleVote(code.id, 'didntWork')}
-                  className="flex items-center space-x-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="This invite code didn't work"
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  <span className="text-sm font-medium">{code.votes.uniqueDidntWork || 0}</span>
-                </button>
+              {/* Didn't Work 按钮 */}
+              <button
+                onClick={() => handleVote(code.id, 'didntWork')}
+                className="flex items-center justify-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                title="This invite code didn't work"
+              >
+                <ThumbsDown className="h-4 w-4" />
+                <span className="text-sm font-medium">Didn't Work</span>
+              </button>
+            </div>
+
+            {/* 统计行 */}
+            <div className="grid grid-cols-3 gap-3">
+              {/* Copy 统计 */}
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Copy Stats</div>
+                <div className="flex justify-center space-x-2 text-sm">
+                  <span className="text-gray-600">Total: {code.copiedCount || 0}</span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-blue-600">Unique: {code.uniqueCopiedCount || 0}</span>
+                </div>
+              </div>
+
+              {/* Worked 统计 */}
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Worked Stats</div>
+                <div className="flex justify-center space-x-2 text-sm">
+                  <span className="text-gray-600">Total: {code.votes.worked || 0}</span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-green-600">Unique: {code.votes.uniqueWorked || 0}</span>
+                </div>
+              </div>
+
+              {/* Didn't Work 统计 */}
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Didn't Work Stats</div>
+                <div className="flex justify-center space-x-2 text-sm">
+                  <span className="text-gray-600">Total: {code.votes.didntWork || 0}</span>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-red-600">Unique: {code.votes.uniqueDidntWork || 0}</span>
+                </div>
               </div>
             </div>
           </div>
