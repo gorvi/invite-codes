@@ -46,6 +46,9 @@ export default function Footer() {
           <p className="text-gray-500 text-xs mt-2">
             © 2025 Sora 2 Invite Codes. All rights reserved. Unauthorized copying or reproduction is prohibited.
           </p>
+          <p className="text-gray-500 text-xs mt-1">
+            Contact: <a href="mailto:wecesoft@gmail.com" className="text-primary-600 hover:text-primary-700 transition-colors">wecesoft@gmail.com</a>
+          </p>
         </div>
       </div>
     </footer>
