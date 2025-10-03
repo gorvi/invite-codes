@@ -25,14 +25,17 @@ export default function Home() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-  // Manually refresh invite codes data
+  // Manually refresh invite codes data - 使用统一的 analytics 接口
   const handleRefresh = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/invite-codes')
+      const response = await fetch('/api/analytics')
       if (response.ok) {
-        const codes = await response.json()
+        const data = await response.json()
+        // 🔥 从 analytics 接口获取 allInviteCodes，确保数据一致性
+        const codes = data.allInviteCodes || []
         setInviteCodes(codes)
+        console.log('[Page] Manual refresh from analytics API:', codes.length)
         // 🔥 触发统计更新事件，确保数据同步
         window.dispatchEvent(new CustomEvent('statsUpdate'))
       }
@@ -94,13 +97,16 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Fetch invite codes data
+    // Fetch invite codes data - 使用统一的 analytics 接口
     const fetchInviteCodes = async () => {
       try {
-        const response = await fetch('/api/invite-codes')
+        const response = await fetch('/api/analytics')
         if (response.ok) {
-          const codes = await response.json()
+          const data = await response.json()
+          // 🔥 从 analytics 接口获取 allInviteCodes，确保数据一致性
+          const codes = data.allInviteCodes || []
           setInviteCodes(codes)
+          console.log('[Page] Fetched codes from analytics API:', codes.length)
         }
       } catch (error) {
         console.error('Failed to fetch invite codes:', error)
