@@ -586,20 +586,6 @@ export default function WhackHamsterGame() {
         <span className="text-2xl sm:text-3xl">🐹</span>
       </div>
       
-      {/* Game Instructions - Responsive */}
-      {showInstructions && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">🎮 How to Play</h4>
-          <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
-            <li>• Click on appearing hamsters 🐹 to score points</li>
-            <li>• Each hit gives you 10 × level points</li>
-            <li>• Hamster appearance time decreases with level</li>
-            <li>• Missing hamsters costs you a life ❤️</li>
-            <li>• Game ends when you run out of lives</li>
-          </ul>
-        </div>
-      )}
-      
       {/* Game Stats - Responsive Layout */}
       <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6">
         <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
@@ -778,6 +764,20 @@ export default function WhackHamsterGame() {
           </button>
         )}
       </div>
+      
+      {/* Game Instructions - Moved to bottom */}
+      {showInstructions && (
+        <div className="mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">🎮 How to Play</h4>
+          <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
+            <li>• Click on appearing hamsters 🐹 to score points</li>
+            <li>• Each hit gives you 10 × level points</li>
+            <li>• Hamster appearance time decreases with level</li>
+            <li>• Missing hamsters costs you a life ❤️</li>
+            <li>• Game ends when you run out of lives</li>
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
