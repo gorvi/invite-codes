@@ -96,6 +96,12 @@ export async function initializeData(): Promise<void> {
   }
 
   try {
+    // 输出环境信息到构建日志
+    console.log('🌍 Environment Info:')
+    console.log('VERCEL_ENV:', process.env.VERCEL_ENV || 'undefined')
+    console.log('NODE_ENV:', process.env.NODE_ENV || 'undefined')
+    console.log('VERCEL_URL:', process.env.VERCEL_URL || 'undefined')
+    
     console.log(`[DATA] Initializing data with storage type: ${persistenceManager.getStorageType()}`)
     
     // 加载邀请码数据

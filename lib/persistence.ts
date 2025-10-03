@@ -21,6 +21,15 @@ export class VercelKVAdapter implements StorageAdapter {
 
   constructor() {
     if (typeof window === 'undefined' && (process.env.VERCEL === '1' || process.env.KV_REST_API_URL)) {
+      // 输出环境变量信息到构建日志
+      console.log('🔍 Environment Variables Debug:')
+      console.log('VERCEL:', process.env.VERCEL)
+      console.log('VERCEL_ENV:', process.env.VERCEL_ENV)
+      console.log('VERCEL_URL:', process.env.VERCEL_URL)
+      console.log('NODE_ENV:', process.env.NODE_ENV)
+      console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL ? '✅ Configured' : '❌ Not configured')
+      console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? '✅ Configured' : '❌ Not configured')
+      
       this.kv = require('@vercel/kv').createClient({
         url: process.env.KV_REST_API_URL!,
         token: process.env.KV_REST_API_TOKEN!,

@@ -14,6 +14,7 @@ import Footer from '@/components/Footer'
 import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
+import EnvDebugger from '@/components/EnvDebugger'
 
 import { InviteCode } from '@/lib/data'
 
@@ -211,6 +212,13 @@ export default function Home() {
       </div>
       
       <Footer />
+      
+      {/* Environment Debugger (only show in development) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <EnvDebugger />
+        </div>
+      )}
       
       {/* Submit Code Modal */}
       <SubmitCodeModal
