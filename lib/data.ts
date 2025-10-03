@@ -264,3 +264,83 @@ export function sendSSENotification(type: string, data: any) {
     }
   })
 }
+
+// 添加邀请码的简化函数
+export function addInviteCode(code: string, submitterName?: string) {
+  // 检查是否已存在相同的邀请码
+  const existingCode = inviteCodes.find(inviteCode => 
+    inviteCode.code.toLowerCase() === code.toLowerCase()
+  )
+
+  if (existingCode) {
+    throw new Error('This invite code already exists')
+  }
+
+  // 生成唯一ID
+  const newId = String(Date.now() + Math.random().toString(36).substr(2, 9))
+  
+  const newCode = {
+    id: newId,
+    code,
+    createdAt: new Date(),
+    status: 'active' as const,
+    votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
+    copiedCount: 0,
+    uniqueCopiedCount: 0,
+  }
+  
+  inviteCodes.unshift(newCode)
+
+  // 增加全局提交计数
+  analyticsData.submitCount += 1
+  
+  // 增加今日提交计数
+  const today = getTodayString()
+  if (!analyticsData.dailyStats[today]) {
+    analyticsData.dailyStats[today] = {
+      date: today,
+      copyClicks: 0,
+      workedVotes: 0,
+      didntWorkVotes: 0,
+      submitCount: 0,
+      uniqueVisitors: 0
+    }
+  }
+  analyticsData.dailyStats[today].submitCount += 1
+
+  // 初始化该邀请码的统计数据
+  analyticsData.inviteCodeStats[newCode.id] = {
+    copyClicks: 0,
+    workedVotes: 0,
+    didntWorkVotes: 0,
+  }
+  
+  // 初始化投票去重统计
+  analyticsData.uniqueVoteStats[newCode.id] = {
+    uniqueWorkedVoters: new Set(),
+    uniqueDidntWorkVoters: new Set()
+  }
+  
+  // 初始化复制去重统计
+  analyticsData.uniqueCopyStats[newCode.id] = {
+    totalUniqueCopies: 0,
+    uniqueCopiers: new Set()
+  }
+
+  // 持久化保存
+  if (typeof window === 'undefined') {
+    try {
+      const { saveInviteCodes, saveAnalytics } = require('./storage')
+      saveInviteCodes(inviteCodes)
+      saveAnalytics(analyticsData)
+      console.log('[DATA] Saved invite codes and analytics to storage')
+    } catch (error) {
+      console.error('[DATA] Failed to save to storage:', error)
+    }
+  }
+
+  // 发送SSE通知给所有客户端
+  sendSSENotification('new_code', { inviteCode: newCode })
+  
+  return newCode
+}
