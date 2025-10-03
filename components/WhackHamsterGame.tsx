@@ -586,21 +586,21 @@ export default function WhackHamsterGame() {
         <span className="text-2xl sm:text-3xl">🐹</span>
       </div>
       
-      {/* 游戏说明 - 响应式 */}
+      {/* Game Instructions - Responsive */}
       {showInstructions && (
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">🎮 游戏说明</h4>
+          <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">🎮 How to Play</h4>
           <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
-            <li>• 点击出现的地鼠 🐹 来获得分数</li>
-            <li>• 每击中一只地鼠获得 10 × 等级 的分数</li>
-            <li>• 地鼠出现时间会随等级缩短</li>
-            <li>• 错过地鼠会扣除一条生命 ❤️</li>
-            <li>• 生命用完游戏结束</li>
+            <li>• Click on appearing hamsters 🐹 to score points</li>
+            <li>• Each hit gives you 10 × level points</li>
+            <li>• Hamster appearance time decreases with level</li>
+            <li>• Missing hamsters costs you a life ❤️</li>
+            <li>• Game ends when you run out of lives</li>
           </ul>
         </div>
       )}
       
-      {/* 游戏统计 - 响应式布局 */}
+      {/* Game Stats - Responsive Layout */}
       <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6">
         <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
           <p className="text-xs sm:text-sm text-gray-600 mb-1">Score</p>
@@ -622,7 +622,7 @@ export default function WhackHamsterGame() {
         </div>
       </div>
       
-      {/* 生命值显示 */}
+      {/* Lives Display */}
       <div className="flex items-center justify-center mb-6">
         <p className="text-sm text-gray-600 mr-3">Lives:</p>
         <div className="flex space-x-1">
@@ -753,7 +753,7 @@ export default function WhackHamsterGame() {
                   </g>
                 </svg>
                 <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
-                  点击开始
+                  Click to Start
                 </span>
               </div>
             </div>

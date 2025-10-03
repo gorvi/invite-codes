@@ -4,7 +4,7 @@ interface SupportCreatorProps {
 
 export default function SupportCreator({ compact = false }: SupportCreatorProps) {
   if (compact) {
-    // 紧凑按钮模式
+    // Compact button mode
     return (
       <a
         href="https://www.buymeacoffee.com/goodai"
@@ -22,7 +22,7 @@ export default function SupportCreator({ compact = false }: SupportCreatorProps)
     )
   }
 
-  // 原来的卡片模式
+  // Original card mode
   return (
     <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border border-yellow-200">
       <div className="flex items-center space-x-2 mb-2">

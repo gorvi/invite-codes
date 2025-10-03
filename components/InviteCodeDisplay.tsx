@@ -64,14 +64,14 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     const createdAt = new Date(code.createdAt)
     const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60))
     
-    if (diffInMinutes < 1) return '刚刚'
-    if (diffInMinutes < 60) return `${diffInMinutes}分钟前`
+    if (diffInMinutes < 1) return 'Just now'
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
     
     const diffInHours = Math.floor(diffInMinutes / 60)
-    if (diffInHours < 24) return `${diffInHours}小时前`
+    if (diffInHours < 24) return `${diffInHours}h ago`
     
     const diffInDays = Math.floor(diffInHours / 24)
-    return `${diffInDays}天前`
+    return `${diffInDays}d ago`
   }
 
   const getStatusIcon = (code: InviteCode) => {
@@ -85,9 +85,9 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   }
 
   const getStatusText = (code: InviteCode) => {
-    if (code.status === 'active') return '可用'
-    if (code.status === 'used') return '已使用'
-    return '已失效'
+    if (code.status === 'active') return 'Available'
+    if (code.status === 'used') return 'Used'
+    return 'Expired'
   }
 
   const getStatusColor = (code: InviteCode) => {
@@ -133,10 +133,10 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                     <Clock className="h-4 w-4" />
                     <span>{calculateLastCodeTime(code)}</span>
                   </div>
-                  {/* 暂时隐藏提交者名称，因为 InviteCode 接口中没有此属性 */}
+                  {/* Temporarily hidden submitter name, as InviteCode interface doesn't have this property */}
                   <div className="flex items-center space-x-1">
                     <Copy className="h-4 w-4" />
-                    <span>复制 {code.copiedCount || 0} 次</span>
+                    <span>Copied {code.copiedCount || 0} times</span>
                   </div>
                 </div>
               </div>
@@ -154,12 +154,12 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 {copiedCode === code.code ? (
                   <>
                     <CheckCircle className="h-4 w-4" />
-                    <span>已复制</span>
+                    <span>Copied</span>
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    <span>复制邀请码</span>
+                    <span>Copy Code</span>
                   </>
                 )}
               </button>
@@ -167,7 +167,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
               <button
                 onClick={() => handleVote(code.id, 'worked')}
                 className="flex items-center space-x-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                title="这个邀请码有效"
+                title="This invite code worked"
               >
                 <ThumbsUp className="h-4 w-4" />
                 <span className="text-sm font-medium">{code.votes.worked || 0}</span>
@@ -176,7 +176,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
               <button
                 onClick={() => handleVote(code.id, 'didntWork')}
                 className="flex items-center space-x-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="这个邀请码无效"
+                title="This invite code didn't work"
               >
                 <ThumbsDown className="h-4 w-4" />
                 <span className="text-sm font-medium">{code.votes.didntWork || 0}</span>

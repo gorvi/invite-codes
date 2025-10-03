@@ -40,7 +40,7 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
       if (response.ok) {
         setSuccess(true)
         setCode('')
-        // 2秒后关闭弹框并刷新
+        // Close modal and refresh after 2 seconds
         setTimeout(() => {
           setSuccess(false)
           onClose()
