@@ -39,6 +39,54 @@ export default function Home() {
     }
   }
 
+  // 处理投票
+  const handleVote = async (id: string, type: 'worked' | 'didntWork') => {
+    try {
+      const response = await fetch(`/api/invite-codes/${id}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type }),
+      })
+      
+      if (response.ok) {
+        // 投票成功后刷新数据
+        await handleRefresh()
+      } else {
+        console.error('Failed to vote:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error voting:', error)
+    }
+  }
+
+  // 处理复制邀请码
+  const handleCopyCode = async (code: string, codeId: string) => {
+    try {
+      // 复制到剪贴板
+      await navigator.clipboard.writeText(code)
+      
+      // 记录复制事件（可选）
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          type: 'copy', 
+          inviteCodeId: codeId 
+        }),
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to record copy event')
+      }
+    } catch (error) {
+      console.error('Failed to copy code:', error)
+    }
+  }
+
   useEffect(() => {
     // 获取邀请码数据
     const fetchInviteCodes = async () => {
@@ -135,10 +183,9 @@ export default function Home() {
             </div>
             
             <InviteCodeDisplay 
-              inviteCodes={inviteCodes} 
-              loading={loading}
-              onRefresh={handleRefresh}
-              onUpdate={setInviteCodes}
+              codes={inviteCodes} 
+              onVote={handleVote}
+              onCopy={handleCopyCode}
             />
             
             {/* 移动端显示游戏 */}

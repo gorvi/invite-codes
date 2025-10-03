@@ -133,12 +133,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                     <Clock className="h-4 w-4" />
                     <span>{calculateLastCodeTime(code)}</span>
                   </div>
-                  {code.submitterName && (
-                    <div className="flex items-center space-x-1">
-                      <User className="h-4 w-4" />
-                      <span>{code.submitterName}</span>
-                    </div>
-                  )}
+                  {/* 暂时隐藏提交者名称，因为 InviteCode 接口中没有此属性 */}
                   <div className="flex items-center space-x-1">
                     <Copy className="h-4 w-4" />
                     <span>复制 {code.copiedCount || 0} 次</span>
@@ -175,7 +170,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 title="这个邀请码有效"
               >
                 <ThumbsUp className="h-4 w-4" />
-                <span className="text-sm font-medium">{code.workedVotes || 0}</span>
+                <span className="text-sm font-medium">{code.votes.worked || 0}</span>
               </button>
 
               <button
@@ -184,7 +179,7 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 title="这个邀请码无效"
               >
                 <ThumbsDown className="h-4 w-4" />
-                <span className="text-sm font-medium">{code.didntWorkVotes || 0}</span>
+                <span className="text-sm font-medium">{code.votes.didntWork || 0}</span>
               </button>
             </div>
           </div>
