@@ -63,11 +63,9 @@ export function checkDataConsistency(
  */
 export function logConsistencyIssue(report: ConsistencyReport): void {
   if (!report.isConsistent) {
-    console.error(`[DataConsistency] Inconsistency detected at ${report.timestamp}`)
-    console.error(`[DataConsistency] Reported active codes: ${report.reportedActiveCount}`)
-    console.error(`[DataConsistency] Actual active codes: ${report.actualActiveCount}`)
-    console.error(`[DataConsistency] Discrepancy: ${report.discrepancy}`)
-    console.error(`[DataConsistency] Code breakdown:`, report.codes)
+    console.warn(`[DataConsistency] ⚠️ Count adjusted: ${report.reportedActiveCount} → ${report.actualActiveCount} active codes`)
+    console.debug(`[DataConsistency] Timestamp: ${report.timestamp}`)
+    console.debug(`[DataConsistency] Code breakdown:`, report.codes)
   }
 }
 
