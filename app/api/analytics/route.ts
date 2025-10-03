@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initializeData, analyticsData, inviteCodes, saveData } from '@/lib/data'
+import { initializeData, analyticsData, inviteCodes, saveData, getTodayString, getCurrentTimestamp } from '@/lib/data'
 
 export async function GET() {
   try {
@@ -100,8 +100,7 @@ export async function POST(request: NextRequest) {
         voteCount: 0,
         submitCount: 0,
         firstVisit: timestamp,
-        lastVisit: timestamp,
-        inviteCodeCopies: {}
+        lastVisit: timestamp
       }
     }
 
@@ -153,17 +152,13 @@ export async function POST(request: NextRequest) {
             console.log(`[Copy] Updated code ${inviteCode.code}: copiedCount=${inviteCode.copiedCount}, uniqueCopiedCount=${inviteCode.uniqueCopiedCount}`)
             
             // 🔥 保存更新后的邀请码
-            saveInviteCodes(inviteCodes)
+            await saveData()
           }
           
           // 更新邀请码总复制次数
           analyticsData.inviteCodeStats[inviteCodeId].copyClicks += 1
           
-          // 更新用户对该邀请码的复制次数
-          if (!analyticsData.userStats[userIdentifier].inviteCodeCopies[inviteCodeId]) {
-            analyticsData.userStats[userIdentifier].inviteCodeCopies[inviteCodeId] = 0
-          }
-          analyticsData.userStats[userIdentifier].inviteCodeCopies[inviteCodeId] += 1
+          // 用户复制统计已在上面更新
         }
         break
       case 'vote_worked':

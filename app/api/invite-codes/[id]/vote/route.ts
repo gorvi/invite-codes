@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initializeData, inviteCodes, analyticsData, saveData, sendSSENotification } from '@/lib/data'
-import { saveInviteCodes, saveAnalytics } from '@/lib/storage'
+import { initializeData, inviteCodes, analyticsData, saveData, sendSSENotification, getTodayString } from '@/lib/data'
 
 export async function POST(
   request: NextRequest,
@@ -69,8 +68,7 @@ export async function POST(
         voteCount: 0,
         submitCount: 0,
         firstVisit: new Date().toISOString(),
-        lastVisit: new Date().toISOString(),
-        inviteCodeCopies: {}
+        lastVisit: new Date().toISOString()
       }
     }
     analyticsData.userStats[userIdentifier].voteCount += 1
@@ -147,7 +145,7 @@ export async function POST(
     // 如果更新了字段，重新保存
     if (needsSave) {
       try {
-        saveInviteCodes(inviteCodes)
+        await saveData()
         console.log('[Vote] Updated and saved copy stats to inviteCode object')
       } catch (error) {
         console.error('[Vote] Failed to save copy stats update:', error)

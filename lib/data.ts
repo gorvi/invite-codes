@@ -145,6 +145,10 @@ export function getTodayString(): string {
   return new Date().toISOString().split('T')[0]
 }
 
+export function getCurrentTimestamp(): string {
+  return new Date().toISOString()
+}
+
 /**
  * 添加邀请码
  */

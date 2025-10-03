@@ -16,8 +16,8 @@ export interface StorageAdapter {
  * Vercel KV 存储适配器
  */
 export class VercelKVAdapter implements StorageAdapter {
-  private kv: any
-  private keyPrefix: string
+  private kv: any = null
+  private keyPrefix: string = ''
 
   constructor() {
     if (typeof window === 'undefined' && (process.env.VERCEL === '1' || process.env.KV_REST_API_URL)) {
@@ -122,7 +122,7 @@ export class VercelKVAdapter implements StorageAdapter {
           key,
           {
             ...value,
-            date: value.date.toISOString ? value.date.toISOString() : value.date,
+            date: typeof value.date === 'string' ? value.date : (value.date as Date).toISOString(),
           },
         ])
       ),
@@ -131,8 +131,8 @@ export class VercelKVAdapter implements StorageAdapter {
           key,
           {
             ...value,
-            firstVisit: value.firstVisit.toISOString ? value.firstVisit.toISOString() : value.firstVisit,
-            lastVisit: value.lastVisit.toISOString ? value.lastVisit.toISOString() : value.lastVisit,
+            firstVisit: typeof value.firstVisit === 'string' ? value.firstVisit : (value.firstVisit as Date).toISOString(),
+            lastVisit: typeof value.lastVisit === 'string' ? value.lastVisit : (value.lastVisit as Date).toISOString(),
           },
         ])
       ),
@@ -287,7 +287,7 @@ export class LocalFileAdapter implements StorageAdapter {
           key,
           {
             ...value,
-            date: value.date.toISOString ? value.date.toISOString() : value.date,
+            date: typeof value.date === 'string' ? value.date : (value.date as Date).toISOString(),
           },
         ])
       ),
@@ -296,8 +296,8 @@ export class LocalFileAdapter implements StorageAdapter {
           key,
           {
             ...value,
-            firstVisit: value.firstVisit.toISOString ? value.firstVisit.toISOString() : value.firstVisit,
-            lastVisit: value.lastVisit.toISOString ? value.lastVisit.toISOString() : value.lastVisit,
+            firstVisit: typeof value.firstVisit === 'string' ? value.firstVisit : (value.firstVisit as Date).toISOString(),
+            lastVisit: typeof value.lastVisit === 'string' ? value.lastVisit : (value.lastVisit as Date).toISOString(),
           },
         ])
       ),
