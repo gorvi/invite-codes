@@ -1,6 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { Copy, ThumbsUp, ThumbsDown, Clock, User, CheckCircle, XCircle } from 'lucide-react'
 import { InviteCode } from '@/lib/data'
+import CopyDetection from '@/lib/copyDetection'
 
 interface InviteCodeDisplayProps {
   codes: InviteCode[]
@@ -11,6 +12,7 @@ interface InviteCodeDisplayProps {
 export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeDisplayProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [lastClickTimes, setLastClickTimes] = useState<{[key: string]: number}>({})
+  const copyDetectionRef = useRef<CopyDetection | null>(null)
 
   const canClick = (buttonKey: string): boolean => {
     const now = Date.now()
@@ -26,6 +28,28 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   const updateClickTime = (buttonKey: string) => {
     setLastClickTimes(prev => ({ ...prev, [buttonKey]: Date.now() }))
   }
+
+  // 🔥 初始化复制检测
+  useEffect(() => {
+    if (!copyDetectionRef.current) {
+      copyDetectionRef.current = new CopyDetection({
+        onDetect: async (copiedText: string, codeId: string) => {
+          console.log('[InviteCodeDisplay] Auto-detected copy:', { copiedText, codeId })
+          // 自动记录复制行为
+          await onCopy(copiedText, codeId)
+          setCopiedCode(copiedText)
+          setTimeout(() => setCopiedCode(null), 2000)
+        }
+      })
+      copyDetectionRef.current.startListening()
+    }
+
+    return () => {
+      if (copyDetectionRef.current) {
+        copyDetectionRef.current.stopListening()
+      }
+    }
+  }, [onCopy])
 
   const handleCopyCode = async (code: string, codeId: string) => {
     const buttonKey = `copy-${codeId}`
@@ -127,7 +151,12 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
                 </div>
                 
                 <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                  <code className="text-lg font-mono font-bold text-gray-900 break-all">
+                  <code 
+                    className="text-lg font-mono font-bold text-gray-900 break-all"
+                    data-invite-code="true"
+                    data-invite-code-id={code.id}
+                    data-invite-code-text={code.code}
+                  >
                     {code.code}
                   </code>
                 </div>

@@ -15,6 +15,7 @@ import Footer from '@/components/Footer'
 import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
+import UserGuidance from '@/components/UserGuidance'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
 import { InviteCode } from '@/lib/data'
@@ -150,6 +151,9 @@ export default function Home() {
         notifications={notifications} 
         onRemove={removeNotification} 
       />
+      
+      {/* User guidance component */}
+      <UserGuidance />
       
       <div className="container mx-auto px-4 py-8">
         {/* Mobile: vertical layout, Desktop: left-right layout (left 70%, right 30%) */}
