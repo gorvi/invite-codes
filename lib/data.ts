@@ -222,16 +222,33 @@ export async function addInviteCode(code: string, submitterName?: string): Promi
  * 发送SSE通知
  */
 function sendSSENotification(type: string, data: any): void {
-  // SSE 通知逻辑保持不变
-  if (typeof global !== 'undefined' && (global as any).sseClients) {
+  if (sseClients.length > 0) {
     const message = `data: ${JSON.stringify({ type, data })}\n\n`
-    ;(global as any).sseClients.forEach((client: any) => {
+    sseClients.forEach((client: any) => {
       try {
-        client.write(message)
+        client.enqueue(message)
       } catch (error) {
         console.error('Error sending SSE message:', error)
+        // 移除无效的客户端
+        removeSSEClient(client)
       }
     })
+  }
+}
+
+// SSE 客户端管理
+let sseClients: any[] = []
+
+export function addSSEClient(client: any) {
+  sseClients.push(client)
+  console.log(`[SSE] Client added, total: ${sseClients.length}`)
+}
+
+export function removeSSEClient(client: any) {
+  const index = sseClients.indexOf(client)
+  if (index > -1) {
+    sseClients.splice(index, 1)
+    console.log(`[SSE] Client removed, total: ${sseClients.length}`)
   }
 }
 
