@@ -19,10 +19,17 @@ export default function CommunityImpact() {
             submitCount: data.submitCount,
             totalCodeCount: data.totalCodeCount
           })
-          // 🔥 使用 submitCount（历史累计提交次数）或 totalCodeCount（当前邀请码总数）
-          // submitCount 更准确，因为即使邀请码被删除，历史提交数也会保留
+          // 🔥 使用 submitCount（历史累计提交次数）
+          // 这代表社区的总贡献，即使代码被删除也保留历史记录
           setTotalSubmissions(data.submitCount || 0)
           setTotalCodes(data.totalCodeCount || 0)
+          
+          console.log('[CommunityImpact] Data consistency check:', {
+            submitCount: data.submitCount,
+            totalCodeCount: data.totalCodeCount,
+            activeCodeCount: data.activeCodeCount,
+            consistencyReport: data.dataConsistency
+          })
         }
       } catch (error) {
         console.error('Failed to fetch community stats:', error)
