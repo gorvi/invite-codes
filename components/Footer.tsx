@@ -38,8 +38,8 @@ export default function Footer() {
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-xs text-blue-700">
-                <strong>💝 Got 1 new code to share?</strong><br/>
-                After registering with Sora 2, you get 1 invite code. Please share it here to help others!
+                <strong>💝 Got 1 code to share?</strong><br/>
+                After registering with Sora 2, you get 1 invite code that can help 4 people join. Please share it here!
               </p>
             </div>
           </div>

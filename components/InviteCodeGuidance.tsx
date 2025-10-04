@@ -66,10 +66,10 @@ export default function InviteCodeGuidance() {
               <Users className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-purple-800 font-medium mb-1">
-                  When you register with Sora 2, you get <strong>1 new invite code</strong>!
+                  When you register with Sora 2, you get <strong>1 invite code</strong> that can help 4 people join!
                 </p>
                 <p className="text-xs text-purple-600">
-                  Share them here to help 4 more people access AI video creation 🎬
+                  Share it here to help others access AI video creation 🎬
                 </p>
               </div>
             </div>

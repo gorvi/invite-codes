@@ -154,7 +154,7 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-sm text-blue-700">
-                  💡 <strong>Got 4 codes to share?</strong> After registering with Sora 2, you receive 4 invite codes. Help others by submitting them here!
+                  💡 <strong>Got 1 code to share?</strong> After registering with Sora 2, you receive 1 invite code that can help 4 people join. Help others by submitting it here!
                 </p>
               </div>
 

@@ -10,7 +10,7 @@ export default function CreatorNote() {
       </p>
       <div className="bg-white rounded-lg p-3 border border-blue-100">
         <p className="text-sm text-gray-700">
-          <strong>💡 Got 4 codes to share?</strong> After registering with Sora 2, you receive 4 invite codes. Please share them here to help others!
+          <strong>💡 Got 1 code to share?</strong> After registering with Sora 2, you receive 1 invite code that can help 4 people join. Please share it here!
         </p>
       </div>
     </div>
