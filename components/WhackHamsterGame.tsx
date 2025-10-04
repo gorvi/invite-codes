@@ -58,6 +58,7 @@ export default function WhackHamsterGame() {
   const [dizzyHamsters, setDizzyHamsters] = useState<DizzyHamster[]>([]) // 追踪眩晕的地鼠
   const [scorePopups, setScorePopups] = useState<ScorePopup[]>([]) // 追踪加分特效
   const [missPopups, setMissPopups] = useState<MissPopup[]>([]) // 追踪未击中提示
+  const [isNewGlobalRecord, setIsNewGlobalRecord] = useState(false) // 追踪是否创造了新全球记录
 
   // 获取全球最佳分数
   const fetchGlobalBest = async () => {
@@ -115,7 +116,19 @@ export default function WhackHamsterGame() {
       const data = await response.json()
       console.log('[Game] Score submitted successfully:', data)
       
-      // 重新获取全球最佳分数
+      // 立即更新全球最佳分数（从服务器响应中获取）
+      if (data.globalBestScore !== undefined) {
+        // 检查是否创造了新全球记录
+        const wasNewRecord = gameState.score === data.globalBestScore && gameState.score > 0
+        setIsNewGlobalRecord(wasNewRecord)
+        
+        setGameState(prev => ({
+          ...prev,
+          globalBest: data.globalBestScore
+        }))
+      }
+      
+      // 重新获取全球最佳分数以确保数据同步
       await fetchGlobalBest()
     } catch (error) {
       console.error('Failed to submit score:', error)
@@ -129,6 +142,7 @@ export default function WhackHamsterGame() {
 
   const startGame = () => {
     setShowInstructions(false)
+    setIsNewGlobalRecord(false) // 重置新记录状态
     // 清理所有现有的定时器
     if (gameIntervalRef.current) clearInterval(gameIntervalRef.current)
     hamsterTimeoutsRef.current.forEach(timeout => clearTimeout(timeout))
@@ -758,7 +772,7 @@ export default function WhackHamsterGame() {
           <p className="text-sm text-gray-600">Final Score: <span className="font-semibold">{gameState.score}</span></p>
           <p className="text-sm text-gray-600">Your Best: <span className="font-semibold">{gameState.bestScore}</span></p>
           <p className="text-sm text-gray-600">Global Best: <span className="font-semibold">{gameState.globalBest > 0 ? gameState.globalBest : '--'}</span></p>
-          {gameState.score === gameState.globalBest && gameState.score > 0 && (
+          {isNewGlobalRecord && (
             <div className="mt-2 p-2 bg-yellow-100 rounded-lg border border-yellow-300">
               <p className="text-sm font-bold text-yellow-800">🏆 新全球记录！</p>
             </div>
