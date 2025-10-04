@@ -233,8 +233,19 @@ export async function addInviteCode(code: string, submitterName?: string): Promi
     uniqueCopiers: new Set()
   }
 
-  // 保存到持久化存储
-  await saveData()
+  // 保存到持久化存储（添加超时和错误处理）
+  try {
+    await Promise.race([
+      saveData(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Save timeout after 10 seconds')), 10000)
+      )
+    ])
+    console.log('[addInviteCode] Data saved successfully')
+  } catch (error) {
+    console.error('[addInviteCode] Failed to save data:', error)
+    // 即使保存失败，也继续执行，因为数据已经在内存中
+  }
 
   // 发送SSE通知给所有客户端
   sendSSENotification('new_code', { inviteCode: newCode })

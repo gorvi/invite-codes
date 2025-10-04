@@ -30,6 +30,12 @@ export class VercelKVAdapter implements StorageAdapter {
       this.kv = require('@vercel/kv').createClient({
         url: process.env.KV_REST_API_URL!,
         token: process.env.KV_REST_API_TOKEN!,
+        // 添加超时配置
+        timeout: 8000, // 8秒超时
+        retry: {
+          retries: 2,
+          delay: 1000
+        }
       })
       
       // 根据环境设置键前缀
@@ -67,26 +73,31 @@ export class VercelKVAdapter implements StorageAdapter {
     }))
     
     try {
-      // 添加重试机制
-      let retries = 3
+      // 添加重试机制（减少重试次数和延迟）
+      let retries = 2
       let success = false
       
       while (retries > 0 && !success) {
         try {
-          await this.kv.set(key, serializableCodes)
+          await Promise.race([
+            this.kv.set(key, serializableCodes),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('KV operation timeout')), 5000)
+            )
+          ])
           success = true
           console.log(`[KV] Successfully saved ${codes.length} invite codes to ${key}`)
         } catch (error) {
-          console.error(`[KV] Save attempt ${4-retries} failed:`, error)
+          console.error(`[KV] Save attempt ${3-retries} failed:`, error)
           retries--
           if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒后重试
+            await new Promise(resolve => setTimeout(resolve, 500)) // 等待0.5秒后重试
           }
         }
       }
       
       if (!success) {
-        throw new Error(`Failed to save invite codes after 3 attempts`)
+        throw new Error(`Failed to save invite codes after 2 attempts`)
       }
     } catch (error) {
       console.error(`[KV] Error saving invite codes:`, error)
@@ -106,13 +117,18 @@ export class VercelKVAdapter implements StorageAdapter {
       
       while (retries > 0 && !data) {
         try {
-          data = await this.kv.get(key)
+          data = await Promise.race([
+            this.kv.get(key),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('KV load timeout')), 5000)
+            )
+          ])
           if (data) break
         } catch (error) {
           console.error(`[KV] Load attempt ${4-retries} failed:`, error)
           retries--
           if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000)) // 等待1秒后重试
+            await new Promise(resolve => setTimeout(resolve, 500)) // 等待0.5秒后重试
           }
         }
       }
@@ -139,19 +155,59 @@ export class VercelKVAdapter implements StorageAdapter {
     const key = this.getKey('analytics_data')
     const serialized = this.serializeAnalytics(analytics)
     
-    await this.kv.set(key, serialized)
-    console.log(`[KV] Saved analytics data to ${key}`)
+    try {
+      // 添加重试机制和超时
+      let retries = 2
+      let success = false
+      
+      while (retries > 0 && !success) {
+        try {
+          await Promise.race([
+            this.kv.set(key, serialized),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('KV analytics timeout')), 5000)
+            )
+          ])
+          success = true
+          console.log(`[KV] Successfully saved analytics to ${key}`)
+        } catch (error) {
+          console.error(`[KV] Analytics save attempt ${3-retries} failed:`, error)
+          retries--
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+        }
+      }
+      
+      if (!success) {
+        throw new Error(`Failed to save analytics after 2 attempts`)
+      }
+    } catch (error) {
+      console.error(`[KV] Error saving analytics:`, error)
+      throw error
+    }
   }
 
   async loadAnalytics(): Promise<AnalyticsData | null> {
     if (!this.kv) throw new Error('Vercel KV not available')
     
     const key = this.getKey('analytics_data')
-    const data = await this.kv.get(key)
     
-    if (!data) return null
-    
-    return this.deserializeAnalytics(data)
+    try {
+      const data = await Promise.race([
+        this.kv.get(key),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('KV analytics load timeout')), 5000)
+        )
+      ])
+      
+      if (!data) return null
+      
+      return this.deserializeAnalytics(data)
+    } catch (error) {
+      console.error(`[KV] Error loading analytics:`, error)
+      return null
+    }
   }
 
   getStorageType(): string {
