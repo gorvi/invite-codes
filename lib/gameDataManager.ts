@@ -94,45 +94,59 @@ class GameDataManager {
   /**
    * 更新游戏全局统计
    */
-  async updateGameAnalytics(updates: Partial<GameAnalytics>): Promise<boolean> {
+  async updateGameAnalytics(updates: Partial<GameAnalytics>): Promise<GameAnalytics | null> {
     if (!this.supabase) {
       console.error('[GameDataManager] Not initialized, cannot update game analytics')
-      return false
+      return null
     }
 
     try {
       const updateData = {
-        ...updates,
+        global_best_score: updates.globalBestScore,
+        total_games_played: updates.totalGamesPlayed,
+        total_hamsters_whacked: updates.totalHamstersWhacked,
+        total_players: updates.totalPlayers,
         updated_at: new Date().toISOString()
       }
 
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('game_analytics')
         .upsert({
           id: 1,
           ...updateData
-        })
+        }, { onConflict: 'id' })
+        .select()
+        .single()
 
       if (error) {
         console.error('[GameDataManager] Error updating game analytics:', error)
-        return false
+        return null
       }
 
-      console.log('[GameDataManager] ✅ Game analytics updated')
-      return true
+      const result: GameAnalytics = {
+        id: data.id,
+        globalBestScore: data.global_best_score || 0,
+        totalGamesPlayed: data.total_games_played || 0,
+        totalHamstersWhacked: data.total_hamsters_whacked || 0,
+        totalPlayers: data.total_players || 0,
+        updatedAt: data.updated_at
+      }
+
+      console.log('[GameDataManager] ✅ Game analytics updated successfully:', result)
+      return result
     } catch (error) {
       console.error('[GameDataManager] Error in updateGameAnalytics:', error)
-      return false
+      return null
     }
   }
 
   /**
    * 更新用户游戏统计
    */
-  async updateUserStats(userId: string, updates: Partial<GameUserStats>): Promise<boolean> {
+  async updateUserStats(userId: string, updates: Partial<GameUserStats>): Promise<GameUserStats | null> {
     if (!this.supabase) {
       console.error('[GameDataManager] Not initialized, cannot update user stats')
-      return false
+      return null
     }
 
     try {
@@ -144,25 +158,41 @@ class GameDataManager {
 
       const updateData = {
         user_id: userId,
-        ...updates,
+        personal_best_score: updates.personalBestScore,
+        total_games_played: updates.totalGamesPlayed,
+        total_hamsters_whacked: updates.totalHamstersWhacked,
+        total_play_time: updates.totalPlayTime,
         first_play_at: existingStats?.first_play_at || new Date().toISOString(),
         last_play_at: new Date().toISOString()
       }
 
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('game_user_stats')
-        .upsert(updateData)
+        .upsert(updateData, { onConflict: 'user_id' })
+        .select()
+        .single()
 
       if (error) {
         console.error('[GameDataManager] Error updating user stats:', error)
-        return false
+        return null
       }
 
-      console.log('[GameDataManager] ✅ User stats updated for user:', userId)
-      return true
+      const result: GameUserStats = {
+        id: data.id,
+        userId: data.user_id,
+        personalBestScore: data.personal_best_score || 0,
+        totalGamesPlayed: data.total_games_played || 0,
+        totalHamstersWhacked: data.total_hamsters_whacked || 0,
+        totalPlayTime: data.total_play_time || 0,
+        firstPlayAt: data.first_play_at,
+        lastPlayAt: data.last_play_at
+      }
+
+      console.log('[GameDataManager] ✅ User stats updated for user:', userId, result)
+      return result
     } catch (error) {
       console.error('[GameDataManager] Error in updateUserStats:', error)
-      return false
+      return null
     }
   }
 

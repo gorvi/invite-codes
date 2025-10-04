@@ -75,10 +75,24 @@ export default function WhackHamsterGame() {
     }
   }
 
+  // 生成用户ID（基于浏览器指纹）
+  const getUserId = useCallback(() => {
+    let userId = localStorage.getItem('game_user_id')
+    if (!userId) {
+      // 生成基于时间戳和随机数的用户ID
+      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      localStorage.setItem('game_user_id', userId)
+    }
+    return userId
+  }, [])
+
   // 提交分数到服务器
-  const submitScore = async (score: number, hamstersWhacked: number) => {
+  const submitScore = async (score: number, hamstersWhacked: number, level: number, gameDuration: number) => {
     try {
-      await fetch('/api/game-stats', {
+      const userId = getUserId()
+      console.log(`[Game] Submitting score: ${score}, user: ${userId}`)
+      
+      const response = await fetch('/api/game-stats', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,9 +100,20 @@ export default function WhackHamsterGame() {
         body: JSON.stringify({
           action: 'submit_score',
           score: score,
-          hamstersWhacked: hamstersWhacked
+          hamstersWhacked: hamstersWhacked,
+          userId: userId,
+          level: level,
+          gameDuration: gameDuration
         }),
       })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to submit score`)
+      }
+
+      const data = await response.json()
+      console.log('[Game] Score submitted successfully:', data)
       
       // 重新获取全球最佳分数
       await fetchGlobalBest()
@@ -260,7 +285,7 @@ export default function WhackHamsterGame() {
         // 检查游戏是否应该结束
         if (prev.lives <= 0) {
           // 游戏结束，提交分数
-          submitScore(prev.score, hamstersWhacked)
+          submitScore(prev.score, hamstersWhacked, prev.level, prev.gameTime)
           return {
             ...prev,
             gameActive: false

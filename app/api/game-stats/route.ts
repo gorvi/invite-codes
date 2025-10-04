@@ -80,7 +80,14 @@ export async function POST(request: NextRequest) {
           }
 
           // 更新全局统计
-          await gameDataManager.updateGameAnalytics(analyticsUpdates)
+          const updatedAnalytics = await gameDataManager.updateGameAnalytics(analyticsUpdates)
+          if (!updatedAnalytics) {
+            console.error('[Game] Failed to update game analytics')
+            return NextResponse.json(
+              { error: 'Failed to update game analytics' },
+              { status: 500 }
+            )
+          }
 
           // 5. 更新用户统计
           const userUpdates: any = {
@@ -95,21 +102,24 @@ export async function POST(request: NextRequest) {
             console.log(`[Game] 🏆 New personal best score for user ${userId}: ${score}`)
           }
 
-          await gameDataManager.updateUserStats(userId, userUpdates)
-
-          // 6. 获取更新后的统计
-          const updatedAnalytics = await gameDataManager.getGameAnalytics()
-          const updatedUserStats = await gameDataManager.getUserStats(userId)
+          const updatedUserStats = await gameDataManager.updateUserStats(userId, userUpdates)
+          if (!updatedUserStats) {
+            console.error('[Game] Failed to update user stats')
+            return NextResponse.json(
+              { error: 'Failed to update user stats' },
+              { status: 500 }
+            )
+          }
 
           console.log('[Game] ✅ Game data saved successfully')
 
           return NextResponse.json({
             success: true,
-            globalBestScore: updatedAnalytics?.globalBestScore || 0,
-            totalGamesPlayed: updatedAnalytics?.totalGamesPlayed || 0,
-            totalHamstersWhacked: updatedAnalytics?.totalHamstersWhacked || 0,
-            totalPlayers: updatedAnalytics?.totalPlayers || 0,
-            personalBestScore: updatedUserStats?.personalBestScore || 0,
+            globalBestScore: updatedAnalytics.globalBestScore,
+            totalGamesPlayed: updatedAnalytics.totalGamesPlayed,
+            totalHamstersWhacked: updatedAnalytics.totalHamstersWhacked,
+            totalPlayers: updatedAnalytics.totalPlayers,
+            personalBestScore: updatedUserStats.personalBestScore,
             gameScoreId: gameScore.id
           })
         } else {
