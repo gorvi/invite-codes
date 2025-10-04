@@ -157,7 +157,7 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
                   💡 <strong>Tip:</strong> Make sure your code is valid and hasn't been submitted before!
                 </p>
                 <p className="text-sm text-blue-700">
-                  🎯 <strong>Got 1 new code to share?</strong> When you register with a Sora 2 invite code, you receive 1 codes to share. Help others by submitting them here!
+                  🎯 <strong>Got 1 new code to share?</strong> When you register with a Sora 2 invite code, you receive 1 new code to share. Help others by submitting them here!
                 </p>
               </div>
 
