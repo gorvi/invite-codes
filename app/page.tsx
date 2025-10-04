@@ -15,8 +15,7 @@ import Footer from '@/components/Footer'
 import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
-import UserGuidance from '@/components/UserGuidance'
-import InviteCodeGuidance from '@/components/InviteCodeGuidance'
+import UnifiedGuidance from '@/components/UnifiedGuidance'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
@@ -157,8 +156,8 @@ export default function Home() {
           onRemove={removeNotification} 
         />
         
-        {/* User guidance component */}
-        <UserGuidance />
+        {/* Unified guidance component */}
+        <UnifiedGuidance />
       
       <div className="container mx-auto px-4 py-8">
         {/* Mobile: vertical layout, Desktop: left-right layout (left 70%, right 30%) */}
@@ -246,8 +245,6 @@ export default function Home() {
           onSuccess={handleRefresh}
         />
         
-        {/* Invite Code Guidance */}
-        <InviteCodeGuidance />
       </main>
     </ErrorBoundary>
   )
