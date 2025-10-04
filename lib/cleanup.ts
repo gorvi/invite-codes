@@ -1,7 +1,6 @@
 // lib/cleanup.ts - 数据清理机制
 
-import { inviteCodes, analyticsData } from './data'
-import { saveInviteCodes, saveAnalytics } from './storage'
+import { inviteCodes, analyticsData, saveData } from './data'
 
 /**
  * 清理配置
@@ -76,7 +75,7 @@ export function cleanupExpiredCodes() {
     inviteCodes.push(...filteredCodes)
     
     // 保存到文件
-    saveInviteCodes(inviteCodes)
+    saveData()
     
     console.log(`[Cleanup] Removed ${removedCount} expired codes. Remaining: ${filteredCodes.length}`)
   } else {
@@ -110,7 +109,7 @@ export function cleanupInactiveUserStats() {
   }
   
   if (removedCount > 0) {
-    saveAnalytics(analyticsData)
+    saveData()
     console.log(`[Cleanup] Removed ${removedCount} inactive users`)
   } else {
     console.log(`[Cleanup] No inactive users to remove`)
@@ -154,7 +153,7 @@ export function cleanupOrphanedStats() {
   }
   
   if (removedCount > 0) {
-    saveAnalytics(analyticsData)
+    saveData()
     console.log(`[Cleanup] Removed ${removedCount} orphaned stats`)
   } else {
     console.log(`[Cleanup] No orphaned stats to remove`)
