@@ -169,7 +169,7 @@ class DataManager {
     this.refreshInterval = setInterval(() => {
       console.log('[DataManager] Auto-refresh triggered')
       this.refreshData()
-    }, 8000) // 每 8 秒刷新一次
+    }, 60000) // 每 60 秒刷新一次（减少数据库调用）
   }
 
   /**
