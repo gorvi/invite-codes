@@ -13,6 +13,8 @@ class CopyDetection {
   private lastClipboardContent = ''
   private debounceTimer: NodeJS.Timeout | null = null
   private isListening = false
+  private lastDetectedCode = '' // 防止重复检测同一个代码
+  private lastDetectedTime = 0 // 防止短时间内重复检测
 
   constructor(options: CopyDetectionOptions) {
     this.options = options
@@ -112,6 +114,13 @@ class CopyDetection {
    * 检测复制行为
    */
   private detectCopy(text: string) {
+    const now = Date.now()
+    
+    // 防止短时间内重复检测（5秒内）
+    if (now - this.lastDetectedTime < 5000) {
+      return
+    }
+    
     // 清理文本，移除可能的格式字符
     const cleanText = text.replace(/[^\w]/g, '').toUpperCase()
     
@@ -124,12 +133,22 @@ class CopyDetection {
       const codeText = element.textContent?.replace(/[^\w]/g, '').toUpperCase()
       
       if (codeText && cleanText.includes(codeText)) {
+        // 防止重复检测同一个代码
+        if (this.lastDetectedCode === codeText && now - this.lastDetectedTime < 10000) {
+          console.log('[CopyDetection] Duplicate copy detection prevented for:', codeText)
+          return
+        }
+        
         console.log('[CopyDetection] Invite code copy detected:', {
           originalText: text,
           cleanText,
           codeText,
           codeId
         })
+        
+        // 记录检测到的代码和时间
+        this.lastDetectedCode = codeText
+        this.lastDetectedTime = now
         
         // 🔥 触发用户引导提示
         window.dispatchEvent(new CustomEvent('copyDetected'))
