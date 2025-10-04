@@ -90,7 +90,44 @@ export class SupabasePersistenceManager {
 
       if (error) {
         console.error('[Supabase] Error loading invite codes:', error)
-        throw error
+        
+        // 如果是 schema cache 错误，尝试重试
+        if (error.code === 'PGRST205') {
+          console.log('[Supabase] Schema cache error for invite_codes, retrying in 1 second...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          const { data: retryData, error: retryError } = await this.supabase
+            .from('invite_codes')
+            .select('*')
+          
+          if (retryError) {
+            console.error('[Supabase] Retry failed for invite_codes:', retryError)
+            return []
+          }
+          
+          if (retryData) {
+            console.log('[Supabase] ✅ Retry successful for invite_codes')
+            const codes: InviteCode[] = (retryData || []).map((row: any) => ({
+              id: row.id,
+              code: row.code,
+              createdAt: new Date(row.created_at),
+              status: row.status || (row.is_active ? 'active' : 'invalid'),
+              votes: {
+                worked: row.worked_votes || 0,
+                didntWork: row.didnt_work_votes || 0,
+                uniqueWorked: row.unique_worked_count || 0,
+                uniqueDidntWork: row.unique_didnt_work_count || 0
+              },
+              copiedCount: row.copy_count || 0,
+              uniqueCopiedCount: row.unique_copied_count || 0
+            }))
+            
+            console.log(`[Supabase] ✅ Successfully loaded ${codes.length} invite codes (retry)`)
+            return codes
+          }
+        }
+        
+        return []
       }
 
       // 转换数据格式
@@ -173,6 +210,50 @@ export class SupabasePersistenceManager {
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
         console.error('[Supabase] Error loading analytics:', error)
+        
+        // 如果是 schema cache 错误，尝试重新初始化客户端
+        if (error.code === 'PGRST205') {
+          console.log('[Supabase] Schema cache error, retrying in 1 second...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // 重新尝试查询
+          const { data: retryData, error: retryError } = await this.supabase
+            .from('analytics')
+            .select('*')
+            .eq('id', 1)
+            .single()
+          
+          if (retryError && retryError.code !== 'PGRST116') {
+            console.error('[Supabase] Retry failed:', retryError)
+            return null
+          }
+          
+          if (retryData) {
+            console.log('[Supabase] ✅ Retry successful')
+            // 使用重试的数据继续处理
+            const analytics: AnalyticsData = {
+              totalClicks: 0,
+              copyClicks: retryData.total_copy_clicks || 0,
+              workedVotes: retryData.total_worked_votes || 0,
+              didntWorkVotes: retryData.total_didnt_work_votes || 0,
+              submitCount: retryData.total_submit_count || 0,
+              gameStats: {
+                globalBestScore: retryData.global_best_score || 0,
+                totalGamesPlayed: retryData.total_games_played || 0,
+                totalHamstersWhacked: retryData.total_hamsters_whacked || 0
+              },
+              dailyStats: retryData.daily_stats || {},
+              inviteCodeStats: {},
+              userStats: retryData.user_stats || {},
+              uniqueCopyStats: {},
+              uniqueVoteStats: {}
+            }
+            
+            console.log('[Supabase] ✅ Successfully loaded analytics data (retry)')
+            return analytics
+          }
+        }
+        
         return null
       }
 
