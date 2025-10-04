@@ -3,9 +3,9 @@
 -- 去掉预聚合表，使用实时查询
 -- ===============================================
 
--- 删除现有表（如果存在）- 按依赖关系倒序删除
-DROP TABLE IF EXISTS sora2_hourly_stats CASCADE;
-DROP TABLE IF EXISTS sora2_daily_stats CASCADE;
+-- 删除现有表和视图（如果存在）- 按依赖关系倒序删除
+DROP VIEW IF EXISTS sora2_hourly_stats CASCADE;
+DROP VIEW IF EXISTS sora2_daily_stats CASCADE;
 DROP TABLE IF EXISTS sora2_user_stats CASCADE;
 DROP TABLE IF EXISTS sora2_submitter_stats CASCADE;
 DROP TABLE IF EXISTS sora2_analytics CASCADE;
@@ -65,31 +65,31 @@ CREATE TABLE sora2_submitter_stats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. 每日统计表（替代 daily_stats JSONB）
-CREATE TABLE sora2_daily_stats (
-  date DATE PRIMARY KEY, -- 日期作为主键
-  submit_count INTEGER DEFAULT 0,
-  copy_clicks INTEGER DEFAULT 0,
-  worked_votes INTEGER DEFAULT 0,
-  didnt_work_votes INTEGER DEFAULT 0,
-  unique_users_visited INTEGER DEFAULT 0, -- 当日独立访客数
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 4. 每日统计视图（实时计算，替代 daily_stats 表）
+CREATE OR REPLACE VIEW sora2_daily_stats AS
+SELECT 
+  DATE(created_at) as date,
+  COUNT(*) as submit_count,
+  COALESCE(SUM(copy_count), 0) as copy_clicks,
+  COALESCE(SUM(worked_votes), 0) as worked_votes,
+  COALESCE(SUM(didnt_work_votes), 0) as didnt_work_votes,
+  COUNT(DISTINCT submitter_name) as unique_submitters
+FROM sora2_invite_codes
+GROUP BY DATE(created_at);
 
--- 5. 每小时统计表（可选，用于更细粒度的分析）
-CREATE TABLE sora2_hourly_stats (
-  date_hour TIMESTAMP WITH TIME ZONE PRIMARY KEY, -- 日期+小时作为主键
-  date DATE NOT NULL,
-  hour INTEGER NOT NULL CHECK (hour >= 0 AND hour <= 23),
-  submit_count INTEGER DEFAULT 0,
-  copy_clicks INTEGER DEFAULT 0,
-  worked_votes INTEGER DEFAULT 0,
-  didnt_work_votes INTEGER DEFAULT 0,
-  unique_users_visited INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 5. 每小时统计视图（实时计算，替代 hourly_stats 表）
+CREATE OR REPLACE VIEW sora2_hourly_stats AS
+SELECT 
+  DATE_TRUNC('hour', created_at) as date_hour,
+  DATE(created_at) as date,
+  EXTRACT(hour FROM created_at)::INTEGER as hour,
+  COUNT(*) as submit_count,
+  COALESCE(SUM(copy_count), 0) as copy_clicks,
+  COALESCE(SUM(worked_votes), 0) as worked_votes,
+  COALESCE(SUM(didnt_work_votes), 0) as didnt_work_votes,
+  COUNT(DISTINCT submitter_name) as unique_submitters
+FROM sora2_invite_codes
+GROUP BY DATE_TRUNC('hour', created_at), DATE(created_at), EXTRACT(hour FROM created_at);
 
 -- ===============================================
 -- 打地鼠游戏业务表
@@ -190,10 +190,7 @@ CREATE INDEX idx_sora2_submitter_stats_last_submission ON sora2_submitter_stats(
 CREATE INDEX idx_sora2_submitter_stats_total_codes ON sora2_submitter_stats(total_codes_submitted);
 CREATE INDEX idx_sora2_submitter_stats_success_rate ON sora2_submitter_stats(success_rate);
 
-CREATE INDEX idx_sora2_daily_stats_date ON sora2_daily_stats(date);
-
-CREATE INDEX idx_sora2_hourly_stats_date ON sora2_hourly_stats(date);
-CREATE INDEX idx_sora2_hourly_stats_hour ON sora2_hourly_stats(hour);
+-- 视图不需要索引
 
 -- 游戏业务索引
 CREATE INDEX idx_game_scores_user_id ON game_scores(user_id);
@@ -209,10 +206,7 @@ CREATE INDEX idx_game_user_stats_last_play_at ON game_user_stats(last_play_at);
 -- ===============================================
 
 -- 删除现有策略（如果存在）
-DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_hourly_stats;
-DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_hourly_stats;
-DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_daily_stats;
-DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_daily_stats;
+-- 视图不需要 RLS 策略
 DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_user_stats;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_user_stats;
 DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_submitter_stats;
@@ -244,15 +238,7 @@ ALTER TABLE sora2_submitter_stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow anonymous read access" ON sora2_submitter_stats FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous upsert access" ON sora2_submitter_stats FOR ALL USING (true);
 
--- 每日统计表 RLS
-ALTER TABLE sora2_daily_stats ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow anonymous read access" ON sora2_daily_stats FOR SELECT USING (true);
-CREATE POLICY "Allow anonymous upsert access" ON sora2_daily_stats FOR ALL USING (true);
-
--- 每小时统计表 RLS
-ALTER TABLE sora2_hourly_stats ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow anonymous read access" ON sora2_hourly_stats FOR SELECT USING (true);
-CREATE POLICY "Allow anonymous upsert access" ON sora2_hourly_stats FOR ALL USING (true);
+-- 视图不需要 RLS 策略
 
 -- 游戏业务 RLS 策略
 -- 游戏分数表 RLS
@@ -344,8 +330,8 @@ Sora 2 邀请码业务表 (简化版):
 - sora2_invite_codes: 邀请码实体表，存储每个邀请码的详细信息
 - sora2_user_stats: 用户统计表，存储每个用户的行为统计
 - sora2_submitter_stats: 提交人统计表，存储每个提交人的统计信息
-- sora2_daily_stats: 每日统计表，存储每天的汇总数据
-- sora2_hourly_stats: 每小时统计表，存储每小时的汇总数据（可选）
+- sora2_daily_stats: 每日统计视图，实时计算每天的汇总数据
+- sora2_hourly_stats: 每小时统计视图，实时计算每小时的汇总数据（可选）
 - sora2_stats: 实时统计视图，替代原来的 sora2_analytics 表
 
 打地鼠游戏业务表:
