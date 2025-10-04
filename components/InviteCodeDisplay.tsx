@@ -60,11 +60,18 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     updateClickTime(buttonKey)
     
     try {
-      await onCopy(code, codeId)
+      // 立即设置复制状态，提供即时反馈
       setCopiedCode(code)
+      
+      // 调用复制函数（包含剪贴板操作和 API 调用）
+      await onCopy(code, codeId)
+      
+      // 2秒后清除复制状态
       setTimeout(() => setCopiedCode(null), 2000)
     } catch (error) {
       console.error('Failed to copy code:', error)
+      // 如果复制失败，立即清除复制状态
+      setCopiedCode(null)
     }
   }
 

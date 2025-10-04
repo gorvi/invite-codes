@@ -46,6 +46,7 @@ export default function Home() {
       })
       
       if (response.ok) {
+        console.log(`[Vote] ${type} vote recorded successfully for code ${id}`)
         // 🔥 使用数据管理器统一刷新所有数据
         await dataManager.triggerRefresh()
       } else {
@@ -59,11 +60,12 @@ export default function Home() {
   // Handle copying invite code
   const handleCopyCode = async (code: string, codeId: string) => {
     try {
-      // Copy to clipboard
+      // 立即复制到剪贴板
       await navigator.clipboard.writeText(code)
+      console.log(`[Copy] Code "${code}" copied to clipboard`)
       
-      // Record copy event (optional)
-      const response = await fetch('/api/analytics', {
+      // 异步记录复制事件，不等待返回
+      fetch('/api/analytics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,13 +74,21 @@ export default function Home() {
           action: 'copy', 
           inviteCodeId: codeId 
         }),
+      }).then(response => {
+        if (response.ok) {
+          console.log('[Copy] Copy event recorded successfully')
+          // 触发数据刷新以更新统计
+          dataManager.triggerRefresh()
+        } else {
+          console.error('[Copy] Failed to record copy event:', response.status)
+        }
+      }).catch(error => {
+        console.error('[Copy] Error recording copy event:', error)
       })
       
-      if (!response.ok) {
-        console.error('Failed to record copy event')
-      }
     } catch (error) {
-      console.error('Failed to copy code:', error)
+      console.error('[Copy] Failed to copy code to clipboard:', error)
+      throw error // 重新抛出错误，让组件知道复制失败
     }
   }
 
