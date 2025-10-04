@@ -2,8 +2,19 @@
 -- Sora 2 邀请码业务 - 优化后的表结构
 -- ===============================================
 
+-- 删除现有表（如果存在）
+DROP TABLE IF EXISTS sora2_hourly_stats CASCADE;
+DROP TABLE IF EXISTS sora2_daily_stats CASCADE;
+DROP TABLE IF EXISTS sora2_user_stats CASCADE;
+DROP TABLE IF EXISTS sora2_analytics CASCADE;
+DROP TABLE IF EXISTS sora2_invite_codes CASCADE;
+
+-- ===============================================
+-- 创建优化后的表结构
+-- ===============================================
+
 -- 1. 邀请码表（保持不变，设计合理）
-CREATE TABLE IF NOT EXISTS sora2_invite_codes (
+CREATE TABLE sora2_invite_codes (
   id VARCHAR(255) PRIMARY KEY,
   code VARCHAR(255) UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -22,7 +33,7 @@ CREATE TABLE IF NOT EXISTS sora2_invite_codes (
 );
 
 -- 2. 全局统计表（简化，只存储真正的全局聚合数据）
-CREATE TABLE IF NOT EXISTS sora2_analytics (
+CREATE TABLE sora2_analytics (
   id INTEGER PRIMARY KEY DEFAULT 1, -- 单行全局统计
   total_submit_count INTEGER DEFAULT 0,
   total_copy_clicks INTEGER DEFAULT 0,
@@ -33,7 +44,7 @@ CREATE TABLE IF NOT EXISTS sora2_analytics (
 );
 
 -- 3. 用户统计表（新增，替代 userStats JSONB）
-CREATE TABLE IF NOT EXISTS sora2_user_stats (
+CREATE TABLE sora2_user_stats (
   user_id VARCHAR(255) PRIMARY KEY,
   copy_count INTEGER DEFAULT 0,
   vote_count INTEGER DEFAULT 0, -- 总投票数（worked + didntWork）
@@ -45,7 +56,7 @@ CREATE TABLE IF NOT EXISTS sora2_user_stats (
 );
 
 -- 4. 每日统计表（新增，替代 daily_stats JSONB）
-CREATE TABLE IF NOT EXISTS sora2_daily_stats (
+CREATE TABLE sora2_daily_stats (
   date DATE PRIMARY KEY, -- 日期作为主键
   submit_count INTEGER DEFAULT 0,
   copy_clicks INTEGER DEFAULT 0,
@@ -57,7 +68,7 @@ CREATE TABLE IF NOT EXISTS sora2_daily_stats (
 );
 
 -- 5. 每小时统计表（可选，用于更细粒度的分析）
-CREATE TABLE IF NOT EXISTS sora2_hourly_stats (
+CREATE TABLE sora2_hourly_stats (
   date_hour TIMESTAMP WITH TIME ZONE PRIMARY KEY, -- 日期+小时作为主键
   date DATE NOT NULL,
   hour INTEGER NOT NULL CHECK (hour >= 0 AND hour <= 23),
@@ -74,26 +85,51 @@ CREATE TABLE IF NOT EXISTS sora2_hourly_stats (
 -- 索引优化
 -- ===============================================
 
+-- 删除现有索引（如果存在）
+DROP INDEX IF EXISTS idx_sora2_hourly_stats_hour;
+DROP INDEX IF EXISTS idx_sora2_hourly_stats_date;
+DROP INDEX IF EXISTS idx_sora2_daily_stats_date;
+DROP INDEX IF EXISTS idx_sora2_user_stats_created_at;
+DROP INDEX IF EXISTS idx_sora2_user_stats_last_visit;
+DROP INDEX IF EXISTS idx_sora2_invite_codes_created_at;
+DROP INDEX IF EXISTS idx_sora2_invite_codes_active;
+DROP INDEX IF EXISTS idx_sora2_invite_codes_status;
+
+-- 创建索引
 -- 邀请码表索引
-CREATE INDEX IF NOT EXISTS idx_sora2_invite_codes_status ON sora2_invite_codes(status);
-CREATE INDEX IF NOT EXISTS idx_sora2_invite_codes_active ON sora2_invite_codes(is_active);
-CREATE INDEX IF NOT EXISTS idx_sora2_invite_codes_created_at ON sora2_invite_codes(created_at);
+CREATE INDEX idx_sora2_invite_codes_status ON sora2_invite_codes(status);
+CREATE INDEX idx_sora2_invite_codes_active ON sora2_invite_codes(is_active);
+CREATE INDEX idx_sora2_invite_codes_created_at ON sora2_invite_codes(created_at);
 
 -- 用户统计表索引
-CREATE INDEX IF NOT EXISTS idx_sora2_user_stats_last_visit ON sora2_user_stats(last_visit);
-CREATE INDEX IF NOT EXISTS idx_sora2_user_stats_created_at ON sora2_user_stats(created_at);
+CREATE INDEX idx_sora2_user_stats_last_visit ON sora2_user_stats(last_visit);
+CREATE INDEX idx_sora2_user_stats_created_at ON sora2_user_stats(created_at);
 
 -- 每日统计表索引
-CREATE INDEX IF NOT EXISTS idx_sora2_daily_stats_date ON sora2_daily_stats(date);
+CREATE INDEX idx_sora2_daily_stats_date ON sora2_daily_stats(date);
 
 -- 每小时统计表索引
-CREATE INDEX IF NOT EXISTS idx_sora2_hourly_stats_date ON sora2_hourly_stats(date);
-CREATE INDEX IF NOT EXISTS idx_sora2_hourly_stats_hour ON sora2_hourly_stats(hour);
+CREATE INDEX idx_sora2_hourly_stats_date ON sora2_hourly_stats(date);
+CREATE INDEX idx_sora2_hourly_stats_hour ON sora2_hourly_stats(hour);
 
 -- ===============================================
 -- 行级安全策略 (RLS)
 -- ===============================================
 
+-- 删除现有策略（如果存在）
+DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_hourly_stats;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_hourly_stats;
+DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_daily_stats;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_daily_stats;
+DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_user_stats;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_user_stats;
+DROP POLICY IF EXISTS "Allow anonymous update access" ON sora2_analytics;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_analytics;
+DROP POLICY IF EXISTS "Allow anonymous update access" ON sora2_invite_codes;
+DROP POLICY IF EXISTS "Allow anonymous insert access" ON sora2_invite_codes;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_invite_codes;
+
+-- 创建 RLS 策略
 -- 邀请码表 RLS
 ALTER TABLE sora2_invite_codes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow anonymous read access" ON sora2_invite_codes FOR SELECT USING (true);
