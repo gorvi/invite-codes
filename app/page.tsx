@@ -191,7 +191,7 @@ export default function Home() {
             </div>
             
             <InviteCodeDisplay 
-              codes={inviteCodes} 
+              codes={inviteCodes.filter(code => code.status === 'active')} 
               onVote={handleVote}
               onCopy={handleCopyCode}
             />
