@@ -3,6 +3,7 @@
  */
 
 import { sora2DataManager } from './sora2DataManager'
+import { getTodayBeijingDateString, getBeijingTimeISOString, createInviteCodeTimestamp } from './timeUtils'
 
 export interface InviteCode {
   id: string
@@ -159,14 +160,14 @@ export async function saveData(): Promise<void> {
 }
 
 /**
- * 获取今日日期字符串
+ * 获取今日日期字符串（北京时间）
  */
 export function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return getTodayBeijingDateString()
 }
 
 export function getCurrentTimestamp(): string {
-  return new Date().toISOString()
+  return getBeijingTimeISOString()
 }
 
 /**
@@ -190,7 +191,7 @@ export async function addInviteCode(code: string, submitterName?: string): Promi
   const newCode: InviteCode = {
     id: newId,
     code,
-    createdAt: new Date(),
+    createdAt: createInviteCodeTimestamp(), // 使用北京时间
     status: 'active',
     votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
     copiedCount: 0,

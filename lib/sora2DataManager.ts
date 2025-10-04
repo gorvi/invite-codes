@@ -1,6 +1,7 @@
 // lib/sora2DataManager.ts - Sora 2 邀请码业务数据管理器
 
 import { createClient } from '@supabase/supabase-js'
+import { getBeijingTimeISOString } from './timeUtils'
 import { InviteCode, AnalyticsData } from './data'
 
 const supabaseUrl = process.env.SUPABASE_URL
@@ -163,9 +164,9 @@ export class Sora2DataManager {
           copy_count: stats.copyCount || 0,
           vote_count: stats.voteCount || 0,
           submit_count: stats.submitCount || 0,
-          first_visit: stats.firstVisit || new Date().toISOString(),
-          last_visit: stats.lastVisit || new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          first_visit: stats.firstVisit || getBeijingTimeISOString(),
+          last_visit: stats.lastVisit || getBeijingTimeISOString(),
+          updated_at: getBeijingTimeISOString()
         }))
 
         if (userStatsArray.length > 0) {

@@ -1,6 +1,7 @@
 // lib/gameDataManager.ts - 独立的游戏数据管理器
 
 import { createClient } from '@supabase/supabase-js'
+import { getBeijingTimeISOString } from './timeUtils'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_ANON_KEY
@@ -57,7 +58,7 @@ class GameDataManager {
           level: scoreData.level,
           hamsters_whacked: scoreData.hamstersWhacked,
           game_duration: scoreData.gameDuration,
-          created_at: new Date().toISOString()
+          created_at: getBeijingTimeISOString()
         })
         .select()
         .single()
@@ -115,8 +116,8 @@ class GameDataManager {
         total_games_played: updates.totalGamesPlayed,
         total_hamsters_whacked: updates.totalHamstersWhacked,
         total_play_time: updates.totalPlayTime,
-        first_play_at: existingStats?.first_play_at || new Date().toISOString(),
-        last_play_at: new Date().toISOString()
+        first_play_at: existingStats?.first_play_at || getBeijingTimeISOString(),
+        last_play_at: getBeijingTimeISOString()
       }
 
       const { data, error } = await this.supabase
