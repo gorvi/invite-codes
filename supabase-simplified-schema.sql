@@ -7,6 +7,7 @@
 DROP TABLE IF EXISTS sora2_hourly_stats CASCADE;
 DROP TABLE IF EXISTS sora2_daily_stats CASCADE;
 DROP TABLE IF EXISTS sora2_user_stats CASCADE;
+DROP TABLE IF EXISTS sora2_submitter_stats CASCADE;
 DROP TABLE IF EXISTS sora2_analytics CASCADE;
 DROP TABLE IF EXISTS sora2_invite_codes CASCADE;
 DROP TABLE IF EXISTS game_user_stats CASCADE;
@@ -48,7 +49,23 @@ CREATE TABLE sora2_user_stats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. 每日统计表（替代 daily_stats JSONB）
+-- 3. 提交人统计表（新增）
+CREATE TABLE sora2_submitter_stats (
+  submitter_name VARCHAR(255) PRIMARY KEY,
+  total_codes_submitted INTEGER DEFAULT 0,
+  active_codes_count INTEGER DEFAULT 0,
+  used_codes_count INTEGER DEFAULT 0,
+  invalid_codes_count INTEGER DEFAULT 0,
+  total_copies_received INTEGER DEFAULT 0, -- 所有提交的邀请码被复制的总次数
+  total_votes_received INTEGER DEFAULT 0, -- 所有提交的邀请码收到的投票总数
+  success_rate DECIMAL(5,2) DEFAULT 0.00, -- 成功率 (worked votes / total votes)
+  first_submission TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_submission TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. 每日统计表（替代 daily_stats JSONB）
 CREATE TABLE sora2_daily_stats (
   date DATE PRIMARY KEY, -- 日期作为主键
   submit_count INTEGER DEFAULT 0,
@@ -60,7 +77,7 @@ CREATE TABLE sora2_daily_stats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. 每小时统计表（可选，用于更细粒度的分析）
+-- 5. 每小时统计表（可选，用于更细粒度的分析）
 CREATE TABLE sora2_hourly_stats (
   date_hour TIMESTAMP WITH TIME ZONE PRIMARY KEY, -- 日期+小时作为主键
   date DATE NOT NULL,
@@ -78,7 +95,7 @@ CREATE TABLE sora2_hourly_stats (
 -- 打地鼠游戏业务表
 -- ===============================================
 
--- 5. 游戏分数表（独立存储每个游戏记录）
+-- 6. 游戏分数表（独立存储每个游戏记录）
 CREATE TABLE game_scores (
   id SERIAL PRIMARY KEY,
   user_id VARCHAR(255) NOT NULL,
@@ -92,7 +109,7 @@ CREATE TABLE game_scores (
 -- 6. 游戏全局统计表（删除，改为实时查询）
 -- CREATE TABLE game_analytics (...); -- 不再需要
 
--- 6. 用户游戏统计表
+-- 7. 用户游戏统计表
 CREATE TABLE game_user_stats (
   user_id VARCHAR(255) PRIMARY KEY,
   personal_best_score INTEGER DEFAULT 0,
@@ -117,6 +134,7 @@ SELECT
   (SELECT COUNT(*) FROM sora2_invite_codes WHERE status = 'used') as used_count,
   (SELECT COUNT(*) FROM sora2_invite_codes WHERE status = 'invalid') as invalid_count,
   (SELECT COUNT(*) FROM sora2_user_stats) as total_users,
+  (SELECT COUNT(*) FROM sora2_submitter_stats) as total_submitters,
   (SELECT COALESCE(SUM(copy_count), 0) FROM sora2_user_stats) as total_copies,
   (SELECT COALESCE(SUM(vote_count), 0) FROM sora2_user_stats) as total_votes,
   (SELECT COALESCE(SUM(submit_count), 0) FROM sora2_user_stats) as total_submits,
@@ -161,11 +179,16 @@ CREATE INDEX idx_sora2_invite_codes_code ON sora2_invite_codes(code);
 CREATE INDEX idx_sora2_invite_codes_status ON sora2_invite_codes(status);
 CREATE INDEX idx_sora2_invite_codes_active ON sora2_invite_codes(is_active);
 CREATE INDEX idx_sora2_invite_codes_created_at ON sora2_invite_codes(created_at);
+CREATE INDEX idx_sora2_invite_codes_submitter ON sora2_invite_codes(submitter_name);
 
 -- Sora 2 统计索引
 CREATE INDEX idx_sora2_user_stats_last_visit ON sora2_user_stats(last_visit);
 CREATE INDEX idx_sora2_user_stats_created_at ON sora2_user_stats(created_at);
 CREATE INDEX idx_sora2_user_stats_updated_at ON sora2_user_stats(updated_at);
+
+CREATE INDEX idx_sora2_submitter_stats_last_submission ON sora2_submitter_stats(last_submission);
+CREATE INDEX idx_sora2_submitter_stats_total_codes ON sora2_submitter_stats(total_codes_submitted);
+CREATE INDEX idx_sora2_submitter_stats_success_rate ON sora2_submitter_stats(success_rate);
 
 CREATE INDEX idx_sora2_daily_stats_date ON sora2_daily_stats(date);
 
@@ -192,6 +215,8 @@ DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_daily_stats;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_daily_stats;
 DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_user_stats;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_user_stats;
+DROP POLICY IF EXISTS "Allow anonymous upsert access" ON sora2_submitter_stats;
+DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_submitter_stats;
 DROP POLICY IF EXISTS "Allow anonymous update access" ON sora2_invite_codes;
 DROP POLICY IF EXISTS "Allow anonymous insert access" ON sora2_invite_codes;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_invite_codes;
@@ -213,6 +238,11 @@ CREATE POLICY "Allow anonymous update access" ON sora2_invite_codes FOR UPDATE U
 ALTER TABLE sora2_user_stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow anonymous read access" ON sora2_user_stats FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous upsert access" ON sora2_user_stats FOR ALL USING (true);
+
+-- 提交人统计表 RLS
+ALTER TABLE sora2_submitter_stats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous read access" ON sora2_submitter_stats FOR SELECT USING (true);
+CREATE POLICY "Allow anonymous upsert access" ON sora2_submitter_stats FOR ALL USING (true);
 
 -- 每日统计表 RLS
 ALTER TABLE sora2_daily_stats ENABLE ROW LEVEL SECURITY;
@@ -273,6 +303,32 @@ CREATE POLICY "Allow anonymous upsert access" ON game_user_stats FOR ALL USING (
 -- ORDER BY personal_best_score DESC 
 -- LIMIT 10;
 
+-- 获取提交人排行榜（按提交数量排序）
+-- SELECT submitter_name, total_codes_submitted, active_codes_count, success_rate 
+-- FROM sora2_submitter_stats 
+-- ORDER BY total_codes_submitted DESC 
+-- LIMIT 10;
+
+-- 获取提交人排行榜（按成功率排序）
+-- SELECT submitter_name, total_codes_submitted, success_rate, total_copies_received 
+-- FROM sora2_submitter_stats 
+-- WHERE total_codes_submitted > 0 
+-- ORDER BY success_rate DESC 
+-- LIMIT 10;
+
+-- 获取某个提交人的详细统计
+-- SELECT 
+--   submitter_name,
+--   total_codes_submitted,
+--   active_codes_count,
+--   used_codes_count,
+--   invalid_codes_count,
+--   success_rate,
+--   first_submission,
+--   last_submission
+-- FROM sora2_submitter_stats 
+-- WHERE submitter_name = '用户名';
+
 -- 获取最近7天的每日统计趋势
 -- SELECT date, submit_count, copy_clicks, worked_votes, didnt_work_votes
 -- FROM sora2_daily_stats 
@@ -287,6 +343,7 @@ CREATE POLICY "Allow anonymous upsert access" ON game_user_stats FOR ALL USING (
 Sora 2 邀请码业务表 (简化版):
 - sora2_invite_codes: 邀请码实体表，存储每个邀请码的详细信息
 - sora2_user_stats: 用户统计表，存储每个用户的行为统计
+- sora2_submitter_stats: 提交人统计表，存储每个提交人的统计信息
 - sora2_daily_stats: 每日统计表，存储每天的汇总数据
 - sora2_hourly_stats: 每小时统计表，存储每小时的汇总数据（可选）
 - sora2_stats: 实时统计视图，替代原来的 sora2_analytics 表
