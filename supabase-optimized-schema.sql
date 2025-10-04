@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS invite_codes (
   id VARCHAR(255) PRIMARY KEY,
   code VARCHAR(255) UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  is_active BOOLEAN DEFAULT true,
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'used', 'invalid')),
+  is_active BOOLEAN GENERATED ALWAYS AS (status = 'active') STORED,
   submitter_name VARCHAR(255) DEFAULT NULL,
   copy_count INTEGER DEFAULT 0,
   worked_votes INTEGER DEFAULT 0,
@@ -71,9 +72,9 @@ CREATE TABLE IF NOT EXISTS daily_stats (
 
 -- 创建索引以提高查询性能
 CREATE INDEX IF NOT EXISTS idx_invite_codes_active ON invite_codes(is_active);
+CREATE INDEX IF NOT EXISTS idx_invite_codes_status ON invite_codes(status);
 CREATE INDEX IF NOT EXISTS idx_invite_codes_created_at ON invite_codes(created_at);
 CREATE INDEX IF NOT EXISTS idx_invite_codes_code ON invite_codes(code);
-CREATE INDEX IF NOT EXISTS idx_invite_codes_status ON invite_codes(status);
 
 CREATE INDEX IF NOT EXISTS idx_game_scores_user_id ON game_scores(user_id);
 CREATE INDEX IF NOT EXISTS idx_game_scores_score ON game_scores(score DESC);

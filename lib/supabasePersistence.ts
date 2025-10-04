@@ -49,7 +49,7 @@ export class SupabasePersistenceManager {
           id: code.id,
           code: code.code,
           created_at: code.createdAt,
-          is_active: code.status === 'active',
+          status: code.status, // 使用 status 字段
           submitter_name: null, // InviteCode 接口中没有这个字段
           copy_count: code.copiedCount || 0,
           worked_votes: code.votes.worked,
@@ -98,7 +98,7 @@ export class SupabasePersistenceManager {
         id: row.id,
         code: row.code,
         createdAt: new Date(row.created_at),
-        status: row.is_active ? 'active' : 'invalid',
+        status: row.status || (row.is_active ? 'active' : 'invalid'), // 优先使用 status 字段
         votes: {
           worked: row.worked_votes || 0,
           didntWork: row.didnt_work_votes || 0,
