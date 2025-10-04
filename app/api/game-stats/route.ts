@@ -54,42 +54,10 @@ export async function POST(request: NextRequest) {
             )
           }
 
-          // 2. 获取当前全局统计
-          const currentAnalytics = await gameDataManager.getGameAnalytics()
-          if (!currentAnalytics) {
-            console.error('[Game] Failed to load game analytics')
-            return NextResponse.json(
-              { error: 'Failed to load game analytics' },
-              { status: 500 }
-            )
-          }
-
-          // 3. 获取用户统计
+          // 2. 获取用户统计
           const userStats = await gameDataManager.getUserStats(userId)
 
-          // 4. 更新全局统计
-          const analyticsUpdates: any = {
-            totalGamesPlayed: currentAnalytics.totalGamesPlayed + 1,
-            totalHamstersWhacked: currentAnalytics.totalHamstersWhacked + (hamstersWhacked || 0)
-          }
-
-          // 检查是否刷新全球最佳分数
-          if (score > currentAnalytics.globalBestScore) {
-            analyticsUpdates.globalBestScore = score
-            console.log(`[Game] 🎉 New global best score: ${score}`)
-          }
-
-          // 更新全局统计
-          const updatedAnalytics = await gameDataManager.updateGameAnalytics(analyticsUpdates)
-          if (!updatedAnalytics) {
-            console.error('[Game] Failed to update game analytics')
-            return NextResponse.json(
-              { error: 'Failed to update game analytics' },
-              { status: 500 }
-            )
-          }
-
-          // 5. 更新用户统计
+          // 3. 更新用户统计
           const userUpdates: any = {
             totalGamesPlayed: (userStats?.totalGamesPlayed || 0) + 1,
             totalHamstersWhacked: (userStats?.totalHamstersWhacked || 0) + (hamstersWhacked || 0),
@@ -111,14 +79,17 @@ export async function POST(request: NextRequest) {
             )
           }
 
+          // 4. 获取最新的全局统计（从视图实时计算）
+          const latestAnalytics = await gameDataManager.getGameAnalytics()
+
           console.log('[Game] ✅ Game data saved successfully')
 
           return NextResponse.json({
             success: true,
-            globalBestScore: updatedAnalytics.globalBestScore,
-            totalGamesPlayed: updatedAnalytics.totalGamesPlayed,
-            totalHamstersWhacked: updatedAnalytics.totalHamstersWhacked,
-            totalPlayers: updatedAnalytics.totalPlayers,
+            globalBestScore: latestAnalytics?.globalBestScore || 0,
+            totalGamesPlayed: latestAnalytics?.totalGamesPlayed || 0,
+            totalHamstersWhacked: latestAnalytics?.totalHamstersWhacked || 0,
+            totalPlayers: latestAnalytics?.totalPlayers || 0,
             personalBestScore: updatedUserStats.personalBestScore,
             gameScoreId: gameScore.id
           })

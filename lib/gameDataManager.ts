@@ -15,14 +15,7 @@ export interface GameScore {
   createdAt: Date
 }
 
-export interface GameAnalytics {
-  id: number
-  globalBestScore: number
-  totalGamesPlayed: number
-  totalHamstersWhacked: number
-  totalPlayers: number
-  updatedAt: string
-}
+// GameAnalytics 接口已删除，现在使用实时查询获取游戏统计
 
 export interface GameUserStats {
   id?: number
@@ -93,52 +86,11 @@ class GameDataManager {
   }
 
   /**
-   * 更新游戏全局统计
+   * 更新游戏全局统计 (已删除，现在使用实时查询)
    */
-  async updateGameAnalytics(updates: Partial<GameAnalytics>): Promise<GameAnalytics | null> {
-    if (!this.supabase) {
-      console.error('[GameDataManager] Not initialized, cannot update game analytics')
-      return null
-    }
-
-    try {
-      const updateData = {
-        global_best_score: updates.globalBestScore,
-        total_games_played: updates.totalGamesPlayed,
-        total_hamsters_whacked: updates.totalHamstersWhacked,
-        total_players: updates.totalPlayers,
-        updated_at: new Date().toISOString()
-      }
-
-      const { data, error } = await this.supabase
-        .from('game_analytics')
-        .upsert({
-          id: 1,
-          ...updateData
-        }, { onConflict: 'id' })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('[GameDataManager] Error updating game analytics:', error)
-        return null
-      }
-
-      const result: GameAnalytics = {
-        id: data.id,
-        globalBestScore: data.global_best_score || 0,
-        totalGamesPlayed: data.total_games_played || 0,
-        totalHamstersWhacked: data.total_hamsters_whacked || 0,
-        totalPlayers: data.total_players || 0,
-        updatedAt: data.updated_at
-      }
-
-      console.log('[GameDataManager] ✅ Game analytics updated successfully:', result)
-      return result
-    } catch (error) {
-      console.error('[GameDataManager] Error in updateGameAnalytics:', error)
-      return null
-    }
+  async updateGameAnalytics(): Promise<any> {
+    console.log('[GameDataManager] updateGameAnalytics is deprecated - using real-time queries instead')
+    return null
   }
 
   /**
@@ -198,48 +150,39 @@ class GameDataManager {
   }
 
   /**
-   * 获取游戏全局统计
+   * 获取游戏全局统计 (现在使用实时查询)
    */
-  async getGameAnalytics(): Promise<GameAnalytics | null> {
+  async getGameAnalytics(): Promise<any> {
     if (!this.supabase) {
       return null
     }
 
     try {
+      // 使用 game_stats 视图获取实时统计
       const { data, error } = await this.supabase
-        .from('game_analytics')
+        .from('game_stats')
         .select('*')
-        .eq('id', 1)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-        console.error('[GameDataManager] Error loading game analytics:', error)
+      if (error) {
+        console.error('[GameDataManager] Error loading game stats:', error)
         return null
       }
 
       if (!data) {
         // 返回默认值
         return {
-          id: 1,
           globalBestScore: 0,
           totalGamesPlayed: 0,
           totalHamstersWhacked: 0,
           totalPlayers: 0,
-          updatedAt: new Date().toISOString()
+          averageScore: 0,
+          todayGamesPlayed: 0
         }
       }
 
-      const analytics: GameAnalytics = {
-        id: data.id,
-        globalBestScore: data.global_best_score || 0,
-        totalGamesPlayed: data.total_games_played || 0,
-        totalHamstersWhacked: data.total_hamsters_whacked || 0,
-        totalPlayers: data.total_players || 0,
-        updatedAt: data.updated_at
-      }
-
-      console.log('[GameDataManager] ✅ Game analytics loaded:', analytics)
-      return analytics
+      console.log('[GameDataManager] ✅ Game stats loaded from view:', data)
+      return data
     } catch (error) {
       console.error('[GameDataManager] Error in getGameAnalytics:', error)
       return null
@@ -329,3 +272,4 @@ class GameDataManager {
 }
 
 export const gameDataManager = new GameDataManager()
+
