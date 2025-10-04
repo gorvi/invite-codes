@@ -13,10 +13,10 @@ export async function GET() {
     }
     
     return NextResponse.json({
-      globalBestScore: gameAnalytics.globalBestScore,
-      totalGamesPlayed: gameAnalytics.totalGamesPlayed,
-      totalHamstersWhacked: gameAnalytics.totalHamstersWhacked,
-      totalPlayers: gameAnalytics.totalPlayers,
+      globalBestScore: gameAnalytics.global_best_score || 0,
+      totalGamesPlayed: gameAnalytics.total_games_played || 0,
+      totalHamstersWhacked: gameAnalytics.total_hamsters_whacked || 0,
+      totalPlayers: gameAnalytics.total_players || 0,
     })
   } catch (error) {
     console.error('[GameStats API] Error:', error)
@@ -86,10 +86,10 @@ export async function POST(request: NextRequest) {
 
           return NextResponse.json({
             success: true,
-            globalBestScore: latestAnalytics?.globalBestScore || 0,
-            totalGamesPlayed: latestAnalytics?.totalGamesPlayed || 0,
-            totalHamstersWhacked: latestAnalytics?.totalHamstersWhacked || 0,
-            totalPlayers: latestAnalytics?.totalPlayers || 0,
+            globalBestScore: latestAnalytics?.global_best_score || 0,
+            totalGamesPlayed: latestAnalytics?.total_games_played || 0,
+            totalHamstersWhacked: latestAnalytics?.total_hamsters_whacked || 0,
+            totalPlayers: latestAnalytics?.total_players || 0,
             personalBestScore: updatedUserStats.personalBestScore,
             gameScoreId: gameScore.id
           })
