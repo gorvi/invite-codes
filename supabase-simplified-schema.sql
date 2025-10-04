@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS sora2_user_stats CASCADE;
 DROP TABLE IF EXISTS sora2_analytics CASCADE;
 DROP TABLE IF EXISTS sora2_invite_codes CASCADE;
 DROP TABLE IF EXISTS game_user_stats CASCADE;
-DROP TABLE IF EXISTS game_analytics CASCADE;
+-- DROP TABLE IF EXISTS game_analytics CASCADE; -- 不再需要
 DROP TABLE IF EXISTS game_scores CASCADE;
 
 -- ===============================================
@@ -89,17 +89,10 @@ CREATE TABLE game_scores (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. 游戏全局统计表（保留，因为游戏统计查询频率高）
-CREATE TABLE game_analytics (
-  id INTEGER PRIMARY KEY DEFAULT 1, -- 单行全局统计
-  global_best_score INTEGER DEFAULT 0,
-  total_games_played INTEGER DEFAULT 0,
-  total_hamsters_whacked INTEGER DEFAULT 0,
-  total_players INTEGER DEFAULT 0,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 6. 游戏全局统计表（删除，改为实时查询）
+-- CREATE TABLE game_analytics (...); -- 不再需要
 
--- 7. 用户游戏统计表
+-- 6. 用户游戏统计表
 CREATE TABLE game_user_stats (
   user_id VARCHAR(255) PRIMARY KEY,
   personal_best_score INTEGER DEFAULT 0,
@@ -113,10 +106,10 @@ CREATE TABLE game_user_stats (
 );
 
 -- ===============================================
--- 实时统计视图（替代 sora2_analytics 表）
+-- 实时统计视图（替代所有预聚合表）
 -- ===============================================
 
--- 创建实时统计视图
+-- Sora 2 实时统计视图
 CREATE OR REPLACE VIEW sora2_stats AS
 SELECT 
   (SELECT COUNT(*) FROM sora2_invite_codes WHERE status = 'active') as active_count,
@@ -131,6 +124,16 @@ SELECT
   (SELECT COALESCE(SUM(copy_clicks), 0) FROM sora2_daily_stats WHERE date = CURRENT_DATE) as today_copies,
   (SELECT COALESCE(SUM(worked_votes), 0) FROM sora2_daily_stats WHERE date = CURRENT_DATE) as today_worked_votes,
   (SELECT COALESCE(SUM(didnt_work_votes), 0) FROM sora2_daily_stats WHERE date = CURRENT_DATE) as today_didnt_work_votes;
+
+-- 游戏实时统计视图
+CREATE OR REPLACE VIEW game_stats AS
+SELECT 
+  (SELECT COALESCE(MAX(personal_best_score), 0) FROM game_user_stats) as global_best_score,
+  (SELECT COUNT(*) FROM game_scores) as total_games_played,
+  (SELECT COALESCE(SUM(hamsters_whacked), 0) FROM game_scores) as total_hamsters_whacked,
+  (SELECT COUNT(*) FROM game_user_stats) as total_players,
+  (SELECT COALESCE(AVG(score), 0) FROM game_scores) as average_score,
+  (SELECT COUNT(*) FROM game_scores WHERE created_at >= CURRENT_DATE) as today_games_played;
 
 -- ===============================================
 -- 索引优化
@@ -194,8 +197,8 @@ DROP POLICY IF EXISTS "Allow anonymous insert access" ON sora2_invite_codes;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON sora2_invite_codes;
 DROP POLICY IF EXISTS "Allow anonymous upsert access" ON game_user_stats;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON game_user_stats;
-DROP POLICY IF EXISTS "Allow anonymous update access" ON game_analytics;
-DROP POLICY IF EXISTS "Allow anonymous read access" ON game_analytics;
+-- DROP POLICY IF EXISTS "Allow anonymous update access" ON game_analytics; -- 不再需要
+-- DROP POLICY IF EXISTS "Allow anonymous read access" ON game_analytics; -- 不再需要
 DROP POLICY IF EXISTS "Allow anonymous insert access" ON game_scores;
 DROP POLICY IF EXISTS "Allow anonymous read access" ON game_scores;
 
@@ -227,10 +230,10 @@ ALTER TABLE game_scores ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow anonymous read access" ON game_scores FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous insert access" ON game_scores FOR INSERT WITH CHECK (true);
 
--- 游戏全局统计表 RLS
-ALTER TABLE game_analytics ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow anonymous read access" ON game_analytics FOR SELECT USING (true);
-CREATE POLICY "Allow anonymous update access" ON game_analytics FOR UPDATE USING (true);
+-- 游戏全局统计表 RLS (删除，改为实时查询)
+-- ALTER TABLE game_analytics ENABLE ROW LEVEL SECURITY; -- 不再需要
+-- CREATE POLICY "Allow anonymous read access" ON game_analytics FOR SELECT USING (true); -- 不再需要
+-- CREATE POLICY "Allow anonymous update access" ON game_analytics FOR UPDATE USING (true); -- 不再需要
 
 -- 用户游戏统计表 RLS
 ALTER TABLE game_user_stats ENABLE ROW LEVEL SECURITY;
@@ -241,10 +244,7 @@ CREATE POLICY "Allow anonymous upsert access" ON game_user_stats FOR ALL USING (
 -- 初始化数据
 -- ===============================================
 
--- 初始化游戏全局统计数据
-INSERT INTO game_analytics (id, global_best_score, total_games_played, total_hamsters_whacked, total_players)
-VALUES (1, 0, 0, 0, 0)
-ON CONFLICT (id) DO NOTHING;
+-- 不再需要初始化预聚合表，因为使用实时查询
 
 -- ===============================================
 -- 示例查询
@@ -264,8 +264,8 @@ ON CONFLICT (id) DO NOTHING;
 -- 获取邀请码统计（活跃状态）
 -- SELECT COUNT(*) as active_count FROM sora2_invite_codes WHERE status = 'active';
 
--- 获取游戏全局统计数据
--- SELECT * FROM game_analytics WHERE id = 1;
+-- 获取游戏实时统计数据
+-- SELECT * FROM game_stats;
 
 -- 获取游戏排行榜（前10名）
 -- SELECT user_id, personal_best_score, total_games_played 
@@ -293,8 +293,8 @@ Sora 2 邀请码业务表 (简化版):
 
 打地鼠游戏业务表:
 - game_scores: 游戏分数表，存储每次游戏的具体记录
-- game_analytics: 游戏全局统计表，存储游戏的汇总数据（保留，因为游戏统计查询频率高）
 - game_user_stats: 用户游戏统计表，存储每个用户的游戏统计
+- game_stats: 游戏实时统计视图，替代原来的 game_analytics 表
 
 设计原则:
 1. 业务分离: Sora 2 和游戏业务完全独立
