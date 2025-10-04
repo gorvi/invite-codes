@@ -55,17 +55,17 @@ export class SupabaseAdapter {
           id: code.id,
           code: code.code,
           created_at: code.createdAt,
-          is_active: code.isActive,
+          is_active: code.status === 'active',
           submitter_name: code.submitterName,
-          copy_count: code.copyCount,
-          worked_votes: code.workedVotes,
-          didnt_work_votes: code.didntWorkVotes,
-          unique_copied_count: code.uniqueCopiedCount,
-          unique_worked_count: code.uniqueWorkedCount,
-          unique_didnt_work_count: code.uniqueDidntWorkCount,
-          worked_user_ids: code.workedUserIds,
-          didnt_work_user_ids: code.didntWorkUserIds,
-          copied_user_ids: code.copiedUserIds
+          copy_count: code.copiedCount || 0,
+          worked_votes: code.votes.worked,
+          didnt_work_votes: code.votes.didntWork,
+          unique_copied_count: code.uniqueCopiedCount || 0,
+          unique_worked_count: code.votes.uniqueWorked,
+          unique_didnt_work_count: code.votes.uniqueDidntWork,
+          worked_user_ids: [],
+          didnt_work_user_ids: [],
+          copied_user_ids: []
         })))
 
       if (insertError) {
@@ -103,18 +103,16 @@ export class SupabaseAdapter {
       const codes: InviteCode[] = (data || []).map((row: any) => ({
         id: row.id,
         code: row.code,
-        createdAt: row.created_at,
-        isActive: row.is_active,
-        submitterName: row.submitter_name,
-        copyCount: row.copy_count || 0,
-        workedVotes: row.worked_votes || 0,
-        didntWorkVotes: row.didnt_work_votes || 0,
-        uniqueCopiedCount: row.unique_copied_count || 0,
-        uniqueWorkedCount: row.unique_worked_count || 0,
-        uniqueDidntWorkCount: row.unique_didnt_work_count || 0,
-        workedUserIds: row.worked_user_ids || [],
-        didntWorkUserIds: row.didnt_work_user_ids || [],
-        copiedUserIds: row.copied_user_ids || []
+        createdAt: new Date(row.created_at),
+        status: row.is_active ? 'active' : 'invalid',
+        votes: {
+          worked: row.worked_votes || 0,
+          didntWork: row.didnt_work_votes || 0,
+          uniqueWorked: row.unique_worked_count || 0,
+          uniqueDidntWork: row.unique_didnt_work_count || 0
+        },
+        copiedCount: row.copy_count || 0,
+        uniqueCopiedCount: row.unique_copied_count || 0
       }))
 
       console.log(`[Supabase] Successfully loaded ${codes.length} invite codes`)
