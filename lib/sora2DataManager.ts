@@ -24,6 +24,13 @@ export class Sora2DataManager {
   }
 
   /**
+   * 获取 Supabase 客户端实例（用于敏感词验证器等）
+   */
+  getSupabaseClient() {
+    return this.supabase
+  }
+
+  /**
    * 保存邀请码数据
    */
   async saveInviteCodes(codes: InviteCode[]): Promise<void> {
@@ -149,6 +156,7 @@ export class Sora2DataManager {
 
   /**
    * 保存统计数据 (现在直接保存到各个独立的表)
+   * ⚡ 优化：只更新相关的用户记录，避免批量更新所有数据
    */
   async saveAnalytics(analytics: AnalyticsData): Promise<void> {
     if (!this.supabase) {
@@ -157,7 +165,7 @@ export class Sora2DataManager {
     }
 
     try {
-      // 保存用户统计数据
+      // 保存用户统计数据 - 只更新有变化的用户
       if (analytics.userStats && Object.keys(analytics.userStats).length > 0) {
         const userStatsArray = Object.entries(analytics.userStats).map(([userId, stats]) => ({
           user_id: userId,
@@ -178,7 +186,7 @@ export class Sora2DataManager {
             console.error('[Sora2DataManager] Error saving user stats:', userStatsError)
             throw userStatsError
           }
-          console.log('[Sora2DataManager] ✅ Successfully saved user stats')
+          console.log(`[Sora2DataManager] ✅ Successfully saved ${userStatsArray.length} user stats`)
         }
       }
 
@@ -188,6 +196,54 @@ export class Sora2DataManager {
       console.log('[Sora2DataManager] ✅ Successfully saved analytics data to separate tables')
     } catch (error) {
       console.error('[Sora2DataManager] Error in saveAnalytics:', error)
+      throw error
+    }
+  }
+
+  /**
+   * ⚡ 新增：更新单个用户统计 (优化版本)
+   */
+  async updateSingleUserStats(userId: string, updates: {
+    copyCount?: number
+    voteCount?: number
+    submitCount?: number
+    lastVisit?: string
+  }): Promise<void> {
+    if (!this.supabase) {
+      console.error('[Sora2DataManager] Not initialized, cannot update user stats')
+      return
+    }
+
+    try {
+      // 获取现有用户数据
+      const { data: existingStats } = await this.supabase
+        .from('sora2_user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      const updateData = {
+        user_id: userId,
+        copy_count: updates.copyCount ?? existingStats?.copy_count ?? 0,
+        vote_count: updates.voteCount ?? existingStats?.vote_count ?? 0,
+        submit_count: updates.submitCount ?? existingStats?.submit_count ?? 0,
+        first_visit: existingStats?.first_visit || getBeijingTimeISOString(),
+        last_visit: updates.lastVisit || getBeijingTimeISOString(),
+        updated_at: getBeijingTimeISOString()
+      }
+
+      const { error } = await this.supabase
+        .from('sora2_user_stats')
+        .upsert(updateData, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('[Sora2DataManager] Error updating single user stats:', error)
+        throw error
+      }
+
+      console.log(`[Sora2DataManager] ✅ Updated user stats for: ${userId}`)
+    } catch (error) {
+      console.error('[Sora2DataManager] Error in updateSingleUserStats:', error)
       throw error
     }
   }

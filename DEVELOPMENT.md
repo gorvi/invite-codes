@@ -51,6 +51,37 @@ sora2-invite-code/
 - 生产环境使用 Vercel KV (Upstash Redis)
 - 开发环境使用本地文件存储
 
+### 数据库更新优化原则 ⚡
+**核心规则：只更新相关的用户或记录，避免批量更新所有数据**
+
+#### 更新策略
+- ✅ **精确更新**: 只更新发生变化的特定用户记录
+- ✅ **单用户操作**: 用户操作只影响自己的统计数据
+- ✅ **增量更新**: 使用 `upsert` 只更新必要的字段
+- ❌ **避免批量更新**: 不要因为单个用户操作而更新所有用户数据
+- ❌ **避免全局刷新**: 不要重置或重新计算整个数据集
+
+#### 具体实现
+```typescript
+// ✅ 正确：只更新特定用户
+await supabase
+  .from('sora2_user_stats')
+  .upsert({
+    user_id: userId,
+    copy_count: newCopyCount,
+    updated_at: getBeijingTimeISOString()
+  }, { onConflict: 'user_id' })
+
+// ❌ 错误：批量更新所有用户
+await supabase
+  .from('sora2_user_stats')
+  .upsert(allUserStats) // 包含所有用户数据
+```
+
+#### 性能影响
+- **优化前**: 每次操作更新所有用户 → 高数据库负载
+- **优化后**: 每次操作只更新相关用户 → 低数据库负载，更好的并发性能
+
 ## 🔧 环境配置
 
 ### 开发环境

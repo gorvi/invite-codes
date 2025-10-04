@@ -73,12 +73,26 @@ This is a Next.js 14 application for sharing Sora 2 invite codes. The project us
 - Implement rate limiting for API endpoints
 - Sanitize data before storing in database
 
+### Content Filtering Rules 🔒
+- **Sensitive Word Filtering**: All user-submitted invite codes must be validated against sensitive word database
+- **Spam Detection**: Implement pattern-based spam detection for repetitive characters, sequential numbers, etc.
+- **Content Validation**: Use `SensitiveWordValidator` class for all user input validation
+- **Rejection Handling**: Provide clear feedback when content is rejected due to sensitive words
+- **Database Integration**: Store and manage sensitive words in `sensitive_words` table
+
 ## Performance Guidelines
 - Use Next.js Image optimization
 - Implement proper caching strategies
 - Minimize bundle size with dynamic imports
 - Use React.memo for expensive components
 - Optimize database queries and storage operations
+
+### Database Performance Optimization
+- **Single User Updates**: Always update only the specific user record, never all users
+- **Incremental Updates**: Use field-level updates instead of full record replacement
+- **Avoid Bulk Operations**: Prevent unnecessary bulk updates that cause high database load
+- **Concurrent Safety**: Use database-level upsert operations for data consistency
+- **Resource Efficiency**: Minimize database writes and network transfers
 
 ## SEO and Accessibility
 - Use semantic HTML elements
@@ -113,6 +127,37 @@ This is a Next.js 14 application for sharing Sora 2 invite codes. The project us
 - Implement proper data serialization/deserialization
 - Use retry mechanisms for network operations
 - Implement proper data validation
+
+### Database Update Optimization Rules ⚡
+**CRITICAL: Only update relevant users/records, avoid bulk updates of all data**
+
+#### Update Strategy
+- ✅ **Precise Updates**: Only update specific user records that have changed
+- ✅ **Single User Operations**: User actions only affect their own statistics
+- ✅ **Incremental Updates**: Use `upsert` to update only necessary fields
+- ❌ **Avoid Bulk Updates**: Never update all user data due to single user actions
+- ❌ **Avoid Global Refresh**: Never reset or recalculate entire datasets
+
+#### Implementation Examples
+```typescript
+// ✅ CORRECT: Update only specific user
+await supabase
+  .from('sora2_user_stats')
+  .upsert({
+    user_id: userId,
+    copy_count: newCopyCount,
+    updated_at: getBeijingTimeISOString()
+  }, { onConflict: 'user_id' })
+
+// ❌ WRONG: Bulk update all users
+await supabase
+  .from('sora2_user_stats')
+  .upsert(allUserStats) // Contains all user data
+```
+
+#### Performance Impact
+- **Before**: Each operation updates all users → High database load
+- **After**: Each operation updates only relevant users → Low database load, better concurrency
 
 ## Code Comments
 - Use Chinese comments for business logic explanations

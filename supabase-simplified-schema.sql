@@ -106,6 +106,17 @@ CREATE TABLE game_scores (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 6. 敏感词表（用于屏蔽不合规的邀请码）
+CREATE TABLE sensitive_words (
+  id SERIAL PRIMARY KEY,
+  word VARCHAR(255) NOT NULL UNIQUE,
+  word_type VARCHAR(50) DEFAULT 'general', -- 'general', 'spam', 'inappropriate', 'fake'
+  severity_level INTEGER DEFAULT 1, -- 1-5, 5为最严重
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 6. 游戏全局统计表（删除，改为实时查询）
 -- CREATE TABLE game_analytics (...); -- 不再需要
 
@@ -201,6 +212,12 @@ CREATE INDEX idx_game_scores_created_at ON game_scores(created_at);
 CREATE INDEX idx_game_user_stats_personal_best_score ON game_user_stats(personal_best_score DESC);
 CREATE INDEX idx_game_user_stats_last_play_at ON game_user_stats(last_play_at);
 
+-- 敏感词表索引
+CREATE INDEX idx_sensitive_words_word ON sensitive_words(word);
+CREATE INDEX idx_sensitive_words_type ON sensitive_words(word_type);
+CREATE INDEX idx_sensitive_words_active ON sensitive_words(is_active);
+CREATE INDEX idx_sensitive_words_severity ON sensitive_words(severity_level);
+
 -- ===============================================
 -- 行级安全策略 (RLS)
 -- ===============================================
@@ -256,9 +273,89 @@ ALTER TABLE game_user_stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow anonymous read access" ON game_user_stats FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous upsert access" ON game_user_stats FOR ALL USING (true);
 
+-- 敏感词表 RLS
+ALTER TABLE sensitive_words ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous read access" ON sensitive_words FOR SELECT USING (true);
+CREATE POLICY "Allow anonymous upsert access" ON sensitive_words FOR ALL USING (true);
+
 -- ===============================================
 -- 初始化数据
 -- ===============================================
+
+-- 插入敏感词数据
+INSERT INTO sensitive_words (word, word_type, severity_level, is_active) VALUES
+-- 通用垃圾词汇
+('test', 'spam', 1, true),
+('test123', 'spam', 1, true),
+('123456', 'spam', 1, true),
+('password', 'spam', 1, true),
+('admin', 'spam', 1, true),
+('user', 'spam', 1, true),
+('guest', 'spam', 1, true),
+('demo', 'spam', 1, true),
+('sample', 'spam', 1, true),
+('example', 'spam', 1, true),
+
+-- 虚假邀请码模式
+('fake', 'fake', 3, true),
+('invalid', 'fake', 3, true),
+('expired', 'fake', 3, true),
+('used', 'fake', 3, true),
+('old', 'fake', 2, true),
+('bad', 'fake', 2, true),
+('wrong', 'fake', 2, true),
+('error', 'fake', 2, true),
+
+-- 不当内容
+('spam', 'inappropriate', 2, true),
+('scam', 'inappropriate', 4, true),
+('fraud', 'inappropriate', 4, true),
+('phishing', 'inappropriate', 4, true),
+('virus', 'inappropriate', 4, true),
+('malware', 'inappropriate', 4, true),
+('hack', 'inappropriate', 3, true),
+('crack', 'inappropriate', 3, true),
+
+-- 商业推广词汇
+('buy', 'spam', 2, true),
+('sell', 'spam', 2, true),
+('free', 'spam', 1, true),
+('discount', 'spam', 2, true),
+('offer', 'spam', 2, true),
+('deal', 'spam', 2, true),
+('promo', 'spam', 2, true),
+('coupon', 'spam', 2, true),
+('sale', 'spam', 2, true),
+
+-- 常见垃圾字符组合
+('aaaa', 'spam', 1, true),
+('bbbb', 'spam', 1, true),
+('cccc', 'spam', 1, true),
+('dddd', 'spam', 1, true),
+('eeee', 'spam', 1, true),
+('ffff', 'spam', 1, true),
+('1111', 'spam', 1, true),
+('2222', 'spam', 1, true),
+('3333', 'spam', 1, true),
+('4444', 'spam', 1, true),
+('5555', 'spam', 1, true),
+('6666', 'spam', 1, true),
+('7777', 'spam', 1, true),
+('8888', 'spam', 1, true),
+('9999', 'spam', 1, true),
+('0000', 'spam', 1, true),
+
+-- 恶意模式
+('virus', 'inappropriate', 5, true),
+('trojan', 'inappropriate', 5, true),
+('worm', 'inappropriate', 5, true),
+('backdoor', 'inappropriate', 5, true),
+('keylog', 'inappropriate', 5, true),
+('steal', 'inappropriate', 4, true),
+('stealer', 'inappropriate', 4, true),
+('rat', 'inappropriate', 4, true),
+('botnet', 'inappropriate', 5, true),
+('ddos', 'inappropriate', 4, true);
 
 -- 不再需要初始化预聚合表，因为使用实时查询
 

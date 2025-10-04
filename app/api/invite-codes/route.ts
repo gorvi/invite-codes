@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeData, inviteCodes, addInviteCode } from '@/lib/data'
+import { sensitiveWordValidator } from '@/lib/sensitiveWordValidator'
 
 export async function GET() {
   try {
@@ -25,6 +26,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     if (!code || typeof code !== 'string') {
       return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 })
+    }
+
+    // 🔒 敏感词验证
+    const validation = await sensitiveWordValidator.validateInviteCode(code)
+    if (!validation.isValid) {
+      console.log(`[InviteCode] ❌ Rejected invite code "${code}": ${validation.reason}`)
+      return NextResponse.json({ 
+        error: '邀请码包含不当内容，请提交有效的 Sora 2 邀请码',
+        reason: validation.reason,
+        matchedWords: validation.matchedWords
+      }, { status: 400 })
     }
 
     // 检查是否已存在相同的邀请码

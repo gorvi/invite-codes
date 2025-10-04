@@ -96,6 +96,7 @@ class GameDataManager {
 
   /**
    * 更新用户游戏统计
+   * ⚡ 优化：只更新特定用户，避免批量更新所有用户
    */
   async updateUserStats(userId: string, updates: Partial<GameUserStats>): Promise<GameUserStats | null> {
     if (!this.supabase) {
@@ -104,18 +105,20 @@ class GameDataManager {
     }
 
     try {
+      // 获取现有用户数据
       const { data: existingStats } = await this.supabase
         .from('game_user_stats')
         .select('*')
         .eq('user_id', userId)
         .single()
 
+      // 只更新传入的字段，保持其他字段不变
       const updateData = {
         user_id: userId,
-        personal_best_score: updates.personalBestScore,
-        total_games_played: updates.totalGamesPlayed,
-        total_hamsters_whacked: updates.totalHamstersWhacked,
-        total_play_time: updates.totalPlayTime,
+        personal_best_score: updates.personalBestScore ?? existingStats?.personal_best_score ?? 0,
+        total_games_played: updates.totalGamesPlayed ?? existingStats?.total_games_played ?? 0,
+        total_hamsters_whacked: updates.totalHamstersWhacked ?? existingStats?.total_hamsters_whacked ?? 0,
+        total_play_time: updates.totalPlayTime ?? existingStats?.total_play_time ?? 0,
         first_play_at: existingStats?.first_play_at || getBeijingTimeISOString(),
         last_play_at: getBeijingTimeISOString()
       }
@@ -142,7 +145,7 @@ class GameDataManager {
         lastPlayAt: data.last_play_at
       }
 
-      console.log('[GameDataManager] ✅ User stats updated for user:', userId, result)
+      console.log(`[GameDataManager] ✅ Updated user stats for: ${userId}`, result)
       return result
     } catch (error) {
       console.error('[GameDataManager] Error in updateUserStats:', error)

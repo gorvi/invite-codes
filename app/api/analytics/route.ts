@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeData, analyticsData, inviteCodes, saveData, getTodayString, getCurrentTimestamp } from '@/lib/data'
+import { sora2DataManager } from '@/lib/sora2DataManager'
 import { checkDataConsistency, logConsistencyIssue } from '@/lib/dataConsistency'
 
 export async function GET() {
@@ -207,10 +208,22 @@ export async function POST(request: NextRequest) {
         console.warn('Unknown analytics action:', action)
     }
 
-    // 保存数据到持久化存储
+    // ⚡ 优化：使用单用户更新方法，避免批量更新所有数据
     try {
-      await saveData()
-      console.log('[Analytics] Saved analytics data to storage')
+      if (action === 'copy' || action === 'vote_worked' || action === 'vote_didntWork' || action === 'submit') {
+        // 只更新当前用户的统计，不保存整个 analyticsData
+        await sora2DataManager.updateSingleUserStats(userIdentifier, {
+          copyCount: analyticsData.userStats[userIdentifier].copyCount,
+          voteCount: analyticsData.userStats[userIdentifier].voteCount,
+          submitCount: analyticsData.userStats[userIdentifier].submitCount,
+          lastVisit: timestamp
+        })
+        console.log(`[Analytics] ⚡ Updated single user stats for: ${userIdentifier}`)
+      } else {
+        // 对于其他操作，仍然保存完整数据
+        await saveData()
+        console.log('[Analytics] Saved analytics data to storage')
+      }
     } catch (error) {
       console.error('[Analytics] Failed to save analytics data:', error)
     }
