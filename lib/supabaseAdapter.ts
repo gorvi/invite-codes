@@ -136,11 +136,13 @@ export class SupabaseAdapter {
         .from('analytics')
         .upsert({
           id: 1, // 使用固定 ID 存储全局统计数据
-          global_best_score: analytics.globalBestScore,
-          total_submit_count: analytics.totalSubmitCount,
-          total_copy_clicks: analytics.totalCopyClicks,
-          total_worked_votes: analytics.totalWorkedVotes,
-          total_didnt_work_votes: analytics.totalDidntWorkVotes,
+          global_best_score: analytics.gameStats.globalBestScore,
+          total_submit_count: analytics.submitCount,
+          total_copy_clicks: analytics.copyClicks,
+          total_worked_votes: analytics.workedVotes,
+          total_didnt_work_votes: analytics.didntWorkVotes,
+          total_games_played: analytics.gameStats.totalGamesPlayed,
+          total_hamsters_whacked: analytics.gameStats.totalHamstersWhacked,
           daily_stats: analytics.dailyStats,
           user_stats: analytics.userStats,
           updated_at: new Date().toISOString()
@@ -184,13 +186,21 @@ export class SupabaseAdapter {
       }
 
       const analytics: AnalyticsData = {
-        globalBestScore: data.global_best_score || 0,
-        totalSubmitCount: data.total_submit_count || 0,
-        totalCopyClicks: data.total_copy_clicks || 0,
-        totalWorkedVotes: data.total_worked_votes || 0,
-        totalDidntWorkVotes: data.total_didnt_work_votes || 0,
+        totalClicks: 0, // 计算得出
+        copyClicks: data.total_copy_clicks || 0,
+        workedVotes: data.total_worked_votes || 0,
+        didntWorkVotes: data.total_didnt_work_votes || 0,
+        submitCount: data.total_submit_count || 0,
+        gameStats: {
+          globalBestScore: data.global_best_score || 0,
+          totalGamesPlayed: data.total_games_played || 0,
+          totalHamstersWhacked: data.total_hamsters_whacked || 0
+        },
         dailyStats: data.daily_stats || {},
-        userStats: data.user_stats || {}
+        inviteCodeStats: {}, // 从 dailyStats 计算得出
+        userStats: data.user_stats || {},
+        uniqueCopyStats: {},
+        uniqueVoteStats: {}
       }
 
       console.log('[Supabase] Successfully loaded analytics data')

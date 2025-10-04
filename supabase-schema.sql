@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS analytics (
   total_copy_clicks INTEGER DEFAULT 0,
   total_worked_votes INTEGER DEFAULT 0,
   total_didnt_work_votes INTEGER DEFAULT 0,
+  total_games_played INTEGER DEFAULT 0,
+  total_hamsters_whacked INTEGER DEFAULT 0,
   daily_stats JSONB DEFAULT '{}'::jsonb,
   user_stats JSONB DEFAULT '{}'::jsonb,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
