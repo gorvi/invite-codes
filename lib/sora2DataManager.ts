@@ -32,23 +32,13 @@ export class Sora2DataManager {
     }
 
     try {
-      // 先删除所有现有数据
-      const { error: deleteError } = await this.supabase
+      // 使用 upsert 来更新或插入数据，避免数据丢失
+      const { error: upsertError } = await this.supabase
         .from('sora2_invite_codes')
-        .delete()
-        .neq('id', '') // 删除所有记录
-
-      if (deleteError) {
-        console.error('[Sora2DataManager] Error deleting existing codes:', deleteError)
-      }
-
-      // 插入新数据
-      const { error: insertError } = await this.supabase
-        .from('sora2_invite_codes')
-        .insert(codes.map(code => ({
+        .upsert(codes.map(code => ({
           id: code.id,
           code: code.code,
-          created_at: code.createdAt,
+          created_at: code.createdAt.toISOString(),
           status: code.status,
           submitter_name: null,
           copy_count: code.copiedCount || 0,
@@ -60,14 +50,16 @@ export class Sora2DataManager {
           worked_user_ids: [],
           didnt_work_user_ids: [],
           copied_user_ids: []
-        })))
+        })), {
+          onConflict: 'id' // 根据 id 字段处理冲突
+        })
 
-      if (insertError) {
-        console.error('[Sora2DataManager] Error saving invite codes:', insertError)
-        throw insertError
+      if (upsertError) {
+        console.error('[Sora2DataManager] Error upserting invite codes:', upsertError)
+        throw upsertError
       }
 
-      console.log(`[Sora2DataManager] ✅ Successfully saved ${codes.length} invite codes`)
+      console.log(`[Sora2DataManager] ✅ Successfully upserted ${codes.length} invite codes`)
     } catch (error) {
       console.error('[Sora2DataManager] Error in saveInviteCodes:', error)
       throw error
