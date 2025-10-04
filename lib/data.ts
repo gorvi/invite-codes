@@ -1,8 +1,8 @@
 /**
- * 数据管理模块 - 使用新的持久化管理器
+ * 数据管理模块 - 统一使用 Supabase 存储
  */
 
-import { persistenceManager } from './persistence'
+import { supabasePersistence } from './supabasePersistence'
 
 export interface InviteCode {
   id: string
@@ -103,10 +103,10 @@ export async function initializeData(): Promise<void> {
     console.log('NODE_ENV:', process.env.NODE_ENV || 'undefined')
     console.log('VERCEL_URL:', process.env.VERCEL_URL || 'undefined')
     
-    console.log(`[DATA] Initializing data with storage type: ${persistenceManager.getStorageType()}`)
+    console.log(`[DATA] Initializing data with storage type: ${supabasePersistence.getStorageType()}`)
     
     // 加载邀请码数据 - 添加数据一致性检查
-    const loadedCodes = await persistenceManager.loadInviteCodes()
+    const loadedCodes = await supabasePersistence.loadInviteCodes()
     inviteCodes = loadedCodes
     
     // 数据一致性检查
@@ -124,7 +124,7 @@ export async function initializeData(): Promise<void> {
     }
     
     // 加载分析数据
-    const loadedAnalytics = await persistenceManager.loadAnalytics()
+    const loadedAnalytics = await supabasePersistence.loadAnalytics()
     if (loadedAnalytics) {
       Object.assign(analyticsData, loadedAnalytics)
       console.log('[DATA] Loaded analytics data')
@@ -149,8 +149,8 @@ export async function saveData(): Promise<void> {
 
   try {
     await Promise.all([
-      persistenceManager.saveInviteCodes(inviteCodes),
-      persistenceManager.saveAnalytics(analyticsData)
+      supabasePersistence.saveInviteCodes(inviteCodes),
+      supabasePersistence.saveAnalytics(analyticsData)
     ])
     console.log('[DATA] Data saved successfully')
   } catch (error) {

@@ -1,32 +1,24 @@
 /**
- * Supabase 数据库适配器
- * 用于替换 Upstash Redis，提供免费的数据持久化
+ * Supabase 持久化管理器 - 统一存储解决方案
+ * 所有环境（本地、dev、生产）都使用 Supabase
  */
 
 import { createClient } from '@supabase/supabase-js'
 import { InviteCode, AnalyticsData } from './data'
 
-// Supabase 客户端配置
-const supabaseUrl = process.env.SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn('[Supabase] Missing environment variables, falling back to local storage')
-}
-
-export class SupabaseAdapter {
+export class SupabasePersistenceManager {
   private supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null
 
   constructor() {
     if (this.supabase) {
-      console.log('[Supabase] Initialized successfully')
+      console.log('[Supabase] ✅ Initialized successfully')
     } else {
-      console.warn('[Supabase] Failed to initialize, using local storage')
+      console.error('[Supabase] ❌ Failed to initialize - missing environment variables')
+      console.error('Required: SUPABASE_URL and SUPABASE_ANON_KEY')
     }
-  }
-
-  getStorageType(): string {
-    return 'supabase'
   }
 
   /**
@@ -34,18 +26,20 @@ export class SupabaseAdapter {
    */
   async saveInviteCodes(codes: InviteCode[]): Promise<void> {
     if (!this.supabase) {
-      throw new Error('Supabase not initialized')
+      console.error('[Supabase] Not initialized, cannot save invite codes')
+      return
     }
 
     try {
-      // 先清空现有数据，然后插入新数据
+      // 先删除所有现有数据
       const { error: deleteError } = await this.supabase
         .from('invite_codes')
         .delete()
-        .neq('id', 0) // 删除所有记录
+        .neq('id', '') // 删除所有记录
 
       if (deleteError) {
-        console.error('[Supabase] Error deleting invite codes:', deleteError)
+        console.error('[Supabase] Error deleting existing invite codes:', deleteError)
+        throw deleteError
       }
 
       // 插入新数据
@@ -73,7 +67,7 @@ export class SupabaseAdapter {
         throw insertError
       }
 
-      console.log(`[Supabase] Successfully saved ${codes.length} invite codes`)
+      console.log(`[Supabase] ✅ Successfully saved ${codes.length} invite codes`)
     } catch (error) {
       console.error('[Supabase] Error in saveInviteCodes:', error)
       throw error
@@ -85,6 +79,7 @@ export class SupabaseAdapter {
    */
   async loadInviteCodes(): Promise<InviteCode[]> {
     if (!this.supabase) {
+      console.error('[Supabase] Not initialized, cannot load invite codes')
       return []
     }
 
@@ -92,11 +87,10 @@ export class SupabaseAdapter {
       const { data, error } = await this.supabase
         .from('invite_codes')
         .select('*')
-        .order('created_at', { ascending: false })
 
       if (error) {
         console.error('[Supabase] Error loading invite codes:', error)
-        return []
+        throw error
       }
 
       // 转换数据格式
@@ -115,7 +109,7 @@ export class SupabaseAdapter {
         uniqueCopiedCount: row.unique_copied_count || 0
       }))
 
-      console.log(`[Supabase] Successfully loaded ${codes.length} invite codes`)
+      console.log(`[Supabase] ✅ Successfully loaded ${codes.length} invite codes`)
       return codes
     } catch (error) {
       console.error('[Supabase] Error in loadInviteCodes:', error)
@@ -128,7 +122,8 @@ export class SupabaseAdapter {
    */
   async saveAnalytics(analytics: AnalyticsData): Promise<void> {
     if (!this.supabase) {
-      throw new Error('Supabase not initialized')
+      console.error('[Supabase] Not initialized, cannot save analytics')
+      return
     }
 
     try {
@@ -153,7 +148,7 @@ export class SupabaseAdapter {
         throw error
       }
 
-      console.log('[Supabase] Successfully saved analytics data')
+      console.log('[Supabase] ✅ Successfully saved analytics data')
     } catch (error) {
       console.error('[Supabase] Error in saveAnalytics:', error)
       throw error
@@ -165,6 +160,7 @@ export class SupabaseAdapter {
    */
   async loadAnalytics(): Promise<AnalyticsData | null> {
     if (!this.supabase) {
+      console.error('[Supabase] Not initialized, cannot load analytics')
       return null
     }
 
@@ -203,11 +199,21 @@ export class SupabaseAdapter {
         uniqueVoteStats: {}
       }
 
-      console.log('[Supabase] Successfully loaded analytics data')
+      console.log('[Supabase] ✅ Successfully loaded analytics data')
       return analytics
     } catch (error) {
       console.error('[Supabase] Error in loadAnalytics:', error)
       return null
     }
   }
+
+  /**
+   * 获取存储类型
+   */
+  getStorageType(): string {
+    return 'supabase'
+  }
 }
+
+// 创建全局实例
+export const supabasePersistence = new SupabasePersistenceManager()
