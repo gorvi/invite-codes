@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS invite_codes (
   code VARCHAR(255) UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   is_active BOOLEAN DEFAULT true,
-  submitter_name VARCHAR(255),
+  submitter_name VARCHAR(255) DEFAULT NULL,
   copy_count INTEGER DEFAULT 0,
   worked_votes INTEGER DEFAULT 0,
   didnt_work_votes INTEGER DEFAULT 0,

@@ -56,7 +56,7 @@ export class SupabaseAdapter {
           code: code.code,
           created_at: code.createdAt,
           is_active: code.status === 'active',
-          submitter_name: code.submitterName,
+          submitter_name: null, // InviteCode 接口中没有这个字段
           copy_count: code.copiedCount || 0,
           worked_votes: code.votes.worked,
           didnt_work_votes: code.votes.didntWork,
