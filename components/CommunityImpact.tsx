@@ -7,6 +7,7 @@ import { dataManager, GlobalData } from '@/lib/dataManager'
 export default function CommunityImpact() {
   const [totalSubmissions, setTotalSubmissions] = useState<number>(0)
   const [totalCodes, setTotalCodes] = useState<number>(0)
+  const [activeCodes, setActiveCodes] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -14,10 +15,12 @@ export default function CommunityImpact() {
     const handleDataUpdate = (data: GlobalData) => {
       console.log('[CommunityImpact] Data updated via DataManager:', {
         submitCount: data.submitCount,
-        totalCodeCount: data.totalCodeCount
+        totalCodeCount: data.totalCodeCount,
+        activeCodeCount: data.activeCodeCount
       })
       setTotalSubmissions(data.submitCount)
-      setTotalCodes(data.totalCodeCount)
+      setTotalCodes(data.totalCodeCount) // 所有代码数量（包括活跃、已使用、无效）
+      setActiveCodes(data.activeCodeCount) // 活跃代码数量
       setLoading(false)
     }
 
@@ -68,13 +71,11 @@ export default function CommunityImpact() {
         <div className="flex items-center justify-center mb-4">
           <Gift className="h-16 w-16 text-blue-600" />
         </div>
-        <p className="text-4xl font-bold text-blue-600 mb-2">{totalSubmissions}</p>
-        <p className="text-lg text-gray-600">Total Codes Submitted</p>
-        {totalCodes !== totalSubmissions && (
-          <p className="text-sm text-gray-500 mt-2">
-            ({totalCodes} codes currently in database)
-          </p>
-        )}
+        <p className="text-4xl font-bold text-blue-600 mb-2">{totalCodes}</p>
+        <p className="text-lg text-gray-600">Total Sora 2 Codes</p>
+        <p className="text-sm text-gray-500 mt-2">
+          ({activeCodes} active, {totalCodes - activeCodes} used/invalid)
+        </p>
       </div>
 
       {/* Community impact description */}
