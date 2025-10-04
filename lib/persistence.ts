@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { InviteCode, AnalyticsData } from '@/lib/data'
+import { SupabaseAdapter } from './supabaseAdapter'
 
 export interface StorageAdapter {
   saveInviteCodes(codes: InviteCode[]): Promise<void>
@@ -480,9 +481,14 @@ export class PersistenceManager {
 
   constructor() {
     // 根据环境选择存储适配器
-    if (typeof window === 'undefined' && (process.env.VERCEL === '1' || process.env.KV_REST_API_URL)) {
+    if (typeof window === 'undefined' && (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)) {
+      // 优先使用 Supabase
+      this.adapter = new SupabaseAdapter()
+    } else if (typeof window === 'undefined' && (process.env.VERCEL === '1' || process.env.KV_REST_API_URL)) {
+      // 其次使用 Vercel KV
       this.adapter = new VercelKVAdapter()
     } else {
+      // 最后使用本地文件
       this.adapter = new LocalFileAdapter()
     }
     
