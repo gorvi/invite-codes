@@ -9,9 +9,18 @@ interface InviteCodeDisplayProps {
   onCopy: (code: string, codeId: string) => Promise<void>
 }
 
+// 乐观更新的本地状态接口
+interface OptimisticUpdate {
+  codeId: string
+  type: 'copy' | 'worked' | 'didntWork'
+  originalValue: number
+  optimisticValue: number
+}
+
 export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeDisplayProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [lastClickTimes, setLastClickTimes] = useState<{[key: string]: number}>({})
+  const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const copyDetectionRef = useRef<CopyDetection | null>(null)
 
   const canClick = (buttonKey: string): boolean => {
@@ -27,6 +36,47 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
 
   const updateClickTime = (buttonKey: string) => {
     setLastClickTimes(prev => ({ ...prev, [buttonKey]: Date.now() }))
+  }
+
+  // 获取显示的数字（考虑乐观更新）
+  const getDisplayValue = (code: InviteCode, type: 'copy' | 'worked' | 'didntWork'): number => {
+    const optimisticUpdate = optimisticUpdates.find(update => 
+      update.codeId === code.id && update.type === type
+    )
+    
+    if (optimisticUpdate) {
+      return optimisticUpdate.optimisticValue
+    }
+    
+    switch (type) {
+      case 'copy':
+        return code.uniqueCopiedCount || 0
+      case 'worked':
+        return code.votes.uniqueWorked
+      case 'didntWork':
+        return code.votes.uniqueDidntWork
+      default:
+        return 0
+    }
+  }
+
+  // 应用乐观更新
+  const applyOptimisticUpdate = (codeId: string, type: 'copy' | 'worked' | 'didntWork', originalValue: number) => {
+    const optimisticValue = originalValue + 1
+    
+    setOptimisticUpdates(prev => [
+      ...prev.filter(update => !(update.codeId === codeId && update.type === type)),
+      { codeId, type, originalValue, optimisticValue }
+    ])
+    
+    return optimisticValue
+  }
+
+  // 移除乐观更新（成功或失败后）
+  const removeOptimisticUpdate = (codeId: string, type: 'copy' | 'worked' | 'didntWork') => {
+    setOptimisticUpdates(prev => 
+      prev.filter(update => !(update.codeId === codeId && update.type === type))
+    )
   }
 
   // 🔥 初始化复制检测
@@ -51,6 +101,14 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     }
   }, [onCopy])
 
+  // 当 codes 数据更新时，清理过期的乐观更新
+  useEffect(() => {
+    // 清理不再存在的邀请码的乐观更新
+    setOptimisticUpdates(prev => 
+      prev.filter(update => codes.some(code => code.id === update.codeId))
+    )
+  }, [codes])
+
   const handleCopyCode = async (code: string, codeId: string) => {
     const buttonKey = `copy-${codeId}`
     if (!canClick(buttonKey)) {
@@ -59,17 +117,34 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     }
     updateClickTime(buttonKey)
     
+    // 找到对应的邀请码
+    const inviteCode = codes.find(c => c.id === codeId)
+    if (!inviteCode) {
+      console.error('Invite code not found:', codeId)
+      return
+    }
+    
+    const originalCopyCount = inviteCode.uniqueCopiedCount || 0
+    
     try {
+      // 🎯 乐观更新：立即显示复制数量 +1
+      applyOptimisticUpdate(codeId, 'copy', originalCopyCount)
+      
       // 立即设置复制状态，提供即时反馈
       setCopiedCode(code)
       
       // 调用复制函数（包含剪贴板操作和 API 调用）
       await onCopy(code, codeId)
       
+      // API 调用成功，移除乐观更新（真实数据会通过 dataManager 刷新）
+      removeOptimisticUpdate(codeId, 'copy')
+      
       // 2秒后清除复制状态
       setTimeout(() => setCopiedCode(null), 2000)
     } catch (error) {
       console.error('Failed to copy code:', error)
+      // API 调用失败，移除乐观更新，恢复到原始状态
+      removeOptimisticUpdate(codeId, 'copy')
       // 如果复制失败，立即清除复制状态
       setCopiedCode(null)
     }
@@ -83,10 +158,30 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     }
     updateClickTime(buttonKey)
     
+    // 找到对应的邀请码
+    const inviteCode = codes.find(c => c.id === id)
+    if (!inviteCode) {
+      console.error('Invite code not found:', id)
+      return
+    }
+    
+    const originalVoteCount = type === 'worked' 
+      ? inviteCode.votes.uniqueWorked 
+      : inviteCode.votes.uniqueDidntWork
+    
     try {
+      // 🎯 乐观更新：立即显示投票数量 +1
+      applyOptimisticUpdate(id, type, originalVoteCount)
+      
+      // 调用投票函数
       await onVote(id, type)
+      
+      // API 调用成功，移除乐观更新（真实数据会通过 dataManager 刷新）
+      removeOptimisticUpdate(id, type)
     } catch (error) {
       console.error('Failed to vote:', error)
+      // API 调用失败，移除乐观更新，恢复到原始状态
+      removeOptimisticUpdate(id, type)
     }
   }
 
@@ -215,20 +310,20 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
               </button>
             </div>
 
-            {/* 简洁统计行 */}
+            {/* 简洁统计行 - 使用乐观更新 */}
             <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t border-gray-100">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Copy className="h-3 w-3" />
-                  <span>{code.uniqueCopiedCount || 0} copied</span>
+                  <span>{getDisplayValue(code, 'copy')} copied</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <ThumbsUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">{code.votes.uniqueWorked || 0}</span>
+                  <span className="text-green-600">{getDisplayValue(code, 'worked')}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <ThumbsDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{code.votes.uniqueDidntWork || 0}</span>
+                  <span className="text-red-600">{getDisplayValue(code, 'didntWork')}</span>
                 </div>
               </div>
               <div className="text-xs text-gray-400">
