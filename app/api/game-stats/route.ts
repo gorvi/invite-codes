@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { initializeData, analyticsData, saveData } from '@/lib/data'
+import { gameDataManager } from '@/lib/gameDataManager'
 
 export async function GET() {
   try {
-    // 确保数据已初始化
-    await initializeData()
+    const gameAnalytics = await gameDataManager.getGameAnalytics()
+    
+    if (!gameAnalytics) {
+      return NextResponse.json(
+        { error: 'Failed to fetch game stats' },
+        { status: 500 }
+      )
+    }
     
     return NextResponse.json({
-      globalBestScore: analyticsData.gameStats.globalBestScore,
-      totalGamesPlayed: analyticsData.gameStats.totalGamesPlayed,
-      totalHamstersWhacked: analyticsData.gameStats.totalHamstersWhacked,
+      globalBestScore: gameAnalytics.globalBestScore,
+      totalGamesPlayed: gameAnalytics.totalGamesPlayed,
+      totalHamstersWhacked: gameAnalytics.totalHamstersWhacked,
+      totalPlayers: gameAnalytics.totalPlayers,
     })
   } catch (error) {
+    console.error('[GameStats API] Error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch game stats' },
       { status: 500 }
@@ -21,57 +29,94 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // 确保数据已初始化
-    await initializeData()
-    
     const body = await request.json()
-    const { action, score, hamstersWhacked, userId } = body
+    const { action, score, hamstersWhacked, userId, level, gameDuration } = body
 
     switch (action) {
       case 'submit_score':
-        if (typeof score === 'number' && score > 0) {
-          // 更新全球最佳分数（只有更高分数才能覆盖）
-          if (score > analyticsData.gameStats.globalBestScore) {
-            analyticsData.gameStats.globalBestScore = score
-            console.log(`[Game] New global best score: ${score}`)
-          }
+        if (typeof score === 'number' && score > 0 && userId) {
+          console.log(`[Game] Submitting score: ${score} for user: ${userId}`)
           
-          // 更新用户个人最佳分数（只有更高分数才能覆盖）
-          if (userId && typeof userId === 'string') {
-            if (!analyticsData.userStats[userId]) {
-              analyticsData.userStats[userId] = {
-                userId: userId,
-                copyCount: 0,
-                voteCount: 0,
-                submitCount: 0,
-                firstVisit: new Date().toISOString(),
-                lastVisit: new Date().toISOString(),
-                personalBestScore: 0
-              }
-            }
-            
-            if (score > analyticsData.userStats[userId].personalBestScore) {
-              analyticsData.userStats[userId].personalBestScore = score
-              analyticsData.userStats[userId].lastVisit = new Date().toISOString()
-              console.log(`[Game] New personal best score for user ${userId}: ${score}`)
-            }
+          // 1. 保存游戏分数记录到 game_scores 表
+          const gameScore = await gameDataManager.saveGameScore({
+            userId,
+            score,
+            level: level || 1,
+            hamstersWhacked: hamstersWhacked || 0,
+            gameDuration: gameDuration || 0
+          })
+
+          if (!gameScore) {
+            console.error('[Game] Failed to save game score')
+            return NextResponse.json(
+              { error: 'Failed to save game score' },
+              { status: 500 }
+            )
           }
-          
-          // 增加游戏次数
-          analyticsData.gameStats.totalGamesPlayed += 1
-          
-          // 增加击中的地鼠数量
-          if (typeof hamstersWhacked === 'number' && hamstersWhacked > 0) {
-            analyticsData.gameStats.totalHamstersWhacked += hamstersWhacked
+
+          // 2. 获取当前全局统计
+          const currentAnalytics = await gameDataManager.getGameAnalytics()
+          if (!currentAnalytics) {
+            console.error('[Game] Failed to load game analytics')
+            return NextResponse.json(
+              { error: 'Failed to load game analytics' },
+              { status: 500 }
+            )
           }
-          
-          // 🔥 使用新的持久化系统保存游戏统计数据
-          try {
-            await saveData()
-            console.log('[Game] Game stats saved to storage')
-          } catch (error) {
-            console.error('[Game] Failed to save game stats:', error)
+
+          // 3. 获取用户统计
+          const userStats = await gameDataManager.getUserStats(userId)
+
+          // 4. 更新全局统计
+          const analyticsUpdates: any = {
+            totalGamesPlayed: currentAnalytics.totalGamesPlayed + 1,
+            totalHamstersWhacked: currentAnalytics.totalHamstersWhacked + (hamstersWhacked || 0)
           }
+
+          // 检查是否刷新全球最佳分数
+          if (score > currentAnalytics.globalBestScore) {
+            analyticsUpdates.globalBestScore = score
+            console.log(`[Game] 🎉 New global best score: ${score}`)
+          }
+
+          // 更新全局统计
+          await gameDataManager.updateGameAnalytics(analyticsUpdates)
+
+          // 5. 更新用户统计
+          const userUpdates: any = {
+            totalGamesPlayed: (userStats?.totalGamesPlayed || 0) + 1,
+            totalHamstersWhacked: (userStats?.totalHamstersWhacked || 0) + (hamstersWhacked || 0),
+            totalPlayTime: (userStats?.totalPlayTime || 0) + (gameDuration || 0)
+          }
+
+          // 检查是否刷新个人最佳分数
+          if (!userStats || score > userStats.personalBestScore) {
+            userUpdates.personalBestScore = score
+            console.log(`[Game] 🏆 New personal best score for user ${userId}: ${score}`)
+          }
+
+          await gameDataManager.updateUserStats(userId, userUpdates)
+
+          // 6. 获取更新后的统计
+          const updatedAnalytics = await gameDataManager.getGameAnalytics()
+          const updatedUserStats = await gameDataManager.getUserStats(userId)
+
+          console.log('[Game] ✅ Game data saved successfully')
+
+          return NextResponse.json({
+            success: true,
+            globalBestScore: updatedAnalytics?.globalBestScore || 0,
+            totalGamesPlayed: updatedAnalytics?.totalGamesPlayed || 0,
+            totalHamstersWhacked: updatedAnalytics?.totalHamstersWhacked || 0,
+            totalPlayers: updatedAnalytics?.totalPlayers || 0,
+            personalBestScore: updatedUserStats?.personalBestScore || 0,
+            gameScoreId: gameScore.id
+          })
+        } else {
+          return NextResponse.json(
+            { error: 'Invalid score data' },
+            { status: 400 }
+          )
         }
         break
       default:
@@ -80,15 +125,8 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
     }
-
-    return NextResponse.json({
-      success: true,
-      globalBestScore: analyticsData.gameStats.globalBestScore,
-      totalGamesPlayed: analyticsData.gameStats.totalGamesPlayed,
-      totalHamstersWhacked: analyticsData.gameStats.totalHamstersWhacked,
-      personalBestScore: userId ? (analyticsData.userStats[userId]?.personalBestScore || 0) : 0,
-    })
   } catch (error) {
+    console.error('[GameStats API] Error:', error)
     return NextResponse.json(
       { error: 'Failed to update game stats' },
       { status: 500 }

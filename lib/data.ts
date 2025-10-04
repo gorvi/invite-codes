@@ -2,7 +2,7 @@
  * 数据管理模块 - 统一使用 Supabase 存储
  */
 
-import { supabasePersistence } from './supabasePersistence'
+import { sora2DataManager } from './sora2DataManager'
 
 export interface InviteCode {
   id: string
@@ -103,10 +103,10 @@ export async function initializeData(): Promise<void> {
     console.log('NODE_ENV:', process.env.NODE_ENV || 'undefined')
     console.log('VERCEL_URL:', process.env.VERCEL_URL || 'undefined')
     
-    console.log(`[DATA] Initializing data with storage type: ${supabasePersistence.getStorageType()}`)
+    console.log(`[DATA] Initializing Sora2 data with storage type: ${sora2DataManager.getStorageType()}`)
     
     // 加载邀请码数据 - 添加数据一致性检查
-    const loadedCodes = await supabasePersistence.loadInviteCodes()
+    const loadedCodes = await sora2DataManager.loadInviteCodes()
     inviteCodes = loadedCodes
     
     // 数据一致性检查
@@ -124,7 +124,7 @@ export async function initializeData(): Promise<void> {
     }
     
     // 加载分析数据
-    const loadedAnalytics = await supabasePersistence.loadAnalytics()
+    const loadedAnalytics = await sora2DataManager.loadAnalytics()
     if (loadedAnalytics) {
       Object.assign(analyticsData, loadedAnalytics)
       console.log('[DATA] Loaded analytics data')
@@ -149,12 +149,12 @@ export async function saveData(): Promise<void> {
 
   try {
     await Promise.all([
-      supabasePersistence.saveInviteCodes(inviteCodes),
-      supabasePersistence.saveAnalytics(analyticsData)
+      sora2DataManager.saveInviteCodes(inviteCodes),
+      sora2DataManager.saveAnalytics(analyticsData)
     ])
-    console.log('[DATA] Data saved successfully')
+    console.log('[DATA] Sora2 data saved successfully')
   } catch (error) {
-    console.error('[DATA] Failed to save data:', error)
+    console.error('[DATA] Failed to save Sora2 data:', error)
   }
 }
 
