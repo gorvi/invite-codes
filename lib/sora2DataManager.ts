@@ -181,30 +181,8 @@ export class Sora2DataManager {
         }
       }
 
-      // 保存每日统计数据
-      if (analytics.dailyStats && Object.keys(analytics.dailyStats).length > 0) {
-        const dailyStatsArray = Object.entries(analytics.dailyStats).map(([date, stats]) => ({
-          date: date,
-          submit_count: stats.submitCount || 0,
-          copy_clicks: stats.copyClicks || 0,
-          worked_votes: stats.workedVotes || 0,
-          didnt_work_votes: stats.didntWorkVotes || 0,
-          unique_users_visited: stats.uniqueVisitors || 0,
-          updated_at: new Date().toISOString()
-        }))
-
-        if (dailyStatsArray.length > 0) {
-          const { error: dailyStatsError } = await this.supabase
-            .from('sora2_daily_stats')
-            .upsert(dailyStatsArray, { onConflict: 'date' })
-
-          if (dailyStatsError) {
-            console.error('[Sora2DataManager] Error saving daily stats:', dailyStatsError)
-            throw dailyStatsError
-          }
-          console.log('[Sora2DataManager] ✅ Successfully saved daily stats')
-        }
-      }
+      // 每日统计数据现在是视图，无需保存
+      // daily_stats 视图会自动从 sora2_invite_codes 表计算
 
       console.log('[Sora2DataManager] ✅ Successfully saved analytics data to separate tables')
     } catch (error) {
@@ -223,7 +201,7 @@ export class Sora2DataManager {
     }
 
     try {
-      // 并行加载用户统计和每日统计
+      // 并行加载用户统计和每日统计（视图）
       const [userStatsResult, dailyStatsResult] = await Promise.all([
         this.supabase.from('sora2_user_stats').select('*'),
         this.supabase.from('sora2_daily_stats').select('*')
@@ -245,7 +223,7 @@ export class Sora2DataManager {
         })
       }
 
-      // 处理每日统计数据
+      // 处理每日统计数据（从视图）
       const dailyStats: any = {}
       if (dailyStatsResult.data) {
         dailyStatsResult.data.forEach(day => {
@@ -255,7 +233,7 @@ export class Sora2DataManager {
             workedVotes: day.worked_votes || 0,
             didntWorkVotes: day.didnt_work_votes || 0,
             submitCount: day.submit_count || 0,
-            uniqueVisitors: day.unique_users_visited || 0
+            uniqueVisitors: day.unique_submitters || 0 // 视图中的字段名是 unique_submitters
           }
         })
       }
