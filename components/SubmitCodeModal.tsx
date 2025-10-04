@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { X, Send, AlertCircle, CheckCircle } from 'lucide-react'
 
 interface SubmitCodeModalProps {
@@ -14,6 +14,7 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,38 +28,63 @@ export default function SubmitCodeModal({ isOpen, onClose, onSuccess }: SubmitCo
     setError(null)
 
     try {
+      // 添加超时机制，防止无限等待
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15秒超时
+
       const response = await fetch('/api/invite-codes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ code: code.trim() }),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
+      abortControllerRef.current = null
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to submit code`)
+      }
 
       const data = await response.json()
 
-      if (response.ok) {
-        setSuccess(true)
-        setCode('')
-        // 🔥 立即触发统计更新
-        window.dispatchEvent(new CustomEvent('statsUpdate'))
-        // Close modal and refresh after 2 seconds
-        setTimeout(() => {
-          setSuccess(false)
-          onClose()
-          onSuccess()
-        }, 2000)
-      } else {
-        setError(data.error || 'Failed to submit code')
-      }
+      setSuccess(true)
+      setCode('')
+      // 🔥 立即触发统计更新
+      window.dispatchEvent(new CustomEvent('statsUpdate'))
+      // Close modal and refresh after 2 seconds
+      setTimeout(() => {
+        setSuccess(false)
+        onClose()
+        onSuccess()
+      }, 2000)
     } catch (error) {
-      setError('Network error. Please try again.')
+      console.error('Submit code error:', error)
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          setError('Request timeout. Please try again.')
+        } else {
+          setError(error.message || 'Network error. Please try again.')
+        }
+      } else {
+        setError('Network error. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleClose = () => {
+    // 取消正在进行的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    
     if (!submitting) {
       setCode('')
       setError(null)
