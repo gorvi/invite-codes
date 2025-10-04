@@ -145,7 +145,7 @@ export class SensitiveWordValidator {
       // 找出不允许的字符
       const invalidChars = code.match(/[^a-zA-Z0-9]/g)
       if (invalidChars) {
-        const uniqueInvalidChars = [...new Set(invalidChars)]
+        const uniqueInvalidChars = Array.from(new Set(invalidChars))
         return {
           isValid: false,
           reason: `邀请码只能包含英文字母和数字，不允许使用: ${uniqueInvalidChars.join(', ')}`
