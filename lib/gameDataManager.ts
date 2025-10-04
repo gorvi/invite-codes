@@ -25,6 +25,7 @@ export interface GameAnalytics {
 }
 
 export interface GameUserStats {
+  id?: number
   userId: string
   personalBestScore: number
   totalGamesPlayed: number
