@@ -16,6 +16,7 @@ import ActiveCodeStats from '@/components/ActiveCodeStats'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
 import UserGuidance from '@/components/UserGuidance'
+import InviteCodeGuidance from '@/components/InviteCodeGuidance'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
@@ -126,9 +127,17 @@ export default function Home() {
       console.error('SSE connection error:', error)
     }
 
+    // Listen for guidance component events
+    const handleOpenSubmitModal = () => {
+      setIsSubmitModalOpen(true)
+    }
+    
+    window.addEventListener('openSubmitModal', handleOpenSubmitModal)
+
     return () => {
       eventSource.close()
       dataManager.removeListener(handleDataUpdate)
+      window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
     }
   }, [])
 
@@ -236,6 +245,9 @@ export default function Home() {
           onClose={() => setIsSubmitModalOpen(false)}
           onSuccess={handleRefresh}
         />
+        
+        {/* Invite Code Guidance */}
+        <InviteCodeGuidance />
       </main>
     </ErrorBoundary>
   )

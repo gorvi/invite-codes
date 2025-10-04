@@ -33,9 +33,15 @@ export default function Footer() {
           {/* Community */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">Community</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mb-3">
               Share your codes, help others, and be part of the Sora 2 community.
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-700">
+                <strong>💝 Got 4 codes to share?</strong><br/>
+                After registering with Sora 2, you get 4 invite codes. Please share them here to help others!
+              </p>
+            </div>
           </div>
         </div>
         
