@@ -102,7 +102,14 @@ export default function Home() {
          }
          
          const dashboardData = await response.json()
+         console.log('[Page] 🔍 Dashboard data received:', {
+           hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+           activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+           firstCode: dashboardData.activeInviteCodes?.[0]?.code,
+           ffaaddExists: dashboardData.activeInviteCodes?.find(c => c.code === 'FFAADD') ? 'YES' : 'NO'
+         })
          const activeInviteCodes = dashboardData.activeInviteCodes || []
+         console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length, 'codes')
          setInviteCodes(activeInviteCodes)
          setLoading(false)
          
