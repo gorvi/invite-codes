@@ -139,7 +139,7 @@ class DataManager {
       console.log('[DataManager] 🔍 Final activeInviteCodes:', {
         length: activeInviteCodes.length,
         isArray: Array.isArray(activeInviteCodes),
-        sample: activeInviteCodes.slice(0, 3).map(c => c.code)
+        sample: activeInviteCodes.slice(0, 3).map((c: any) => c.code)
       })
       
       // 直接使用统一接口返回的数据
