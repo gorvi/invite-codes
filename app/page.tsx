@@ -23,8 +23,28 @@ import { InviteCode } from '@/lib/data'
 import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function Home() {
-  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
-  const [loading, setLoading] = useState(true)
+  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([
+    // 🔥 临时硬编码测试数据
+    {
+      id: 'temp1',
+      code: 'TEMP1',
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
+      copiedCount: 5,
+      uniqueCopiedCount: 3
+    },
+    {
+      id: 'temp2', 
+      code: 'TEMP2',
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      votes: { worked: 1, didntWork: 0, uniqueWorked: 1, uniqueDidntWork: 0 },
+      copiedCount: 3,
+      uniqueCopiedCount: 2
+    }
+  ])
+  const [loading, setLoading] = useState(false) // 设置为 false，因为我们已经有了测试数据
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
