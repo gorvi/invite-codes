@@ -93,15 +93,23 @@ export default function Home() {
   }
 
   useEffect(() => {
+    console.log('[Page] 🔍 useEffect triggered, setting up data manager...')
+    
     // 🔥 使用全局数据管理器，避免重复 API 调用
     const handleDataUpdate = (data: GlobalData) => {
-      console.log('[Page] Data updated via DataManager:', data.inviteCodes.length, 'codes')
-      console.log('[Page] Invite codes data:', data.inviteCodes)
+      console.log('[Page] 🔍 Data updated via DataManager:', {
+        inviteCodesLength: data.inviteCodes.length,
+        activeCodeCount: data.activeCodeCount,
+        totalCodeCount: data.totalCodeCount,
+        sampleCodes: data.inviteCodes.slice(0, 3).map(c => c.code)
+      })
+      console.log('[Page] 🔍 Full invite codes data:', data.inviteCodes)
       setInviteCodes(data.inviteCodes)
       setLoading(false)
     }
 
     // 注册数据监听器（会自动触发数据加载）
+    console.log('[Page] 🔍 Adding listener to dataManager...')
     dataManager.addListener(handleDataUpdate)
 
     // Set up SSE connection for real-time updates
