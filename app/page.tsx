@@ -95,6 +95,32 @@ export default function Home() {
   useEffect(() => {
     console.log('[Page] 🔍 useEffect triggered, setting up data manager...')
     
+    // 🔥 临时修复：直接获取数据，不依赖 dataManager
+    const fetchDataDirectly = async () => {
+      try {
+        console.log('[Page] 🔍 Fetching data directly from API...')
+        const response = await fetch('/api/dashboard')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        
+        const dashboardData = await response.json()
+        console.log('[Page] 🔍 Direct API Response:', {
+          hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+          activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+          sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map(c => c.code)
+        })
+        
+        const activeInviteCodes = dashboardData.activeInviteCodes || []
+        console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
+        setInviteCodes(activeInviteCodes)
+        setLoading(false)
+      } catch (error) {
+        console.error('[Page] ❌ Direct fetch error:', error)
+        setLoading(false)
+      }
+    }
+    
     // 🔥 使用全局数据管理器，避免重复 API 调用
     const handleDataUpdate = (data: GlobalData) => {
       console.log('[Page] 🔍 Data updated via DataManager:', {
@@ -115,6 +141,9 @@ export default function Home() {
     // 🔥 强制刷新数据，确保数据加载
     console.log('[Page] 🔍 Force refreshing data...')
     dataManager.triggerRefresh()
+    
+    // 🔥 临时修复：同时直接获取数据作为备用
+    fetchDataDirectly()
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
