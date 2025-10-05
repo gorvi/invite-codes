@@ -113,13 +113,11 @@ export async function POST(
       inviteCode.status = 'invalid'
     }
 
-    // 保存数据到持久化存储
+    // 保存数据到 Supabase 数据库
     try {
-      await saveData()
-      // 🔥 同时保存到 Supabase 数据库
       const { sora2DataManager } = await import('@/lib/sora2DataManager')
       await sora2DataManager.saveInviteCodes(inviteCodes)
-      console.log('[DATA] ✅ Saved vote update to both local and Supabase storage')
+      console.log('[DATA] ✅ Saved vote update to Supabase database')
     } catch (error) {
       console.error('[DATA] Failed to save vote update:', error)
     }
@@ -146,11 +144,12 @@ export async function POST(
       needsSave = true
     }
     
-    // 如果更新了字段，重新保存
+    // 如果更新了字段，重新保存到数据库
     if (needsSave) {
       try {
-        await saveData()
-        console.log('[Vote] Updated and saved copy stats to inviteCode object')
+        const { sora2DataManager } = await import('@/lib/sora2DataManager')
+        await sora2DataManager.saveInviteCodes(inviteCodes)
+        console.log('[Vote] Updated and saved copy stats to Supabase database')
       } catch (error) {
         console.error('[Vote] Failed to save copy stats update:', error)
       }

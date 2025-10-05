@@ -221,9 +221,9 @@ export async function POST(request: NextRequest) {
         })
         console.log(`[Analytics] ⚡ Updated single user stats for: ${userIdentifier}`)
       } else {
-        // 对于其他操作，仍然保存完整数据
-        await saveData()
-        console.log('[Analytics] Saved analytics data to storage')
+        // 对于其他操作，保存分析数据到数据库
+        await sora2DataManager.saveAnalytics(analyticsData)
+        console.log('[Analytics] Saved analytics data to Supabase database')
       }
     } catch (error) {
       console.error('[Analytics] Failed to save analytics data:', error)

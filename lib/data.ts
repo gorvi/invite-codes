@@ -141,22 +141,12 @@ export async function initializeData(): Promise<void> {
 }
 
 /**
- * 保存数据到持久化存储
+ * 保存数据到持久化存储 - 已废弃，直接使用 sora2DataManager
+ * @deprecated 使用 sora2DataManager.saveInviteCodes() 和 sora2DataManager.saveAnalytics() 替代
  */
 export async function saveData(): Promise<void> {
-  if (typeof window !== 'undefined') {
-    return
-  }
-
-  try {
-    await Promise.all([
-      sora2DataManager.saveInviteCodes(inviteCodes),
-      sora2DataManager.saveAnalytics(analyticsData)
-    ])
-    console.log('[DATA] Sora2 data saved successfully')
-  } catch (error) {
-    console.error('[DATA] Failed to save Sora2 data:', error)
-  }
+  console.warn('[DATA] saveData() is deprecated. Use sora2DataManager methods directly.')
+  // 不再执行任何操作，所有数据操作直接通过 sora2DataManager 进行
 }
 
 /**
@@ -234,20 +224,10 @@ export async function addInviteCode(code: string, submitterName?: string): Promi
     uniqueCopiers: new Set()
   }
 
-  // 保存到持久化存储（添加超时和错误处理）
+  // 保存到 Supabase 数据库
   try {
-    await Promise.race([
-      saveData(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Save timeout after 10 seconds')), 10000)
-      )
-    ])
-    
-    // 🔥 同时保存到 Supabase 数据库
-    const { sora2DataManager } = await import('./sora2DataManager')
     await sora2DataManager.saveInviteCodes(inviteCodes)
-    
-    console.log('[addInviteCode] ✅ Data saved successfully to both local and Supabase storage')
+    console.log('[addInviteCode] ✅ Data saved successfully to Supabase database')
   } catch (error) {
     console.error('[addInviteCode] Failed to save data:', error)
     // 即使保存失败，也继续执行，因为数据已经在内存中

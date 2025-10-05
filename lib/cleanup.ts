@@ -74,8 +74,9 @@ export function cleanupExpiredCodes() {
     inviteCodes.length = 0
     inviteCodes.push(...filteredCodes)
     
-    // 保存到文件
-    saveData()
+    // 保存到 Supabase 数据库
+    const { sora2DataManager } = await import('./sora2DataManager')
+    await sora2DataManager.saveInviteCodes(inviteCodes)
     
     console.log(`[Cleanup] Removed ${removedCount} expired codes. Remaining: ${filteredCodes.length}`)
   } else {
@@ -109,7 +110,9 @@ export function cleanupInactiveUserStats() {
   }
   
   if (removedCount > 0) {
-    saveData()
+    // 保存用户统计到数据库
+    const { sora2DataManager } = await import('./sora2DataManager')
+    await sora2DataManager.saveAnalytics(analyticsData)
     console.log(`[Cleanup] Removed ${removedCount} inactive users`)
   } else {
     console.log(`[Cleanup] No inactive users to remove`)
@@ -153,7 +156,9 @@ export function cleanupOrphanedStats() {
   }
   
   if (removedCount > 0) {
-    saveData()
+    // 保存分析数据到数据库
+    const { sora2DataManager } = await import('./sora2DataManager')
+    await sora2DataManager.saveAnalytics(analyticsData)
     console.log(`[Cleanup] Removed ${removedCount} orphaned stats`)
   } else {
     console.log(`[Cleanup] No orphaned stats to remove`)
