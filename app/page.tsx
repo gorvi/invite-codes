@@ -95,7 +95,7 @@ export default function Home() {
   useEffect(() => {
     console.log('[Page] 🔍 useEffect triggered, fetching data...')
     
-    // 🔥 简化的数据获取逻辑
+    // 🔥 使用 dataManager 的简化版本
     const fetchData = async () => {
       try {
         console.log('[Page] 🔍 Fetching data from /api/dashboard...')
@@ -113,8 +113,14 @@ export default function Home() {
         
         const activeInviteCodes = dashboardData.activeInviteCodes || []
         console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
-        setInviteCodes(activeInviteCodes)
-        setLoading(false)
+        
+        // 🔥 强制设置数据，确保状态更新
+        setTimeout(() => {
+          setInviteCodes(activeInviteCodes)
+          setLoading(false)
+          console.log('[Page] 🔍 Data set after timeout')
+        }, 100)
+        
       } catch (error) {
         console.error('[Page] ❌ Fetch error:', error)
         setLoading(false)
