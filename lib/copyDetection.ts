@@ -94,6 +94,14 @@ class CopyDetection {
    * 开始监控剪贴板
    */
   private startClipboardMonitoring() {
+    // 🔥 初始化时记录当前剪贴板内容，避免页面刷新时误触发
+    navigator.clipboard.readText().then(content => {
+      this.lastClipboardContent = content || ''
+      console.log('[CopyDetection] Initial clipboard content:', this.lastClipboardContent)
+    }).catch(() => {
+      // 忽略初始化时的剪贴板访问错误
+    })
+
     // 定期检查剪贴板内容
     setInterval(async () => {
       try {

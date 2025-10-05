@@ -142,7 +142,14 @@ class DataManager {
       console.log('[DataManager] Data refreshed:', {
         inviteCodes: this.data.inviteCodes.length,
         activeCount: this.data.activeCodeCount,
-        submitCount: this.data.submitCount
+        submitCount: this.data.submitCount,
+        // 🔥 添加调试信息：显示邀请码的复制统计
+        inviteCodesWithStats: this.data.inviteCodes.map(code => ({
+          code: code.code,
+          copiedCount: code.copiedCount,
+          uniqueCopiedCount: code.uniqueCopiedCount,
+          status: code.status
+        }))
       })
 
       // 通知所有监听器
