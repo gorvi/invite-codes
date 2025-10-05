@@ -134,9 +134,17 @@ class DataManager {
         allKeys: Object.keys(dashboardData)
       })
       
+      // 🔥 确保 activeInviteCodes 存在且为数组
+      const activeInviteCodes = dashboardData.activeInviteCodes || []
+      console.log('[DataManager] 🔍 Final activeInviteCodes:', {
+        length: activeInviteCodes.length,
+        isArray: Array.isArray(activeInviteCodes),
+        sample: activeInviteCodes.slice(0, 3).map(c => c.code)
+      })
+      
       // 直接使用统一接口返回的数据
       this.data = {
-        inviteCodes: dashboardData.activeInviteCodes || [], // 只返回活跃的邀请码
+        inviteCodes: activeInviteCodes, // 只返回活跃的邀请码
         activeCodeCount: dashboardData.activeCodeCount || 0,
         totalCodeCount: dashboardData.totalCodeCount || 0,
         usedCodeCount: dashboardData.usedCodeCount || 0,
