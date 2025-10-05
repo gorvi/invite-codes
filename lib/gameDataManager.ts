@@ -86,13 +86,6 @@ class GameDataManager {
     }
   }
 
-  /**
-   * 更新游戏全局统计 (已删除，现在使用实时查询)
-   */
-  async updateGameAnalytics(): Promise<any> {
-    console.log('[GameDataManager] updateGameAnalytics is deprecated - using real-time queries instead')
-    return null
-  }
 
   /**
    * 更新用户游戏统计
