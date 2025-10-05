@@ -92,19 +92,19 @@ export async function POST(request: NextRequest) {
     
     switch (action) {
       case 'full':
-        result = runFullCleanup()
+        result = await runFullCleanup()
         break
       
       case 'expired':
-        result = cleanupExpiredCodes()
+        result = await cleanupExpiredCodes()
         break
       
       case 'users':
-        result = cleanupInactiveUserStats()
+        result = await cleanupInactiveUserStats()
         break
       
       case 'orphaned':
-        result = cleanupOrphanedStats()
+        result = await cleanupOrphanedStats()
         break
       
       default:

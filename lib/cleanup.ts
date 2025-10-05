@@ -31,7 +31,7 @@ const CLEANUP_CONFIG = {
 /**
  * 清理过期的 'used' 和 'invalid' 邀请码
  */
-export function cleanupExpiredCodes() {
+export async function cleanupExpiredCodes() {
   const now = Date.now()
   const usedRetentionMs = CLEANUP_CONFIG.USED_CODE_RETENTION_DAYS * 24 * 60 * 60 * 1000
   const invalidRetentionMs = CLEANUP_CONFIG.INVALID_CODE_RETENTION_DAYS * 24 * 60 * 60 * 1000
@@ -92,7 +92,7 @@ export function cleanupExpiredCodes() {
 /**
  * 清理不活跃用户的统计数据
  */
-export function cleanupInactiveUserStats() {
+export async function cleanupInactiveUserStats() {
   const now = Date.now()
   const retentionMs = CLEANUP_CONFIG.USER_STATS_RETENTION_DAYS * 24 * 60 * 60 * 1000
   
@@ -124,7 +124,7 @@ export function cleanupInactiveUserStats() {
 /**
  * 清理孤立的唯一用户统计（邀请码已删除但统计还在）
  */
-export function cleanupOrphanedStats() {
+export async function cleanupOrphanedStats() {
   const validCodeIds = new Set(inviteCodes.map(code => code.id))
   let removedCount = 0
   
@@ -170,14 +170,14 @@ export function cleanupOrphanedStats() {
 /**
  * 执行完整清理
  */
-export function runCleanup() {
+export async function runCleanup() {
   console.log('[Cleanup] Starting full cleanup...')
   const startTime = Date.now()
   
   const results = {
-    expiredCodes: cleanupExpiredCodes(),
-    inactiveUsers: cleanupInactiveUserStats(),
-    orphanedStats: cleanupOrphanedStats(),
+    expiredCodes: await cleanupExpiredCodes(),
+    inactiveUsers: await cleanupInactiveUserStats(),
+    orphanedStats: await cleanupOrphanedStats(),
     duration: 0,
   }
   
@@ -253,11 +253,11 @@ export function startAutoCleanup() {
   console.log(`[Cleanup] Starting auto cleanup (interval: ${CLEANUP_CONFIG.AUTO_CLEANUP_INTERVAL_HOURS} hours)`)
   
   // 立即执行一次
-  runCleanup()
+  runCleanup().catch(console.error)
   
   // 然后定时执行
   cleanupTimer = setInterval(() => {
-    runCleanup()
+    runCleanup().catch(console.error)
   }, intervalMs)
 }
 
