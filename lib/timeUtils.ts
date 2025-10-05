@@ -7,9 +7,15 @@
  * @returns 北京时间的 Date 对象
  */
 export function getBeijingTime(): Date {
-  // 直接返回当前时间，JavaScript Date 对象会自动处理时区
-  // 在数据库存储时使用 UTC 时间，显示时转换为本地时间
-  return new Date()
+  // 获取当前 UTC 时间
+  const now = new Date()
+  
+  // 北京时区是 UTC+8，即比 UTC 快 8 小时
+  // 由于 JavaScript Date 对象内部存储的是 UTC 时间，
+  // 我们需要创建一个表示北京时间的 Date 对象
+  const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000))
+  
+  return beijingTime
 }
 
 /**
