@@ -7,11 +7,12 @@ import { sora2DataManager } from '@/lib/sora2DataManager'
  */
 export async function GET() {
   try {
-    // 🔥 确保数据管理器已初始化
-    await sora2DataManager.initialize()
-    
     // 直接从数据库查询所有需要的数据
     const supabase = sora2DataManager.getSupabaseClient()
+    
+    if (!supabase) {
+      throw new Error('Supabase client not initialized')
+    }
     
     // 并行查询所有需要的数据
     const [
