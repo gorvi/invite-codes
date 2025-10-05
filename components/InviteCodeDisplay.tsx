@@ -188,16 +188,26 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   const calculateLastCodeTime = (code: InviteCode) => {
     const now = new Date()
     const createdAt = new Date(code.createdAt)
-    const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60))
+    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000)
     
-    if (diffInMinutes < 1) return 'Just now'
+    // 显示更精确的时间
+    if (diffInSeconds < 30) return 'Just now'
+    if (diffInSeconds < 60) return `${diffInSeconds}s ago`
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60)
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`
     
     const diffInHours = Math.floor(diffInMinutes / 60)
     if (diffInHours < 24) return `${diffInHours}h ago`
     
     const diffInDays = Math.floor(diffInHours / 24)
-    return `${diffInDays}d ago`
+    if (diffInDays < 7) return `${diffInDays}d ago`
+    
+    const diffInWeeks = Math.floor(diffInDays / 7)
+    if (diffInWeeks < 4) return `${diffInWeeks}w ago`
+    
+    const diffInMonths = Math.floor(diffInDays / 30)
+    return `${diffInMonths}mo ago`
   }
 
   const getStatusIcon = (code: InviteCode) => {

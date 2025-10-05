@@ -200,7 +200,10 @@ export default function Home() {
             </div>
             
             <InviteCodeDisplay 
-              codes={inviteCodes.filter(code => code.status === 'active')} 
+              codes={inviteCodes
+                .filter(code => code.status === 'active')
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              } 
               onVote={handleVote}
               onCopy={handleCopyCode}
             />
