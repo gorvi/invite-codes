@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Share2, Copy, Check, Twitter, Facebook, Linkedin, MessageCircle, X } from 'lucide-react'
+import { Share2, Copy, Check, Twitter, Facebook, Linkedin, MessageCircle, X, MessageSquare, Video } from 'lucide-react'
 
 interface ShareButtonProps {
   url?: string
@@ -31,10 +31,28 @@ export default function ShareButton({
     twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-    telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+    wechat: `https://web.wechat.com/`, // WeChat doesn't have direct share URL, will show QR code
+    tiktok: `https://www.tiktok.com/` // TikTok doesn't have direct share URL, will copy text
   }
 
   const handleSocialShare = (platform: keyof typeof shareLinks) => {
+    if (platform === 'wechat') {
+      // For WeChat, we'll copy the URL and show a message
+      handleCopyUrl()
+      return
+    }
+    
+    if (platform === 'tiktok') {
+      // For TikTok, copy the title and URL
+      const shareText = `${title}\n${url}`
+      navigator.clipboard.writeText(shareText).then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      })
+      return
+    }
+    
     const shareUrl = shareLinks[platform]
     window.open(shareUrl, '_blank', 'width=600,height=400')
   }
@@ -157,6 +175,32 @@ export default function ShareButton({
                   <div>
                     <span className="text-sm font-medium text-gray-700">Telegram</span>
                     <p className="text-xs text-gray-500">Share on Telegram</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSocialShare('wechat')}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-green-50 rounded-xl transition-colors border border-gray-100 hover:border-green-200"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <MessageSquare className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">WeChat</span>
+                    <p className="text-xs text-gray-500">Copy link for WeChat</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSocialShare('tiktok')}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-pink-50 rounded-xl transition-colors border border-gray-100 hover:border-pink-200"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
+                    <Video className="h-4 w-4 text-pink-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">TikTok</span>
+                    <p className="text-xs text-gray-500">Copy text for TikTok</p>
                   </div>
                 </button>
               </div>
