@@ -152,7 +152,14 @@ export async function GET() {
       }))
     })
 
-    return NextResponse.json(dashboardData)
+    const response = NextResponse.json(dashboardData)
+    
+    // 🔥 添加缓存控制头，确保数据是最新的
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
     
   } catch (error) {
     console.error('[Dashboard] Error fetching unified data:', error)
