@@ -124,23 +124,8 @@ class DataManager {
 
       const dashboardData = await response.json()
       
-      // 🔥 详细调试 API 响应数据
-      console.log('[DataManager] 🔍 API Response Debug:', {
-        hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
-        activeInviteCodesType: typeof dashboardData.activeInviteCodes,
-        activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
-        activeInviteCodesIsArray: Array.isArray(dashboardData.activeInviteCodes),
-        activeInviteCodesSample: dashboardData.activeInviteCodes?.slice(0, 2),
-        allKeys: Object.keys(dashboardData)
-      })
-      
-      // 🔥 确保 activeInviteCodes 存在且为数组
+      // 确保 activeInviteCodes 存在且为数组
       const activeInviteCodes = dashboardData.activeInviteCodes || []
-      console.log('[DataManager] 🔍 Final activeInviteCodes:', {
-        length: activeInviteCodes.length,
-        isArray: Array.isArray(activeInviteCodes),
-        sample: activeInviteCodes.slice(0, 3).map((c: any) => c.code)
-      })
       
       // 直接使用统一接口返回的数据
       this.data = {
@@ -158,18 +143,7 @@ class DataManager {
       console.log('[DataManager] ✅ Unified data refreshed:', {
         inviteCodes: this.data.inviteCodes.length,
         activeCount: this.data.activeCodeCount,
-        submitCount: this.data.submitCount,
-        // 🔥 详细调试信息：显示每个邀请码的完整统计
-        inviteCodesWithStats: this.data.inviteCodes.map(code => ({
-          code: code.code,
-          copiedCount: code.copiedCount,
-          uniqueCopiedCount: code.uniqueCopiedCount,
-          workedVotes: code.votes.worked,
-          uniqueWorked: code.votes.uniqueWorked,
-          didntWorkVotes: code.votes.didntWork,
-          uniqueDidntWork: code.votes.uniqueDidntWork,
-          status: code.status
-        }))
+        submitCount: this.data.submitCount
       })
 
       // 通知所有监听器
