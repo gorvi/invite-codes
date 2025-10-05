@@ -113,41 +113,43 @@ class DataManager {
     }
 
     this.isRefreshing = true
-    console.log('[DataManager] Starting data refresh...')
+    console.log('[DataManager] Starting unified data refresh...')
 
     try {
-      const response = await fetch('/api/analytics')
+      // 🔥 使用统一的仪表板接口，一次性获取所有数据
+      const response = await fetch('/api/dashboard')
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const analyticsData = await response.json()
+      const dashboardData = await response.json()
       
-      // 计算活跃代码数量
-      const allInviteCodes = analyticsData.allInviteCodes || []
-      const actualActiveCount = allInviteCodes.filter((code: any) => code.status === 'active').length
-
+      // 直接使用统一接口返回的数据
       this.data = {
-        inviteCodes: allInviteCodes,
-        activeCodeCount: actualActiveCount,
-        totalCodeCount: analyticsData.totalCodeCount || 0,
-        usedCodeCount: analyticsData.usedCodeCount || 0,
-        invalidCodeCount: analyticsData.invalidCodeCount || 0,
-        successfullyUsedCount: analyticsData.successfullyUsedCount || 0,
-        submitCount: analyticsData.submitCount || 0,
-        dataConsistency: analyticsData.dataConsistency,
+        inviteCodes: dashboardData.activeInviteCodes || [], // 只返回活跃的邀请码
+        activeCodeCount: dashboardData.activeCodeCount || 0,
+        totalCodeCount: dashboardData.totalCodeCount || 0,
+        usedCodeCount: dashboardData.usedCodeCount || 0,
+        invalidCodeCount: dashboardData.invalidCodeCount || 0,
+        successfullyUsedCount: dashboardData.successfullyUsedCount || 0,
+        submitCount: dashboardData.submitCount || 0,
+        dataConsistency: dashboardData.dataConsistency,
         lastUpdated: Date.now()
       }
 
-      console.log('[DataManager] Data refreshed:', {
+      console.log('[DataManager] ✅ Unified data refreshed:', {
         inviteCodes: this.data.inviteCodes.length,
         activeCount: this.data.activeCodeCount,
         submitCount: this.data.submitCount,
-        // 🔥 添加调试信息：显示邀请码的复制统计
+        // 🔥 详细调试信息：显示每个邀请码的完整统计
         inviteCodesWithStats: this.data.inviteCodes.map(code => ({
           code: code.code,
           copiedCount: code.copiedCount,
           uniqueCopiedCount: code.uniqueCopiedCount,
+          workedVotes: code.votes.worked,
+          uniqueWorked: code.votes.uniqueWorked,
+          didntWorkVotes: code.votes.didntWork,
+          uniqueDidntWork: code.votes.uniqueDidntWork,
           status: code.status
         }))
       })
@@ -158,7 +160,7 @@ class DataManager {
       
       return this.data
     } catch (error) {
-      console.error('[DataManager] Failed to refresh data:', error)
+      console.error('[DataManager] Failed to refresh unified data:', error)
       return this.data // 返回旧数据
     } finally {
       this.isRefreshing = false
