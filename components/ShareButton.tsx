@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Share2, Copy, Check, Twitter, Facebook, Linkedin, MessageCircle, X, MessageSquare, Video } from 'lucide-react'
+import { Share2, Copy, Check, X, Facebook, Linkedin, MessageCircle, MessageSquare, Video } from 'lucide-react'
 
 interface ShareButtonProps {
   url?: string
@@ -172,7 +172,7 @@ export default function ShareButton({
                    className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-xl transition-colors border border-gray-100 hover:border-gray-200"
                  >
                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                     <Twitter className="h-4 w-4 text-gray-800" />
+                     <X className="h-4 w-4 text-gray-800" />
                    </div>
                    <div>
                      <span className="text-sm font-medium text-gray-700">X (Twitter)</span>
