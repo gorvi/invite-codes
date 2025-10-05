@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Share2, Copy, Check, Twitter, Facebook, Linkedin, MessageCircle } from 'lucide-react'
+import { Share2, Copy, Check, Twitter, Facebook, Linkedin, MessageCircle, X } from 'lucide-react'
 
 interface ShareButtonProps {
   url?: string
@@ -40,85 +40,130 @@ export default function ShareButton({
   }
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-        title="分享"
-      >
-        <Share2 className="h-4 w-4" />
-        <span className="hidden sm:inline">分享</span>
-      </button>
+    <>
+      {/* Fixed Share Button */}
+      <div className="fixed top-6 right-6 z-50">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 shadow-lg hover:shadow-xl border border-gray-200 rounded-full p-3 transition-all duration-200 transform hover:scale-105"
+          title="Share"
+        >
+          {isOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Share2 className="h-5 w-5" />
+          )}
+        </button>
+      </div>
 
+      {/* Share Menu */}
       {isOpen && (
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-40 bg-black bg-opacity-20 backdrop-blur-sm" 
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Share Menu */}
-          <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border z-50">
-            <div className="p-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">分享到</h3>
+          {/* Share Panel */}
+          <div className="fixed top-20 right-6 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in slide-in-from-top-2 duration-200">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Share</h3>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </button>
+              </div>
               
               {/* Copy URL */}
               <button
                 onClick={handleCopyUrl}
-                className="w-full flex items-center space-x-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200 mb-4"
               >
                 {copied ? (
                   <>
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-green-600">已复制!</span>
+                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-green-700">Copied!</span>
+                      <p className="text-xs text-green-600">Link copied to clipboard</p>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">复制链接</span>
+                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                      <Copy className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Copy Link</span>
+                      <p className="text-xs text-gray-500">Copy URL to clipboard</p>
+                    </div>
                   </>
                 )}
               </button>
 
               {/* Social Media Links */}
-              <div className="mt-3 space-y-1">
+              <div className="space-y-2">
                 <button
                   onClick={() => handleSocialShare('twitter')}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200"
                 >
-                  <Twitter className="h-4 w-4 text-blue-400" />
-                  <span className="text-sm text-gray-700">Twitter</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Twitter className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Twitter</span>
+                    <p className="text-xs text-gray-500">Share on Twitter</p>
+                  </div>
                 </button>
 
                 <button
                   onClick={() => handleSocialShare('facebook')}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200"
                 >
-                  <Facebook className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-700">Facebook</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Facebook className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Facebook</span>
+                    <p className="text-xs text-gray-500">Share on Facebook</p>
+                  </div>
                 </button>
 
                 <button
                   onClick={() => handleSocialShare('linkedin')}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200"
                 >
-                  <Linkedin className="h-4 w-4 text-blue-700" />
-                  <span className="text-sm text-gray-700">LinkedIn</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Linkedin className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">LinkedIn</span>
+                    <p className="text-xs text-gray-500">Share on LinkedIn</p>
+                  </div>
                 </button>
 
                 <button
                   onClick={() => handleSocialShare('telegram')}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200"
                 >
-                  <MessageCircle className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm text-gray-700">Telegram</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Telegram</span>
+                    <p className="text-xs text-gray-500">Share on Telegram</p>
+                  </div>
                 </button>
               </div>
             </div>
           </div>
         </>
       )}
-    </div>
+    </>
   )
 }

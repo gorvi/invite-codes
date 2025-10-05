@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import Header from '@/components/Header'
+import ShareButton from '@/components/ShareButton'
 import InviteCodeDisplay from '@/components/InviteCodeDisplay'
 import CreatorNote from '@/components/CreatorNote'
 import SupportCreator from '@/components/SupportCreator'
@@ -250,6 +251,9 @@ export default function Home() {
       </div>
       
         <Footer />
+        
+        {/* Fixed Share Button */}
+        <ShareButton />
         
         {/* Submit Code Modal */}
         <SubmitCodeModal
