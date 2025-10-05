@@ -111,6 +111,10 @@ export default function Home() {
     // 注册数据监听器（会自动触发数据加载）
     console.log('[Page] 🔍 Adding listener to dataManager...')
     dataManager.addListener(handleDataUpdate)
+    
+    // 🔥 强制刷新数据，确保数据加载
+    console.log('[Page] 🔍 Force refreshing data...')
+    dataManager.triggerRefresh()
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
