@@ -240,6 +240,14 @@ export default function Home() {
               {/* Support Creator button is hidden */}
             </div>
             
+            {/* 🔥 调试信息 */}
+            <div className="bg-yellow-100 p-4 rounded mb-4">
+              <h3 className="font-bold">Debug Info:</h3>
+              <p>inviteCodes length: {inviteCodes.length}</p>
+              <p>filtered codes length: {inviteCodes.filter(code => code.status === 'active').length}</p>
+              <p>sample codes: {inviteCodes.slice(0, 3).map(c => c.code).join(', ')}</p>
+            </div>
+            
             <InviteCodeDisplay 
               codes={inviteCodes
                 .filter(code => code.status === 'active')
