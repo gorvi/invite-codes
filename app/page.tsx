@@ -93,22 +93,55 @@ export default function Home() {
   }
 
   useEffect(() => {
-    console.log('[Page] 🔍 useEffect triggered, setting up data manager...')
+    console.log('[Page] 🔍 useEffect triggered, fetching data directly...')
     
-    // 🔥 使用原始的 dataManager 逻辑
+    // 🔥 直接获取数据，不依赖 dataManager
+    const fetchData = async () => {
+      try {
+        console.log('[Page] 🔍 Fetching data from /api/dashboard...')
+        const response = await fetch('/api/dashboard')
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        
+        const dashboardData = await response.json()
+        console.log('[Page] 🔍 API Response:', {
+          hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+          activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+          sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map((c: any) => c.code)
+        })
+        
+        const activeInviteCodes = dashboardData.activeInviteCodes || []
+        console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
+        setInviteCodes(activeInviteCodes)
+        setLoading(false)
+        
+      } catch (error) {
+        console.error('[Page] ❌ Fetch error:', error)
+        setLoading(false)
+      }
+    }
+    
+    // 立即获取数据
+    fetchData()
+    
+    // 🔥 备用：使用 dataManager（如果直接获取失败）
     const handleDataUpdate = (data: GlobalData) => {
-      console.log('[Page] 🔍 Data updated via DataManager:', {
+      console.log('[Page] 🔍 Data updated via DataManager (backup):', {
         inviteCodesLength: data.inviteCodes.length,
         activeCodeCount: data.activeCodeCount,
         totalCodeCount: data.totalCodeCount,
-        sampleCodes: data.inviteCodes.slice(0, 3).map(c => c.code)
+        sampleCodes: data.inviteCodes.slice(0, 3).map((c: any) => c.code)
       })
-      setInviteCodes(data.inviteCodes)
-      setLoading(false)
+      // 只有当直接获取的数据为空时才使用 dataManager 的数据
+      if (inviteCodes.length === 0) {
+        setInviteCodes(data.inviteCodes)
+        setLoading(false)
+      }
     }
 
-    // 注册数据监听器（会自动触发数据加载）
-    console.log('[Page] 🔍 Adding listener to dataManager...')
+    // 注册数据监听器作为备用
+    console.log('[Page] 🔍 Adding backup listener to dataManager...')
     dataManager.addListener(handleDataUpdate)
 
     // Set up SSE connection for real-time updates
