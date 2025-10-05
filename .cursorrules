@@ -66,6 +66,25 @@ This is a Next.js 14 application for sharing Sora 2 invite codes. The project us
 - Utility functions in `lib/` directory
 - Keep data structures consistent and well-documented
 
+### Documentation Organization 📚
+- **Markdown files**: Place all `.md` files in `docs/` directory
+  - `docs/README.md` - Main project documentation
+  - `docs/DEVELOPMENT.md` - Development guidelines and rules
+  - `docs/DEPLOYMENT.md` - Deployment instructions
+  - `docs/DATABASE_*.md` - Database-related documentation
+  - `docs/SENSITIVE_WORD_FILTER.md` - Content filtering documentation
+  - Other documentation files organized by category
+- **SQL files**: Place all `.sql` files in `database/` directory
+  - `database/supabase-simplified-schema.sql` - Main database schema
+  - `database/supabase-timezone-beijing.sql` - Timezone configuration
+  - Other database migration and setup scripts
+- **Project root**: Keep only essential configuration files in root directory
+  - `.cursorrules` - Cursor AI rules and project guidelines
+  - `package.json` - Node.js dependencies and scripts
+  - `next.config.js` - Next.js configuration
+  - `tailwind.config.js` - Tailwind CSS configuration
+  - `tsconfig.json` - TypeScript configuration
+
 ## Security Guidelines
 - Never expose sensitive data in client-side code
 - Validate all user inputs
