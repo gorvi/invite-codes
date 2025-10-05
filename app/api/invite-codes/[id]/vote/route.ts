@@ -116,7 +116,10 @@ export async function POST(
     // 保存数据到持久化存储
     try {
       await saveData()
-      console.log('[DATA] Saved vote update to storage')
+      // 🔥 同时保存到 Supabase 数据库
+      const { sora2DataManager } = await import('@/lib/sora2DataManager')
+      await sora2DataManager.saveInviteCodes(inviteCodes)
+      console.log('[DATA] ✅ Saved vote update to both local and Supabase storage')
     } catch (error) {
       console.error('[DATA] Failed to save vote update:', error)
     }

@@ -163,8 +163,9 @@ export async function POST(request: NextRequest) {
             
             console.log(`[Copy] Updated code ${inviteCode.code}: copiedCount=${inviteCode.copiedCount}, uniqueCopiedCount=${inviteCode.uniqueCopiedCount}`)
             
-            // 🔥 保存更新后的邀请码
-            await saveData()
+            // 🔥 保存更新后的邀请码到 Supabase 数据库
+            await sora2DataManager.saveInviteCodes(inviteCodes)
+            console.log(`[Copy] ✅ Saved updated invite codes to Supabase database`)
           }
           
           // 更新邀请码总复制次数

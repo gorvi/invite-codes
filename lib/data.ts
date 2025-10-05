@@ -242,7 +242,12 @@ export async function addInviteCode(code: string, submitterName?: string): Promi
         setTimeout(() => reject(new Error('Save timeout after 10 seconds')), 10000)
       )
     ])
-    console.log('[addInviteCode] Data saved successfully')
+    
+    // 🔥 同时保存到 Supabase 数据库
+    const { sora2DataManager } = await import('./sora2DataManager')
+    await sora2DataManager.saveInviteCodes(inviteCodes)
+    
+    console.log('[addInviteCode] ✅ Data saved successfully to both local and Supabase storage')
   } catch (error) {
     console.error('[addInviteCode] Failed to save data:', error)
     // 即使保存失败，也继续执行，因为数据已经在内存中
