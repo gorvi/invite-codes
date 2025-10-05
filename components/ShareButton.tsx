@@ -17,39 +17,80 @@ export default function ShareButton({
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const handleCopyUrl = async () => {
+  // 通用复制函数，支持任意文本，兼容移动端
+  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(url)
+      // 优先使用现代 Clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text)
+        return true
+      }
+      
+      // 备选方案：创建临时 textarea 元素（兼容移动端）
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      try {
+        const successful = document.execCommand('copy')
+        return successful
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+      return false
+    }
+  }
+
+  const handleCopyUrl = async () => {
+    const success = await copyToClipboard(url)
+    if (success) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy URL:', err)
+    } else {
+      alert(`Please copy this URL manually:\n${url}`)
     }
   }
 
   const shareLinks = {
-    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+    x: `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, // Twitter 已改名为 X
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
     telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
-    wechat: `https://web.wechat.com/`, // WeChat doesn't have direct share URL, will show QR code
-    tiktok: `https://www.tiktok.com/` // TikTok doesn't have direct share URL, will copy text
+    wechat: `https://web.wechat.com/`, // WeChat doesn't have direct share URL
+    tiktok: `https://www.tiktok.com/` // TikTok doesn't have direct share URL
   }
 
-  const handleSocialShare = (platform: keyof typeof shareLinks) => {
+  const handleSocialShare = async (platform: keyof typeof shareLinks) => {
     if (platform === 'wechat') {
-      // For WeChat, we'll copy the URL and show a message
-      handleCopyUrl()
+      // For WeChat, copy the URL
+      const success = await copyToClipboard(url)
+      if (success) {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } else {
+        alert(`Please copy this URL manually:\n${url}`)
+      }
       return
     }
     
     if (platform === 'tiktok') {
       // For TikTok, copy the title and URL
       const shareText = `${title}\n${url}`
-      navigator.clipboard.writeText(shareText).then(() => {
+      const success = await copyToClipboard(shareText)
+      if (success) {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
-      })
+      } else {
+        alert(`Please copy this text manually:\n${shareText}`)
+      }
       return
     }
     
@@ -124,20 +165,20 @@ export default function ShareButton({
                 )}
               </button>
 
-              {/* Social Media Links */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleSocialShare('twitter')}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-blue-50 rounded-xl transition-colors border border-gray-100 hover:border-blue-200"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Twitter className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Twitter</span>
-                    <p className="text-xs text-gray-500">Share on Twitter</p>
-                  </div>
-                </button>
+               {/* Social Media Links */}
+               <div className="space-y-2">
+                 <button
+                   onClick={() => handleSocialShare('x')}
+                   className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-xl transition-colors border border-gray-100 hover:border-gray-200"
+                 >
+                   <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                     <Twitter className="h-4 w-4 text-gray-800" />
+                   </div>
+                   <div>
+                     <span className="text-sm font-medium text-gray-700">X (Twitter)</span>
+                     <p className="text-xs text-gray-500">Share on X</p>
+                   </div>
+                 </button>
 
                 <button
                   onClick={() => handleSocialShare('facebook')}
