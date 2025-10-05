@@ -64,8 +64,8 @@ export default function Home() {
       await navigator.clipboard.writeText(code)
       console.log(`[Copy] Code "${code}" copied to clipboard`)
       
-      // 异步记录复制事件，不等待返回
-      fetch('/api/analytics', {
+      // 🔥 同步记录复制事件，等待完成后再刷新
+      const response = await fetch('/api/analytics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,20 +74,22 @@ export default function Home() {
           action: 'copy', 
           inviteCodeId: codeId 
         }),
-      }).then(response => {
-        if (response.ok) {
-          console.log('[Copy] Copy event recorded successfully')
-          // 触发数据刷新以更新统计
-          dataManager.triggerRefresh()
-        } else {
-          console.error('[Copy] Failed to record copy event:', response.status)
-        }
-      }).catch(error => {
-        console.error('[Copy] Error recording copy event:', error)
       })
+      
+      if (response.ok) {
+        console.log('[Copy] Copy event recorded successfully')
+        // 🔥 API 成功后刷新数据，确保显示最新统计
+        dataManager.triggerRefresh()
+      } else {
+        console.error('[Copy] Failed to record copy event:', response.status)
+        // 即使 API 失败，也刷新一下数据
+        dataManager.triggerRefresh()
+      }
       
     } catch (error) {
       console.error('[Copy] Failed to copy code to clipboard:', error)
+      // 即使出错，也尝试刷新数据
+      dataManager.triggerRefresh()
       throw error // 重新抛出错误，让组件知道复制失败
     }
   }
