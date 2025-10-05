@@ -186,17 +186,22 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   }
 
   const calculateLastCodeTime = (code: InviteCode) => {
-    // 获取当前时间（UTC）
+    // 获取当前北京时间
     const now = new Date()
+    const beijingOffset = 8 * 60 * 60 * 1000 // UTC+8 毫秒
+    const nowBeijing = new Date(now.getTime() + beijingOffset)
     
-    // 解析数据库中的时间（UTC 格式）
+    // 解析数据库中的时间（已经是北京时间格式，因为 createInviteCodeTimestamp 返回北京时间）
     const createdAt = new Date(code.createdAt)
     
-    // 计算时间差（秒）- 直接使用 UTC 时间计算，结果一致
-    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000)
+    // 计算时间差（秒）
+    const diffInSeconds = Math.floor((nowBeijing.getTime() - createdAt.getTime()) / 1000)
     
     // 调试信息
-    console.log(`[TimeDebug] Code: ${code.code}, Created: ${createdAt.toISOString()}, Now: ${now.toISOString()}, Diff: ${diffInSeconds}s`)
+    console.log(`[TimeDebug] Code: ${code.code}`)
+    console.log(`[TimeDebug] Created: ${createdAt.toISOString()} (${createdAt.toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'})})`)
+    console.log(`[TimeDebug] Now Beijing: ${nowBeijing.toISOString()} (${nowBeijing.toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'})})`)
+    console.log(`[TimeDebug] Diff: ${diffInSeconds}s`)
     
     // 显示更精确的时间
     if (diffInSeconds < 30) return 'Just now'
