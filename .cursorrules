@@ -114,6 +114,13 @@ This is a Next.js 14 application for sharing Sora 2 invite codes. The project us
 - Proper error handling for missing env vars
 - Document required environment variables
 
+### Timezone Rules 🕐
+- **Beijing Time (UTC+8)**: All time calculations and displays MUST use Beijing time (Asia/Shanghai timezone)
+- **Database Storage**: Store all timestamps in UTC format in the database
+- **Frontend Display**: Convert UTC timestamps to Beijing time (UTC+8) for display
+- **Time Calculations**: Always account for timezone differences when calculating relative time
+- **Consistency**: Ensure all time-related features (invite code timestamps, analytics, game scores) use Beijing time
+
 ## Game Logic Rules
 - Global Best scores only update when new score is higher
 - Personal Best scores only update when new score is higher

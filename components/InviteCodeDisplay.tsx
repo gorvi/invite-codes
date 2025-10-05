@@ -186,9 +186,15 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   }
 
   const calculateLastCodeTime = (code: InviteCode) => {
+    // 获取当前北京时间
     const now = new Date()
-    const createdAt = new Date(code.createdAt)
-    const diffInSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000)
+    const beijingNow = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8
+    
+    // 解析数据库中的 UTC 时间并转换为北京时间
+    const createdAtUTC = new Date(code.createdAt)
+    const createdAtBeijing = new Date(createdAtUTC.getTime() + (8 * 60 * 60 * 1000))
+    
+    const diffInSeconds = Math.floor((beijingNow.getTime() - createdAtBeijing.getTime()) / 1000)
     
     // 显示更精确的时间
     if (diffInSeconds < 30) return 'Just now'
