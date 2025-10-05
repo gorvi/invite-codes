@@ -113,7 +113,25 @@ export default function Home() {
         
         const activeInviteCodes = dashboardData.activeInviteCodes || []
         console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
-        setInviteCodes(activeInviteCodes)
+        
+        // 🔥 临时测试：如果 API 数据为空，使用测试数据
+        if (activeInviteCodes.length === 0) {
+          console.log('[Page] 🔍 API returned empty data, using test data')
+          const testData = [
+            {
+              id: 'test1',
+              code: 'TEST1',
+              createdAt: new Date().toISOString(),
+              status: 'active',
+              votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
+              copiedCount: 5,
+              uniqueCopiedCount: 3
+            }
+          ]
+          setInviteCodes(testData)
+        } else {
+          setInviteCodes(activeInviteCodes)
+        }
         setLoading(false)
       } catch (error) {
         console.error('[Page] ❌ Direct fetch error:', error)
