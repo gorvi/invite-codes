@@ -223,6 +223,16 @@ export default function Home() {
             </div>
             
             
+            {/* 🔥 临时调试信息 */}
+            <div className="bg-yellow-100 p-4 rounded mb-4">
+              <h3 className="font-bold">Debug Info:</h3>
+              <p>Total inviteCodes: {inviteCodes.length}</p>
+              <p>Active codes: {inviteCodes.filter(code => code.status === 'active').length}</p>
+              <p>First 3 codes: {inviteCodes.slice(0, 3).map(c => c.code).join(', ')}</p>
+              <p>FFAADD exists: {inviteCodes.find(c => c.code === 'FFAADD') ? 'YES' : 'NO'}</p>
+              <p>FFAADD status: {inviteCodes.find(c => c.code === 'FFAADD')?.status}</p>
+            </div>
+            
             <InviteCodeDisplay 
               codes={inviteCodes
                 .filter(code => code.status === 'active')
