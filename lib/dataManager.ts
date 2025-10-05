@@ -124,6 +124,16 @@ class DataManager {
 
       const dashboardData = await response.json()
       
+      // 🔥 详细调试 API 响应数据
+      console.log('[DataManager] 🔍 API Response Debug:', {
+        hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+        activeInviteCodesType: typeof dashboardData.activeInviteCodes,
+        activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+        activeInviteCodesIsArray: Array.isArray(dashboardData.activeInviteCodes),
+        activeInviteCodesSample: dashboardData.activeInviteCodes?.slice(0, 2),
+        allKeys: Object.keys(dashboardData)
+      })
+      
       // 直接使用统一接口返回的数据
       this.data = {
         inviteCodes: dashboardData.activeInviteCodes || [], // 只返回活跃的邀请码
