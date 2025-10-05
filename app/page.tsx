@@ -23,28 +23,8 @@ import { InviteCode } from '@/lib/data'
 import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function Home() {
-  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([
-    // 🔥 临时硬编码测试数据
-    {
-      id: 'temp1',
-      code: 'TEMP1',
-      createdAt: new Date().toISOString(),
-      status: 'active',
-      votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
-      copiedCount: 5,
-      uniqueCopiedCount: 3
-    },
-    {
-      id: 'temp2', 
-      code: 'TEMP2',
-      createdAt: new Date().toISOString(),
-      status: 'active',
-      votes: { worked: 1, didntWork: 0, uniqueWorked: 1, uniqueDidntWork: 0 },
-      copiedCount: 3,
-      uniqueCopiedCount: 2
-    }
-  ])
-  const [loading, setLoading] = useState(false) // 设置为 false，因为我们已经有了测试数据
+  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
+  const [loading, setLoading] = useState(true)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
@@ -113,19 +93,19 @@ export default function Home() {
   }
 
   useEffect(() => {
-    console.log('[Page] 🔍 useEffect triggered, setting up data manager...')
+    console.log('[Page] 🔍 useEffect triggered, fetching data...')
     
-    // 🔥 临时修复：直接获取数据，不依赖 dataManager
-    const fetchDataDirectly = async () => {
+    // 🔥 简化的数据获取逻辑
+    const fetchData = async () => {
       try {
-        console.log('[Page] 🔍 Fetching data directly from API...')
+        console.log('[Page] 🔍 Fetching data from /api/dashboard...')
         const response = await fetch('/api/dashboard')
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
         
         const dashboardData = await response.json()
-        console.log('[Page] 🔍 Direct API Response:', {
+        console.log('[Page] 🔍 API Response:', {
           hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
           activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
           sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map(c => c.code)
@@ -133,55 +113,15 @@ export default function Home() {
         
         const activeInviteCodes = dashboardData.activeInviteCodes || []
         console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
-        
-        // 🔥 临时测试：如果 API 数据为空，使用测试数据
-        if (activeInviteCodes.length === 0) {
-          console.log('[Page] 🔍 API returned empty data, using test data')
-          const testData = [
-            {
-              id: 'test1',
-              code: 'TEST1',
-              createdAt: new Date().toISOString(),
-              status: 'active',
-              votes: { worked: 0, didntWork: 0, uniqueWorked: 0, uniqueDidntWork: 0 },
-              copiedCount: 5,
-              uniqueCopiedCount: 3
-            }
-          ]
-          setInviteCodes(testData)
-        } else {
-          setInviteCodes(activeInviteCodes)
-        }
+        setInviteCodes(activeInviteCodes)
         setLoading(false)
       } catch (error) {
-        console.error('[Page] ❌ Direct fetch error:', error)
+        console.error('[Page] ❌ Fetch error:', error)
         setLoading(false)
       }
     }
     
-    // 🔥 使用全局数据管理器，避免重复 API 调用
-    const handleDataUpdate = (data: GlobalData) => {
-      console.log('[Page] 🔍 Data updated via DataManager:', {
-        inviteCodesLength: data.inviteCodes.length,
-        activeCodeCount: data.activeCodeCount,
-        totalCodeCount: data.totalCodeCount,
-        sampleCodes: data.inviteCodes.slice(0, 3).map(c => c.code)
-      })
-      console.log('[Page] 🔍 Full invite codes data:', data.inviteCodes)
-      setInviteCodes(data.inviteCodes)
-      setLoading(false)
-    }
-
-    // 注册数据监听器（会自动触发数据加载）
-    console.log('[Page] 🔍 Adding listener to dataManager...')
-    dataManager.addListener(handleDataUpdate)
-    
-    // 🔥 强制刷新数据，确保数据加载
-    console.log('[Page] 🔍 Force refreshing data...')
-    dataManager.triggerRefresh()
-    
-    // 🔥 临时修复：同时直接获取数据作为备用
-    fetchDataDirectly()
+    fetchData()
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
