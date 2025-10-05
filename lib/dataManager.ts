@@ -113,7 +113,6 @@ class DataManager {
     }
 
     this.isRefreshing = true
-    console.log('[DataManager] Starting unified data refresh...')
 
     try {
       // 🔥 使用统一的仪表板接口，一次性获取所有数据
@@ -143,7 +142,18 @@ class DataManager {
       console.log('[DataManager] ✅ Unified data refreshed:', {
         inviteCodes: this.data.inviteCodes.length,
         activeCount: this.data.activeCodeCount,
-        submitCount: this.data.submitCount
+        submitCount: this.data.submitCount,
+        // 🔥 详细调试信息：显示每个邀请码的完整统计
+        inviteCodesWithStats: this.data.inviteCodes.map(code => ({
+          code: code.code,
+          copiedCount: code.copiedCount,
+          uniqueCopiedCount: code.uniqueCopiedCount,
+          workedVotes: code.votes.worked,
+          uniqueWorked: code.votes.uniqueWorked,
+          didntWorkVotes: code.votes.didntWork,
+          uniqueDidntWork: code.votes.uniqueDidntWork,
+          status: code.status
+        }))
       })
 
       // 通知所有监听器

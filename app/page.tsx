@@ -92,40 +92,40 @@ export default function Home() {
     }
   }
 
-  useEffect(() => {
-    // 直接获取数据，不依赖 dataManager
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/dashboard')
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        
-        const dashboardData = await response.json()
-        const activeInviteCodes = dashboardData.activeInviteCodes || []
-        setInviteCodes(activeInviteCodes)
-        setLoading(false)
-        
-      } catch (error) {
-        console.error('[Page] Fetch error:', error)
-        setLoading(false)
-      }
-    }
-    
-    // 立即获取数据
-    fetchData()
-    
-    // 备用：使用 dataManager（如果直接获取失败）
-    const handleDataUpdate = (data: GlobalData) => {
-      // 只有当直接获取的数据为空时才使用 dataManager 的数据
-      if (inviteCodes.length === 0) {
-        setInviteCodes(data.inviteCodes)
-        setLoading(false)
-      }
-    }
+   useEffect(() => {
+     // 直接获取数据，不依赖 dataManager
+     const fetchData = async () => {
+       try {
+         const response = await fetch('/api/dashboard')
+         if (!response.ok) {
+           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+         }
+         
+         const dashboardData = await response.json()
+         const activeInviteCodes = dashboardData.activeInviteCodes || []
+         setInviteCodes(activeInviteCodes)
+         setLoading(false)
+         
+       } catch (error) {
+         console.error('[Page] Fetch error:', error)
+         setLoading(false)
+       }
+     }
+     
+     // 立即获取数据
+     fetchData()
+     
+     // 备用：使用 dataManager（如果直接获取失败）
+     const handleDataUpdate = (data: GlobalData) => {
+       // 只有当直接获取的数据为空时才使用 dataManager 的数据
+       if (inviteCodes.length === 0) {
+         setInviteCodes(data.inviteCodes)
+         setLoading(false)
+       }
+     }
 
-    // 注册数据监听器作为备用
-    dataManager.addListener(handleDataUpdate)
+     // 注册数据监听器作为备用
+     dataManager.addListener(handleDataUpdate)
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')

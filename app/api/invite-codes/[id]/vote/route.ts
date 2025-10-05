@@ -17,90 +17,85 @@ export async function POST(
       )
     }
 
-    // 生成或获取用户ID
-    const userIdentifier = userId || generateUserIdentifier(request)
-
-    // 获取 Supabase 客户端
+    // 从 Supabase 数据库获取邀请码
     const supabase = sora2DataManager.getSupabaseClient()
     if (!supabase) {
       throw new Error('Supabase client not initialized')
     }
 
-    // 获取当前邀请码数据
-    const { data: currentCode, error: fetchError } = await supabase
+    // 获取邀请码数据
+    const { data: inviteCodeData, error: fetchError } = await supabase
       .from('sora2_invite_codes')
       .select('*')
       .eq('id', id)
       .single()
 
-    if (fetchError || !currentCode) {
+    if (fetchError || !inviteCodeData) {
       return NextResponse.json(
         { error: 'Invite code not found' },
         { status: 404 }
       )
     }
 
-    // 准备更新数据
-    const updates: any = {
-      updated_at: new Date().toISOString()
-    }
+    // 生成或获取用户ID
+    const userIdentifier = userId || generateUserIdentifier(request)
 
-    // 更新投票数据
-    if (vote === 'worked') {
-      updates.worked_votes = (currentCode.worked_votes || 0) + 1
-    } else {
-      updates.didnt_work_votes = (currentCode.didnt_work_votes || 0) + 1
-    }
-
-    // 检查用户是否已经投票过（使用唯一用户投票统计）
-    const { data: existingVotes } = await supabase
-      .from('sora2_unique_vote_stats')
+    // 获取用户统计
+    const { data: userStats, error: userStatsError } = await supabase
+      .from('sora2_user_stats')
       .select('*')
-      .eq('code_id', id)
       .eq('user_id', userIdentifier)
-      .eq('vote_type', vote)
       .single()
 
-    // 如果是新的唯一用户投票，更新唯一投票计数
-    if (!existingVotes) {
-      // 插入唯一投票记录
-      await supabase
-        .from('sora2_unique_vote_stats')
-        .insert({
-          code_id: id,
-          user_id: userIdentifier,
-          vote_type: vote,
-          created_at: new Date().toISOString()
-        })
+    // 更新投票数据 - 使用现有的数据库结构
+    let newWorkedVotes = inviteCodeData.worked_votes || 0
+    let newDidntWorkVotes = inviteCodeData.didnt_work_votes || 0
+    let newUniqueWorkedVotes = inviteCodeData.unique_worked_count || 0
+    let newUniqueDidntWorkVotes = inviteCodeData.unique_didnt_work_count || 0
+    let newStatus = inviteCodeData.status || 'active'
 
-      // 更新唯一投票计数
-      if (vote === 'worked') {
-        updates.unique_worked_count = (currentCode.unique_worked_count || 0) + 1
-      } else {
-        updates.unique_didnt_work_count = (currentCode.unique_didnt_work_count || 0) + 1
+    // 获取现有的用户ID列表
+    let workedUserIds = inviteCodeData.worked_user_ids || []
+    let didntWorkUserIds = inviteCodeData.didnt_work_user_ids || []
+
+    // 检查是否是新用户投票
+    if (vote === 'worked') {
+      newWorkedVotes += 1
+      // 检查是否是新的独立用户投票
+      if (!workedUserIds.includes(userIdentifier)) {
+        workedUserIds.push(userIdentifier)
+        newUniqueWorkedVotes += 1
+      }
+    } else { // vote === 'didntWork'
+      newDidntWorkVotes += 1
+      // 检查是否是新的独立用户投票
+      if (!didntWorkUserIds.includes(userIdentifier)) {
+        didntWorkUserIds.push(userIdentifier)
+        newUniqueDidntWorkVotes += 1
       }
     }
 
     // 检查邀请码状态逻辑
-    const newUniqueWorked = vote === 'worked' && !existingVotes 
-      ? (currentCode.unique_worked_count || 0) + 1 
-      : (currentCode.unique_worked_count || 0)
-    const newUniqueDidntWork = vote === 'didntWork' && !existingVotes 
-      ? (currentCode.unique_didnt_work_count || 0) + 1 
-      : (currentCode.unique_didnt_work_count || 0)
-
-    if (newUniqueWorked >= 4) {
-      updates.status = 'used'
+    if (newUniqueWorkedVotes >= 4) {
+      newStatus = 'used'
     } else if (vote === 'didntWork' && 
-               newUniqueDidntWork > newUniqueWorked && 
-               newUniqueWorked >= 2) {
-      updates.status = 'invalid'
+               newUniqueDidntWorkVotes > newUniqueWorkedVotes && 
+               newUniqueWorkedVotes >= 2) {
+      newStatus = 'invalid'
     }
 
     // 更新邀请码数据
-    const { data: updatedCode, error: updateError } = await supabase
+    const { data: updatedInviteCode, error: updateError } = await supabase
       .from('sora2_invite_codes')
-      .update(updates)
+      .update({
+        worked_votes: newWorkedVotes,
+        didnt_work_votes: newDidntWorkVotes,
+        unique_worked_count: newUniqueWorkedVotes,
+        unique_didnt_work_count: newUniqueDidntWorkVotes,
+        worked_user_ids: workedUserIds,
+        didnt_work_user_ids: didntWorkUserIds,
+        status: newStatus
+      })
       .eq('id', id)
       .select()
       .single()
@@ -108,72 +103,55 @@ export async function POST(
     if (updateError) {
       console.error('[Vote] Failed to update invite code:', updateError)
       return NextResponse.json(
-        { error: 'Failed to update invite code' },
+        { error: 'Failed to update vote' },
         { status: 500 }
       )
     }
 
     // 更新用户统计
-    const { data: existingUserStats } = await supabase
-      .from('sora2_user_stats')
-      .select('vote_count')
-      .eq('user_id', userIdentifier)
-      .single()
-
-    await supabase
-      .from('sora2_user_stats')
-      .upsert({
+    if (userStats) {
+      await supabase
+        .from('sora2_user_stats')
+        .update({
+          vote_count: (userStats.vote_count || 0) + 1,
+          last_visit: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userIdentifier)
+    } else {
+      // 创建新用户统计
+      await supabase.from('sora2_user_stats').insert({
         user_id: userIdentifier,
-        vote_count: (existingUserStats?.vote_count || 0) + 1,
+        vote_count: 1,
+        copy_count: 0,
+        submit_count: 0,
+        first_visit: new Date().toISOString(),
         last_visit: new Date().toISOString(),
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'user_id' 
       })
-
-    // 更新每日统计
-    const today = new Date().toISOString().split('T')[0]
-    const { data: existingDailyStats } = await supabase
-      .from('sora2_daily_stats')
-      .select('worked_votes, didnt_work_votes')
-      .eq('date', today)
-      .single()
-
-    const currentWorkedVotes = existingDailyStats?.worked_votes || 0
-    const currentDidntWorkVotes = existingDailyStats?.didnt_work_votes || 0
-
-    await supabase
-      .from('sora2_daily_stats')
-      .upsert({
-        date: today,
-        worked_votes: vote === 'worked' ? currentWorkedVotes + 1 : currentWorkedVotes,
-        didnt_work_votes: vote === 'didntWork' ? currentDidntWorkVotes + 1 : currentDidntWorkVotes,
-        updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'date' 
-      })
-
-    // 返回更新后的邀请码数据
-    const responseData = {
-      id: updatedCode.id,
-      code: updatedCode.code,
-      createdAt: updatedCode.created_at,
-      status: updatedCode.status,
-      votes: {
-        worked: updatedCode.worked_votes || 0,
-        didntWork: updatedCode.didnt_work_votes || 0,
-        uniqueWorked: updatedCode.unique_worked_count || 0,
-        uniqueDidntWork: updatedCode.unique_didnt_work_count || 0
-      },
-      copiedCount: updatedCode.copy_count || 0,
-      uniqueCopiedCount: updatedCode.unique_copied_count || 0
     }
 
-    console.log(`[Vote] ✅ Vote recorded: ${vote} for code ${updatedCode.code}`)
+    console.log(`[Vote] Vote recorded successfully: ${vote} for code ${id}`)
+
+    // 构造返回数据
+    const responseData = {
+      id: updatedInviteCode.id,
+      code: updatedInviteCode.code,
+      status: updatedInviteCode.status,
+      createdAt: updatedInviteCode.created_at,
+      votes: {
+        worked: newWorkedVotes,
+        didntWork: newDidntWorkVotes,
+        uniqueWorked: newUniqueWorkedVotes,
+        uniqueDidntWork: newUniqueDidntWorkVotes
+      },
+      copiedCount: updatedInviteCode.copy_count || 0,
+      uniqueCopiedCount: updatedInviteCode.unique_copied_count || 0
+    }
 
     return NextResponse.json(responseData)
   } catch (error) {
-    console.error('[Vote] Error:', error)
     return NextResponse.json(
       { error: 'Failed to vote on invite code' },
       { status: 500 }
