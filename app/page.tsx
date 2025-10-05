@@ -93,41 +93,23 @@ export default function Home() {
   }
 
   useEffect(() => {
-    console.log('[Page] 🔍 useEffect triggered, fetching data...')
+    console.log('[Page] 🔍 useEffect triggered, setting up data manager...')
     
-    // 🔥 使用 dataManager 的简化版本
-    const fetchData = async () => {
-      try {
-        console.log('[Page] 🔍 Fetching data from /api/dashboard...')
-        const response = await fetch('/api/dashboard')
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        
-        const dashboardData = await response.json()
-        console.log('[Page] 🔍 API Response:', {
-          hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
-          activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
-          sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map(c => c.code)
-        })
-        
-        const activeInviteCodes = dashboardData.activeInviteCodes || []
-        console.log('[Page] 🔍 Setting invite codes:', activeInviteCodes.length)
-        
-        // 🔥 强制设置数据，确保状态更新
-        setTimeout(() => {
-          setInviteCodes(activeInviteCodes)
-          setLoading(false)
-          console.log('[Page] 🔍 Data set after timeout')
-        }, 100)
-        
-      } catch (error) {
-        console.error('[Page] ❌ Fetch error:', error)
-        setLoading(false)
-      }
+    // 🔥 使用原始的 dataManager 逻辑
+    const handleDataUpdate = (data: GlobalData) => {
+      console.log('[Page] 🔍 Data updated via DataManager:', {
+        inviteCodesLength: data.inviteCodes.length,
+        activeCodeCount: data.activeCodeCount,
+        totalCodeCount: data.totalCodeCount,
+        sampleCodes: data.inviteCodes.slice(0, 3).map(c => c.code)
+      })
+      setInviteCodes(data.inviteCodes)
+      setLoading(false)
     }
-    
-    fetchData()
+
+    // 注册数据监听器（会自动触发数据加载）
+    console.log('[Page] 🔍 Adding listener to dataManager...')
+    dataManager.addListener(handleDataUpdate)
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
