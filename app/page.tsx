@@ -184,38 +184,17 @@ export default function Home() {
         <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl mx-auto">
           {/* Left main content area */}
           <div className="w-full lg:w-[70%] space-y-8">
-            {/* Unified Hero Section - Combined Welcome + Main CTA */}
+            {/* Simplified Hero Section - Clean and Focused */}
             <section className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white mb-8">
               <div className="max-w-4xl mx-auto text-center">
-                {/* Welcome Message */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-center space-x-2 mb-3">
-                    <span className="text-3xl">🎁</span>
-                    <h2 className="text-2xl md:text-3xl font-bold">Welcome to Sora 2 Invite Code Community</h2>
-                  </div>
-                  <p className="text-lg md:text-xl opacity-90 mb-4">
-                    Share your Sora 2 invite codes and help others access the latest AI video generation technology! 🎬✨
-                  </p>
-                </div>
-
-                {/* Main CTA */}
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                   Get Free Sora 2 Invite Codes
                 </h1>
                 <p className="text-xl md:text-2xl mb-6 opacity-90">
                   Access OpenAI's revolutionary AI video generation technology with working invite codes from our community
                 </p>
-
-                {/* Share Code Call-to-Action */}
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
-                  <p className="text-lg font-semibold mb-2">💡 Got 1 code to share?</p>
-                  <p className="text-sm opacity-90">
-                    After registering with Sora 2, you receive 1 invite code that can help 4 people join. 
-                    <span className="font-semibold text-yellow-200"> Share it here and help the community!</span>
-                  </p>
-                </div>
-
-                {/* Feature Badges */}
+                
+                {/* Simplified Feature Badges */}
                 <div className="flex flex-wrap justify-center gap-4 text-sm">
                   <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
                     <CheckCircle className="w-4 h-4 mr-2" />
@@ -245,9 +224,9 @@ export default function Home() {
                   <div className="flex items-start space-x-3">
                     <Plus className="h-6 w-6 flex-shrink-0 mt-1" />
                     <div className="flex-1 text-left">
-                      <div className="font-bold text-lg mb-1">Submit Your Sora 2 Code</div>
+                      <div className="font-bold text-lg mb-1">Share Your Sora 2 Code</div>
                       <div className="text-sm text-blue-100">
-                        Have a Sora 2 invite? Share it with the community!
+                        Got an invite code? Help 4 people access Sora 2!
                       </div>
                     </div>
                   </div>
@@ -268,17 +247,34 @@ export default function Home() {
               onCopy={handleCopyCode}
             />
 
-            {/* Simplified Sora 2 Info Section */}
-            <section className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 mb-8 border border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900 mb-3">About Sora 2 Invite Codes</h2>
-              <p className="text-gray-700 mb-4">
-                Sora 2 is OpenAI's AI video generation model. Due to high demand, access is invite-only. 
-                Our community shares verified codes with 85%+ success rate.
-              </p>
-              <div className="flex flex-wrap gap-3 text-sm">
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">✓ Community Verified</span>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">✓ Real-time Updates</span>
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">✓ 85%+ Success Rate</span>
+            {/* SEO-Optimized Content Section - Moved after code list */}
+            <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">What is Sora 2 and Why Use Invite Codes?</h2>
+              <div className="prose prose-lg max-w-none text-gray-700">
+                <p className="mb-4">
+                  Sora 2 is OpenAI's cutting-edge AI video generation model that creates stunning videos from text descriptions. 
+                  Due to its advanced capabilities and high demand, access is currently limited through an invite-only system.
+                </p>
+                <p className="mb-4">
+                  Our community platform provides verified, working invite codes that give you instant access to this revolutionary technology. 
+                  Each code is tested and verified by our community members to ensure maximum success rates.
+                </p>
+                <div className="grid md:grid-cols-2 gap-6 mt-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
+                      <Star className="w-5 h-5 mr-2" />
+                      High Success Rate
+                    </h3>
+                    <p className="text-blue-800 text-sm">Our codes have an 85%+ success rate, verified by community feedback</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-green-900 mb-2 flex items-center">
+                      <TrendingUp className="w-5 h-5 mr-2" />
+                      Real-time Updates
+                    </h3>
+                    <p className="text-green-800 text-sm">New codes are added instantly as they become available</p>
+                  </div>
+                </div>
               </div>
             </section>
             
