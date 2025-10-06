@@ -278,7 +278,7 @@ export default function SEOMonitorPage() {
               </h2>
               
               <div className="space-y-3">
-                {Object.entries(results.keywordAnalysis).map(([keyword, data]) => (
+                {Object.entries(results.keywordAnalysis).map(([keyword, data]: [string, any]) => (
                   <div key={keyword} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">"{keyword}"</p>
