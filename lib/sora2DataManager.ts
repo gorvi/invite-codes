@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { getBeijingTimeISOString } from './timeUtils'
-import { InviteCode, AnalyticsData } from './data'
+import { InviteCode } from './data'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_ANON_KEY
@@ -154,51 +154,6 @@ export class Sora2DataManager {
     }
   }
 
-  /**
-   * 保存统计数据 (现在直接保存到各个独立的表)
-   * ⚡ 优化：只更新相关的用户记录，避免批量更新所有数据
-   */
-  async saveAnalytics(analytics: AnalyticsData): Promise<void> {
-    if (!this.supabase) {
-      console.error('[Sora2DataManager] Not initialized, cannot save analytics')
-      return
-    }
-
-    try {
-      // 保存用户统计数据 - 只更新有变化的用户
-      if (analytics.userStats && Object.keys(analytics.userStats).length > 0) {
-        const userStatsArray = Object.entries(analytics.userStats).map(([userId, stats]) => ({
-          user_id: userId,
-          copy_count: stats.copyCount || 0,
-          vote_count: stats.voteCount || 0,
-          submit_count: stats.submitCount || 0,
-          first_visit: stats.firstVisit || getBeijingTimeISOString(),
-          last_visit: stats.lastVisit || getBeijingTimeISOString(),
-          updated_at: getBeijingTimeISOString()
-        }))
-
-        if (userStatsArray.length > 0) {
-          const { error: userStatsError } = await this.supabase
-            .from('sora2_user_stats')
-            .upsert(userStatsArray, { onConflict: 'user_id' })
-
-          if (userStatsError) {
-            console.error('[Sora2DataManager] Error saving user stats:', userStatsError)
-            throw userStatsError
-          }
-          console.log(`[Sora2DataManager] ✅ Successfully saved ${userStatsArray.length} user stats`)
-        }
-      }
-
-      // 每日统计数据现在是视图，无需保存
-      // daily_stats 视图会自动从 sora2_invite_codes 表计算
-
-      console.log('[Sora2DataManager] ✅ Successfully saved analytics data to separate tables')
-    } catch (error) {
-      console.error('[Sora2DataManager] Error in saveAnalytics:', error)
-      throw error
-    }
-  }
 
   /**
    * ⚡ 新增：更新单个用户统计 (优化版本)
@@ -248,83 +203,6 @@ export class Sora2DataManager {
     }
   }
 
-  /**
-   * 加载统计数据 (现在从各个独立的表加载)
-   */
-  async loadAnalytics(): Promise<AnalyticsData | null> {
-    if (!this.supabase) {
-      console.error('[Sora2DataManager] Not initialized, cannot load analytics')
-      return null
-    }
-
-    try {
-      // 并行加载用户统计和每日统计（视图）
-      const [userStatsResult, dailyStatsResult] = await Promise.all([
-        this.supabase.from('sora2_user_stats').select('*'),
-        this.supabase.from('sora2_daily_stats').select('*')
-      ])
-
-      // 处理用户统计数据
-      const userStats: any = {}
-      if (userStatsResult.data) {
-        userStatsResult.data.forEach(user => {
-          userStats[user.user_id] = {
-            userId: user.user_id,
-            copyCount: user.copy_count || 0,
-            voteCount: user.vote_count || 0,
-            submitCount: user.submit_count || 0,
-            firstVisit: user.first_visit,
-            lastVisit: user.last_visit,
-            personalBestScore: 0 // Sora 2 用户没有游戏分数
-          }
-        })
-      }
-
-      // 处理每日统计数据（从视图）
-      const dailyStats: any = {}
-      if (dailyStatsResult.data) {
-        dailyStatsResult.data.forEach(day => {
-          dailyStats[day.date] = {
-            date: day.date,
-            copyClicks: day.copy_clicks || 0,
-            workedVotes: day.worked_votes || 0,
-            didntWorkVotes: day.didnt_work_votes || 0,
-            submitCount: day.submit_count || 0,
-            uniqueVisitors: day.unique_submitters || 0 // 视图中的字段名是 unique_submitters
-          }
-        })
-      }
-
-      // 计算总计数据
-      const totalCopyClicks = Object.values(userStats).reduce((sum: number, user: any) => sum + (user.copyCount || 0), 0)
-      const totalWorkedVotes = Object.values(userStats).reduce((sum: number, user: any) => sum + (user.voteCount || 0), 0)
-      const totalSubmitCount = Object.values(userStats).reduce((sum: number, user: any) => sum + (user.submitCount || 0), 0)
-
-      const analytics: AnalyticsData = {
-        totalClicks: 0, // 计算得出
-        copyClicks: totalCopyClicks,
-        workedVotes: totalWorkedVotes,
-        didntWorkVotes: 0, // 需要从邀请码表计算
-        submitCount: totalSubmitCount,
-        gameStats: { // 游戏统计不再由 Sora2DataManager 管理，这里清空
-          globalBestScore: 0,
-          totalGamesPlayed: 0,
-          totalHamstersWhacked: 0
-        },
-        dailyStats: dailyStats,
-        inviteCodeStats: {}, // 从 dailyStats 计算得出
-        userStats: userStats,
-        uniqueCopyStats: {},
-        uniqueVoteStats: {}
-      }
-
-      console.log('[Sora2DataManager] ✅ Successfully loaded analytics data from separate tables')
-      return analytics
-    } catch (error) {
-      console.error('[Sora2DataManager] Error in loadAnalytics:', error)
-      return null
-    }
-  }
 }
 
 export const sora2DataManager = new Sora2DataManager()
