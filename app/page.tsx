@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Plus, Users, Clock, CheckCircle, Star, TrendingUp } from 'lucide-react'
 import Header from '@/components/Header'
@@ -25,7 +25,9 @@ export default function Home() {
    const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
    const [loading, setLoading] = useState(true)
    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+   const [showFloatingButton, setShowFloatingButton] = useState(false)
    const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
+   const gameSectionRef = useRef<HTMLDivElement>(null)
 
 
    const handleManualRefresh = async () => {
@@ -110,55 +112,72 @@ export default function Home() {
   }
 
 
-   useEffect(() => {
-     const initialLoadTimeout = setTimeout(() => {
-       handleManualRefresh()
-     }, 100)
+    useEffect(() => {
+      const initialLoadTimeout = setTimeout(() => {
+        handleManualRefresh()
+      }, 100)
+      
+      const refreshInterval = setInterval(() => {
+        handleManualRefresh()
+      }, 30000)
+
+     // Set up SSE connection for real-time updates
+     const eventSource = new EventSource('/api/sse')
      
-     const refreshInterval = setInterval(() => {
-       handleManualRefresh()
-     }, 30000)
-
-    // Set up SSE connection for real-time updates
-    const eventSource = new EventSource('/api/sse')
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        
-        if (data.type === 'new_code') {
-          setInviteCodes(prev => [data.inviteCode, ...prev])
-          showNewCodeNotification(data.inviteCode.code)
-          window.dispatchEvent(new CustomEvent('statsUpdate'))
-        } else if (data.type === 'initial') {
-          setInviteCodes(data.inviteCodes)
-        } else if (data.type === 'update') {
-          setInviteCodes(data.inviteCodes)
-          window.dispatchEvent(new CustomEvent('statsUpdate'))
-        }
-      } catch (error) {
-        console.error('[SSE] Parse error:', error)
-      }
-    }
-
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error)
-    }
-
-    // Listen for guidance component events
-    const handleOpenSubmitModal = () => {
-      setIsSubmitModalOpen(true)
-    }
-    
-    window.addEventListener('openSubmitModal', handleOpenSubmitModal)
-
-     return () => {
-       clearTimeout(initialLoadTimeout)
-       clearInterval(refreshInterval)
-       eventSource.close()
-       window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
+     eventSource.onmessage = (event) => {
+       try {
+         const data = JSON.parse(event.data)
+         
+         if (data.type === 'new_code') {
+           setInviteCodes(prev => [data.inviteCode, ...prev])
+           showNewCodeNotification(data.inviteCode.code)
+           window.dispatchEvent(new CustomEvent('statsUpdate'))
+         } else if (data.type === 'initial') {
+           setInviteCodes(data.inviteCodes)
+         } else if (data.type === 'update') {
+           setInviteCodes(data.inviteCodes)
+           window.dispatchEvent(new CustomEvent('statsUpdate'))
+         }
+       } catch (error) {
+         console.error('[SSE] Parse error:', error)
+       }
      }
-   }, [])
+
+     eventSource.onerror = (error) => {
+       console.error('SSE connection error:', error)
+     }
+
+     // Listen for guidance component events
+     const handleOpenSubmitModal = () => {
+       setIsSubmitModalOpen(true)
+     }
+     
+     window.addEventListener('openSubmitModal', handleOpenSubmitModal)
+
+     // Scroll listener for floating button (mobile only)
+     const handleScroll = () => {
+       if (window.innerWidth >= 1024) return // Desktop only
+       
+       const gameSection = gameSectionRef.current
+       if (gameSection) {
+         const rect = gameSection.getBoundingClientRect()
+         const isGameVisible = rect.top <= window.innerHeight * 0.8
+         setShowFloatingButton(isGameVisible)
+       }
+     }
+     
+     window.addEventListener('scroll', handleScroll)
+     window.addEventListener('resize', handleScroll)
+
+      return () => {
+        clearTimeout(initialLoadTimeout)
+        clearInterval(refreshInterval)
+        eventSource.close()
+        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
+        window.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleScroll)
+      }
+    }, [])
 
   return (
     <ErrorBoundary>
@@ -217,7 +236,7 @@ export default function Home() {
             
             
             {/* Clear Share Button - Obviously Clickable */}
-            <div className="sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4">
+            <div className={`sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4 transition-all duration-500 ${showFloatingButton ? 'lg:block hidden' : 'block'}`}>
               {/* Main Share Button - Clear button appearance */}
               <button onClick={() => setIsSubmitModalOpen(true)} className="w-full group">
                 <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer border-2 border-green-400 hover:border-green-300">
@@ -309,7 +328,7 @@ export default function Home() {
             </section>
             
             {/* Mobile game display */}
-            <div className="lg:hidden">
+            <div className="lg:hidden" ref={gameSectionRef}>
               <WhackHamsterGame />
             </div>
             
@@ -382,6 +401,18 @@ export default function Home() {
         
         {/* Fixed Share Button */}
         <ShareButton />
+        
+        {/* Floating Mobile Share Button - Appears when scrolling past game */}
+        {showFloatingButton && (
+          <div className="fixed top-4 right-4 z-50 lg:hidden">
+            <button
+              onClick={() => setIsSubmitModalOpen(true)}
+              className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+            >
+              <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
+            </button>
+          </div>
+        )}
         
         {/* Submit Code Modal */}
         <SubmitCodeModal
