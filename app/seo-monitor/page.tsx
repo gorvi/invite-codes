@@ -7,7 +7,7 @@ import { ArrowLeft, RefreshCw, CheckCircle, AlertCircle, TrendingUp, Search, Bot
 export default function SEOMonitorPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [results, setResults] = useState(null)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [targetUrl, setTargetUrl] = useState('https://www.invitecodes.net')
 
   // 模拟SEO监控数据
