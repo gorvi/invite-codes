@@ -129,9 +129,12 @@ export default function Home() {
 
 
    useEffect(() => {
-     // 🔥 使用手动刷新方法获取初始数据
-     console.log('[Page] 🔄 Initial load using manual refresh method')
-     handleManualRefresh()
+     // 🔥 延迟初始数据加载，避免与 SSE 连接冲突
+     console.log('[Page] 🔄 Initial load scheduled with delay')
+     const initialLoadTimeout = setTimeout(() => {
+       console.log('[Page] 🔄 Initial load executing after delay')
+       handleManualRefresh()
+     }, 100) // 100ms 延迟，确保组件完全初始化
      
      // 🔥 添加定期刷新机制（每30秒检查一次）
      const refreshInterval = setInterval(() => {
@@ -180,6 +183,7 @@ export default function Home() {
 
      return () => {
        console.log('[Page] 🔍 Cleaning up...')
+       clearTimeout(initialLoadTimeout)
        clearInterval(refreshInterval)
        eventSource.close()
        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
