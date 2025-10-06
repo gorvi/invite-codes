@@ -14,6 +14,8 @@ Disallow: /static/
 Allow: /
 Allow: /how-it-works/
 Allow: /faq/
+Allow: /submit/
+Allow: /ai-seo-guide/
 
 # Normal crawl delay
 Crawl-delay: 1
