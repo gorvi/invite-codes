@@ -259,7 +259,16 @@ export default function Home() {
             
             
             
-            {/* SEO-Optimized Content Section */}
+            <InviteCodeDisplay 
+              codes={inviteCodes
+                .filter(code => code.status === 'active')
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              } 
+              onVote={handleVote}
+              onCopy={handleCopyCode}
+            />
+
+            {/* SEO-Optimized Content Section - Moved after code list */}
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">What is Sora 2 and Why Use Invite Codes?</h2>
               <div className="prose prose-lg max-w-none text-gray-700">
@@ -289,15 +298,6 @@ export default function Home() {
                 </div>
               </div>
             </section>
-
-            <InviteCodeDisplay 
-              codes={inviteCodes
-                .filter(code => code.status === 'active')
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              } 
-              onVote={handleVote}
-              onCopy={handleCopyCode}
-            />
             
             {/* Mobile game display */}
             <div className="lg:hidden">
