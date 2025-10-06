@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/logo_web.png",
+      "src": "/logo-web.png",
       "sizes": "192x64",
       "type": "image/png",
       "purpose": "any maskable"
@@ -33,7 +33,7 @@
   "id": "sora2-invite-codes",
   "screenshots": [
     {
-      "src": "/logo_web.png",
+      "src": "/logo-web.png",
       "sizes": "192x64",
       "type": "image/png",
       "form_factor": "wide",

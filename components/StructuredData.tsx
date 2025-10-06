@@ -55,7 +55,7 @@ export function OrganizationStructuredData() {
     url: 'https://www.invitecodes.net',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://www.invitecodes.net/logo_web.png',
+      url: 'https://www.invitecodes.net/logo-web.png',
       width: 120,
       height: 40,
       alt: 'Sora 2 Invite Codes - Modern blue and silver iC logo for AI video generation platform'

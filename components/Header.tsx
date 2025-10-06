@@ -9,7 +9,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <Link href="/" className="flex items-center space-x-3" data-protected>
           <Image 
-            src="/logo_web.png" 
+            src="/logo-web.png" 
             alt="Sora 2 Invite Codes - Modern blue and silver iC logo for AI video generation platform"
             title="Sora 2 Invite Codes Logo - Access Free AI Video Generation"
             width={120} 
