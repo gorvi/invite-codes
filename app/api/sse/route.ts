@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { inviteCodes, analyticsData, addSSEClient, removeSSEClient } from '@/lib/data'
+import { sora2DataManager } from '@/lib/sora2DataManager'
 
 // 强制动态渲染，避免静态生成
 export const dynamic = 'force-dynamic'
@@ -12,23 +12,65 @@ export async function GET(request: NextRequest) {
   const encoder = new TextEncoder()
   
   const stream = new ReadableStream({
-    start(controller) {
-      // 注册SSE客户端
-      addSSEClient(controller)
-      // 发送初始数据
-      const initialCodesWithAnalytics = inviteCodes.filter(code => code.status === 'active').map(code => ({
-        ...code,
-        copiedCount: analyticsData.inviteCodeStats[code.id]?.copyClicks || 0,
-        uniqueCopiedCount: analyticsData.uniqueCopyStats[code.id]?.totalUniqueCopies || 0,
-      }))
-      const data = JSON.stringify({
-        type: 'initial',
-        inviteCodes: initialCodesWithAnalytics
-      })
-      
-      controller.enqueue(
-        encoder.encode(`data: ${data}\n\n`)
-      )
+    async start(controller) {
+      try {
+        // 🔥 从 Supabase 获取最新数据
+        const supabase = sora2DataManager.getSupabaseClient()
+        if (supabase) {
+          const { data: inviteCodesData, error } = await supabase
+            .from('sora2_invite_codes')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+          
+          if (!error && inviteCodesData) {
+            // 转换数据格式以匹配前端期望
+            const formattedCodes = inviteCodesData.map((row: any) => ({
+              id: row.id,
+              code: row.code,
+              createdAt: new Date(row.created_at),
+              status: row.status,
+              votes: {
+                worked: row.worked_votes || 0,
+                didntWork: row.didnt_work_votes || 0,
+                uniqueWorked: row.unique_worked_count || 0,
+                uniqueDidntWork: row.unique_didnt_work_count || 0
+              },
+              copiedCount: row.copy_count || 0,
+              uniqueCopiedCount: row.unique_copied_count || 0
+            }))
+            
+            const data = JSON.stringify({
+              type: 'initial',
+              inviteCodes: formattedCodes
+            })
+            
+            controller.enqueue(
+              encoder.encode(`data: ${data}\n\n`)
+            )
+            
+            console.log('[SSE] Initial data sent from Supabase:', formattedCodes.length, 'codes')
+          } else {
+            console.error('[SSE] Failed to fetch initial data:', error)
+            // 发送空数据
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
+            )
+          }
+        } else {
+          console.error('[SSE] Supabase client not available')
+          // 发送空数据
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
+          )
+        }
+      } catch (error) {
+        console.error('[SSE] Error in start function:', error)
+        // 发送空数据
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
+        )
+      }
 
       // 定期发送心跳
       const heartbeatInterval = setInterval(() => {
@@ -43,7 +85,6 @@ export async function GET(request: NextRequest) {
       // 清理函数
       request.signal.addEventListener('abort', () => {
         clearInterval(heartbeatInterval)
-        removeSSEClient(controller)
         controller.close()
       })
     }
