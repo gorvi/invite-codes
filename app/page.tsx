@@ -23,10 +23,39 @@ import { InviteCode } from '@/lib/data'
 import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function Home() {
-  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-  const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
+   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
+   const [loading, setLoading] = useState(true)
+   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
+
+   // 🔥 手动刷新函数
+   const handleManualRefresh = async () => {
+     console.log('[Page] 🔄 Manual refresh triggered')
+     setLoading(true)
+     try {
+       const timestamp = Date.now()
+       const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+         cache: 'no-store',
+         headers: {
+           'Cache-Control': 'no-cache, no-store, must-revalidate',
+           'Pragma': 'no-cache'
+         }
+       })
+       
+       if (!response.ok) {
+         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+       }
+       
+       const dashboardData = await response.json()
+       const activeInviteCodes = dashboardData.activeInviteCodes || []
+       console.log('[Page] 🔄 Manual refresh result:', activeInviteCodes.length, 'codes')
+       setInviteCodes(activeInviteCodes)
+     } catch (error) {
+       console.error('[Page] ❌ Manual refresh error:', error)
+     } finally {
+       setLoading(false)
+     }
+   }
 
   // Manually refresh invite codes data - 使用全局数据管理器
   const handleRefresh = async () => {
@@ -96,18 +125,35 @@ export default function Home() {
      // 直接获取数据，不依赖 dataManager
      const fetchData = async () => {
        try {
-         const response = await fetch('/api/dashboard')
+         // 🔥 添加缓存破坏参数
+         const timestamp = Date.now()
+         const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+           cache: 'no-store',
+           headers: {
+             'Cache-Control': 'no-cache, no-store, must-revalidate',
+             'Pragma': 'no-cache'
+           }
+         })
+         
          if (!response.ok) {
            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
          }
          
          const dashboardData = await response.json()
+         console.log('[Page] 🔍 API Response received:', {
+           hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+           activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+           sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map((c: any) => c.code),
+           timestamp: new Date().toISOString()
+         })
+         
          const activeInviteCodes = dashboardData.activeInviteCodes || []
+         console.log('[Page] 🔍 Setting invite codes state:', activeInviteCodes.length, 'codes')
          setInviteCodes(activeInviteCodes)
          setLoading(false)
          
        } catch (error) {
-         console.error('[Page] Fetch error:', error)
+         console.error('[Page] ❌ Fetch error:', error)
          setLoading(false)
        }
      }
@@ -115,10 +161,18 @@ export default function Home() {
      // 立即获取数据
      fetchData()
      
+     // 🔥 添加定期刷新机制（每30秒检查一次）
+     const refreshInterval = setInterval(() => {
+       console.log('[Page] 🔄 Periodic refresh triggered')
+       fetchData()
+     }, 30000)
+     
      // 备用：使用 dataManager（如果直接获取失败）
      const handleDataUpdate = (data: GlobalData) => {
+       console.log('[Page] 🔍 DataManager backup triggered:', data.inviteCodes.length, 'codes')
        // 只有当直接获取的数据为空时才使用 dataManager 的数据
        if (inviteCodes.length === 0) {
+         console.log('[Page] 🔄 Using DataManager backup data')
          setInviteCodes(data.inviteCodes)
          setLoading(false)
        }
@@ -166,11 +220,13 @@ export default function Home() {
     
     window.addEventListener('openSubmitModal', handleOpenSubmitModal)
 
-    return () => {
-      eventSource.close()
-      dataManager.removeListener(handleDataUpdate)
-      window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
-    }
+     return () => {
+       console.log('[Page] 🔍 Cleaning up...')
+       clearInterval(refreshInterval)
+       eventSource.close()
+       dataManager.removeListener(handleDataUpdate)
+       window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
+     }
   }, [])
 
   return (
@@ -201,6 +257,27 @@ export default function Home() {
             
             {/* Available invite codes stats */}
             <ActiveCodeStats />
+            
+            {/* 🔥 临时调试和手动刷新按钮 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-blue-800">Debug Info</h3>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Codes loaded: {inviteCodes.length} | 
+                    Active: {inviteCodes.filter(code => code.status === 'active').length} |
+                    Loading: {loading ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={loading}
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Refreshing...' : 'Manual Refresh'}
+                </button>
+              </div>
+            </div>
             
             {/* Action buttons area - sticky */}
             <div className="sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4">
