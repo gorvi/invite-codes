@@ -53,7 +53,13 @@ export function OrganizationStructuredData() {
     name: 'Sora 2 Invite Code Community',
     description: 'A community dedicated to sharing Sora 2 invite codes and helping creators access AI video generation technology.',
     url: 'https://www.invitecodes.net',
-    logo: 'https://www.invitecodes.net/logo.png',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://www.invitecodes.net/logo_web.png',
+      width: 120,
+      height: 40,
+      alt: 'Sora 2 Invite Codes - Modern blue and silver iC logo for AI video generation platform'
+    },
     sameAs: [
       'https://twitter.com/sora2codes'
     ],

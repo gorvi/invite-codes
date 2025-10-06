@@ -1,7 +1,7 @@
 {
   "name": "Sora 2 Invite Codes - Free AI Video Generation Access",
   "short_name": "Sora 2 Codes",
-  "description": "Get free Sora 2 invite codes and share yours with the community. Access the latest AI video generation technology.",
+  "description": "Get free Sora 2 invite codes and share yours with the community. Access the latest AI video generation technology from OpenAI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -12,11 +12,32 @@
       "src": "/logo_web.png",
       "sizes": "192x64",
       "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
       "purpose": "any"
     }
   ],
-  "categories": ["productivity", "utilities", "education"],
+  "categories": ["productivity", "utilities", "education", "ai", "video"],
   "lang": "en",
   "scope": "/",
-  "id": "sora2-invite-codes"
+  "id": "sora2-invite-codes",
+  "screenshots": [
+    {
+      "src": "/logo_web.png",
+      "sizes": "192x64",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Sora 2 Invite Codes Platform"
+    }
+  ]
 }

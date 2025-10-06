@@ -126,11 +126,11 @@ export default function RootLayout({
       <head>
         {/* PWA and App Icons */}
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#1e40af" />
+        <link rel="icon" href="/favicon.ico" title="Sora 2 Invite Codes Favicon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" title="Sora 2 Invite Codes App Icon" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" title="Sora 2 Invite Codes 32x32 Icon" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" title="Sora 2 Invite Codes 16x16 Icon" />
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#1e40af" title="Sora 2 Invite Codes Safari Icon" />
         
         {/* SEO and Performance */}
         <meta name="theme-color" content="#1e40af" />
