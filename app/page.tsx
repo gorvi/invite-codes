@@ -216,19 +216,55 @@ export default function Home() {
             <ActiveCodeStats />
             
             
-            {/* Action buttons area - sticky */}
+            {/* Enhanced Share Button - More Compelling and Visible */}
             <div className="sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4">
-              {/* Submit Code button (main action) */}
-              <button onClick={() => setIsSubmitModalOpen(true)} className="w-full">
-                <div className="bg-gradient-to-r from-primary-600 to-blue-600 text-white p-4 rounded-lg hover:from-primary-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer">
-                  <div className="flex items-start space-x-3">
-                    <Plus className="h-6 w-6 flex-shrink-0 mt-1" />
-                    <div className="flex-1 text-left">
-                      <div className="font-bold text-lg mb-1">Share Your Sora 2 Code</div>
-                      <div className="text-sm text-blue-100">
-                        Got an invite code? Help 4 people access Sora 2!
+              {/* Enhanced Submit Code button with better visual appeal */}
+              <button onClick={() => setIsSubmitModalOpen(true)} className="w-full group">
+                <div className="relative bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-6 rounded-xl hover:from-green-600 hover:via-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105 cursor-pointer border-2 border-green-400/20 hover:border-green-300/40">
+                  {/* Animated background effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  <div className="relative flex items-center space-x-4">
+                    {/* Enhanced icon with animation */}
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
+                        <Plus className="h-7 w-7 text-white group-hover:scale-110 transition-transform duration-300" />
                       </div>
                     </div>
+                    
+                    <div className="flex-1 text-left">
+                      {/* Main headline with emoji */}
+                      <div className="font-bold text-xl mb-2 flex items-center">
+                        <span className="mr-2">🎁</span>
+                        Share Your Sora 2 Code
+                        <span className="ml-2 text-yellow-200 group-hover:animate-bounce">✨</span>
+                      </div>
+                      
+                      {/* Compelling subtext */}
+                      <div className="text-base text-green-100 leading-relaxed">
+                        <span className="font-semibold text-yellow-200">Got an invite code?</span> 
+                        <br />
+                        Help <span className="font-bold text-white">4 people</span> access Sora 2 and become a community hero! 🚀
+                      </div>
+                      
+                      {/* Urgency indicator */}
+                      <div className="mt-3 flex items-center text-sm text-green-200">
+                        <Clock className="w-4 h-4 mr-1 animate-pulse" />
+                        <span>Codes expire quickly - share now!</span>
+                      </div>
+                    </div>
+                    
+                    {/* Arrow indicator */}
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
+                        <span className="text-white group-hover:translate-x-1 transition-transform duration-300">→</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Success message overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">Click to Share! 🎉</span>
                   </div>
                 </div>
               </button>
