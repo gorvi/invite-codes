@@ -21,7 +21,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/ai-seo-guide" className="text-gray-600 hover:text-primary-600 transition-colors">
-                  AI SEO Guide
+                  Complete Guide
                 </Link>
               </li>
             </ul>

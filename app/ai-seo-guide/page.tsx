@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { ArrowLeft, Search, Bot, Target, TrendingUp } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'AI SEO Guide for Sora 2 Invite Codes - How to Find Working Codes',
-  description: 'Complete guide to finding and using Sora 2 invite codes. Learn how AI search engines work and get the best results for accessing OpenAI\'s video generation technology.',
+  title: 'Complete Guide to Sora 2 Invite Codes - Find Working Codes',
+  description: 'Complete guide to finding and using Sora 2 invite codes. Learn best practices, troubleshooting tips, and how to maximize your success rate with community-shared codes.',
   keywords: [
     'sora 2 invite codes',
     'openai sora 2 access',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     'free sora 2 access'
   ],
   openGraph: {
-    title: 'AI SEO Guide for Sora 2 Invite Codes',
+    title: 'Complete Guide to Sora 2 Invite Codes',
     description: 'Learn how to find and use working Sora 2 invite codes with our comprehensive guide.',
     type: 'article',
     publishedTime: new Date().toISOString(),
@@ -97,12 +97,12 @@ Our community platform helps identify which codes are most likely to work for yo
           <div className="flex items-center mb-4">
             <Bot className="w-8 h-8 text-primary-600 mr-3" />
             <h1 className="text-4xl font-bold text-gray-900">
-              AI SEO Guide for Sora 2 Invite Codes
+              Complete Guide to Sora 2 Invite Codes
             </h1>
           </div>
           
           <p className="text-xl text-gray-600 leading-relaxed">
-            Learn how to find and use working Sora 2 invite codes with our comprehensive guide optimized for AI search engines and human users.
+            Learn how to find and use working Sora 2 invite codes with our comprehensive guide. Get expert tips, troubleshooting help, and best practices for accessing AI video generation.
           </p>
         </div>
 
