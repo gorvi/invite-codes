@@ -310,7 +310,7 @@ export default function SEOMonitorPage() {
                 AI Search Engine Simulation
               </h2>
               
-              {Object.entries(results.aiSearchResults).map(([query, result]) => (
+              {Object.entries(results.aiSearchResults).map(([query, result]: [string, any]) => (
                 <div key={query} className="mb-6 p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-3">Query: "{query}"</h3>
                   
@@ -318,7 +318,7 @@ export default function SEOMonitorPage() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Relevant Pages</h4>
                       <div className="space-y-2">
-                        {result.relevantContent.map((page, index) => (
+                        {result.relevantContent.map((page: any, index: number) => (
                           <div key={index} className="text-sm">
                             <p className="font-medium">{page.url}</p>
                             <p className="text-gray-600">Relevance: {page.relevance}%</p>
@@ -330,7 +330,7 @@ export default function SEOMonitorPage() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Entities Found</h4>
                       <div className="space-y-1">
-                        {result.entityRecognition.map((entity, index) => (
+                        {result.entityRecognition.map((entity: any, index: number) => (
                           <div key={index} className="text-sm">
                             <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                               {entity.entity}
@@ -344,7 +344,7 @@ export default function SEOMonitorPage() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Semantic Categories</h4>
                       <div className="space-y-1">
-                        {result.semanticAnalysis.map((category, index) => (
+                        {result.semanticAnalysis.map((category: any, index: number) => (
                           <div key={index} className="text-sm">
                             <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
                               {category.category}
@@ -401,7 +401,7 @@ export default function SEOMonitorPage() {
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">Strengths</h3>
                     <ul className="space-y-1">
-                      {results.performance.strengths.map((strength, index) => (
+                      {results.performance.strengths.map((strength: string, index: number) => (
                         <li key={index} className="text-sm text-green-700 flex items-center">
                           <CheckCircle className="w-4 h-4 mr-2" />
                           {strength}
@@ -413,7 +413,7 @@ export default function SEOMonitorPage() {
                   <div>
                     <h3 className="font-medium text-gray-900 mb-2">Areas for Improvement</h3>
                     <ul className="space-y-1">
-                      {results.performance.weaknesses.map((weakness, index) => (
+                      {results.performance.weaknesses.map((weakness: string, index: number) => (
                         <li key={index} className="text-sm text-yellow-700 flex items-center">
                           <AlertCircle className="w-4 h-4 mr-2" />
                           {weakness}
@@ -430,7 +430,7 @@ export default function SEOMonitorPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Optimization Recommendations</h2>
               
               <div className="space-y-3">
-                {results.recommendations?.map((rec, index) => (
+                {results.recommendations?.map((rec: any, index: number) => (
                   <div key={index} className={`p-3 rounded-lg border ${
                     rec.priority === 'high' ? 'bg-red-50 border-red-200' :
                     rec.priority === 'medium' ? 'bg-yellow-50 border-yellow-200' :
