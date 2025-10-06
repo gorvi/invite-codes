@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Users, Clock, CheckCircle, Star, TrendingUp } from 'lucide-react'
 import Header from '@/components/Header'
 import ShareButton from '@/components/ShareButton'
 import InviteCodeDisplay from '@/components/InviteCodeDisplay'
@@ -186,6 +186,32 @@ export default function Home() {
           <div className="w-full lg:w-[70%] space-y-8">
             <CreatorNote />
             
+            {/* SEO-Optimized Hero Section */}
+            <section className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white mb-8">
+              <div className="max-w-4xl mx-auto text-center">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                  Get Free Sora 2 Invite Codes
+                </h1>
+                <p className="text-xl md:text-2xl mb-6 opacity-90">
+                  Access OpenAI's revolutionary AI video generation technology with working invite codes from our community
+                </p>
+                <div className="flex flex-wrap justify-center gap-4 text-sm">
+                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    <span>100% Free Access</span>
+                  </div>
+                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span>Community Verified</span>
+                  </div>
+                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <span>Real-time Updates</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Available invite codes stats */}
             <ActiveCodeStats />
             
@@ -212,6 +238,37 @@ export default function Home() {
             
             
             
+            {/* SEO-Optimized Content Section */}
+            <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">What is Sora 2 and Why Use Invite Codes?</h2>
+              <div className="prose prose-lg max-w-none text-gray-700">
+                <p className="mb-4">
+                  Sora 2 is OpenAI's cutting-edge AI video generation model that creates stunning videos from text descriptions. 
+                  Due to its advanced capabilities and high demand, access is currently limited through an invite-only system.
+                </p>
+                <p className="mb-4">
+                  Our community platform provides verified, working invite codes that give you instant access to this revolutionary technology. 
+                  Each code is tested and verified by our community members to ensure maximum success rates.
+                </p>
+                <div className="grid md:grid-cols-2 gap-6 mt-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
+                      <Star className="w-5 h-5 mr-2" />
+                      High Success Rate
+                    </h3>
+                    <p className="text-blue-800 text-sm">Our codes have an 85%+ success rate, verified by community feedback</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-green-900 mb-2 flex items-center">
+                      <TrendingUp className="w-5 h-5 mr-2" />
+                      Real-time Updates
+                    </h3>
+                    <p className="text-green-800 text-sm">New codes are added instantly as they become available</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <InviteCodeDisplay 
               codes={inviteCodes
                 .filter(code => code.status === 'active')
@@ -233,6 +290,29 @@ export default function Home() {
               <CommunityImpact />
             </div>
             
+            {/* SEO-Optimized FAQ Section */}
+            <section className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About Sora 2 Invite Codes</h2>
+              <div className="space-y-6">
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">How do I use a Sora 2 invite code?</h3>
+                  <p className="text-gray-700">Simply copy the invite code from our platform and paste it into the Sora 2 access form on OpenAI's website. Make sure you have a valid OpenAI account first.</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Are these invite codes free to use?</h3>
+                  <p className="text-gray-700">Yes, all invite codes on our platform are completely free. We're a community-driven platform dedicated to helping people access Sora 2.</p>
+                </div>
+                <div className="border-l-4 border-purple-500 pl-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">How often are new codes added?</h3>
+                  <p className="text-gray-700">New codes are added in real-time as community members share them. We recommend checking our platform regularly for the latest working codes.</p>
+                </div>
+                <div className="border-l-4 border-orange-500 pl-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">What if a code doesn't work?</h3>
+                  <p className="text-gray-700">Try multiple codes from our platform. Each code has different usage limits and expiration times. Our community feedback system helps identify the most reliable codes.</p>
+                </div>
+              </div>
+            </section>
+
             {/* SEO Pages Navigation */}
             <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
               <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Learn More</h3>

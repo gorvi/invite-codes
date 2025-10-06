@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { ArrowLeft, Search, Bot, Target, TrendingUp } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Complete Guide to Sora 2 Invite Codes - Find Working Codes',
-  description: 'Complete guide to finding and using Sora 2 invite codes. Learn best practices, troubleshooting tips, and how to maximize your success rate with community-shared codes.',
+  title: 'Complete Guide to Sora 2 Invite Codes - Find Working Codes | 2024',
+  description: 'Complete guide to finding and using Sora 2 invite codes. Learn best practices, troubleshooting tips, and how to maximize your success rate with community-shared codes. Updated for 2024.',
   keywords: [
     'sora 2 invite codes',
     'openai sora 2 access',
@@ -12,14 +12,33 @@ export const metadata: Metadata = {
     'sora 2 working codes',
     'how to get sora 2 invite',
     'sora 2 community codes',
-    'free sora 2 access'
+    'free sora 2 access',
+    'sora 2 tutorial',
+    'ai video creation',
+    'openai sora 2 guide',
+    'sora 2 tips',
+    'sora 2 troubleshooting'
   ],
+  authors: [{ name: 'Sora 2 Community' }],
+  creator: 'Sora 2 Invite Code Community',
+  publisher: 'Sora 2 Community',
   openGraph: {
-    title: 'Complete Guide to Sora 2 Invite Codes',
-    description: 'Learn how to find and use working Sora 2 invite codes with our comprehensive guide.',
+    title: 'Complete Guide to Sora 2 Invite Codes - 2024',
+    description: 'Learn how to find and use working Sora 2 invite codes with our comprehensive guide. Get expert tips and troubleshooting help.',
     type: 'article',
     publishedTime: new Date().toISOString(),
-  }
+    modifiedTime: new Date().toISOString(),
+    authors: ['Sora 2 Community'],
+    tags: ['Sora 2', 'AI Video Generation', 'OpenAI', 'Invite Codes', 'Tutorial'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Complete Guide to Sora 2 Invite Codes - 2024',
+    description: 'Learn how to find and use working Sora 2 invite codes with our comprehensive guide.',
+  },
+  alternates: {
+    canonical: '/ai-seo-guide',
+  },
 }
 
 export default function AISEOGuidePage() {
@@ -136,10 +155,26 @@ Our community platform helps identify which codes are most likely to work for yo
           </div>
         </div>
 
+        {/* SEO-Optimized Table of Contents */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Table of Contents</h2>
+          <nav className="space-y-2">
+            {sections.map((section, index) => (
+              <a 
+                key={index}
+                href={`#section-${index + 1}`}
+                className="block text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              >
+                {index + 1}. {section.title}
+              </a>
+            ))}
+          </nav>
+        </div>
+
         {/* Main Content */}
         <div className="space-y-8">
           {sections.map((section, index) => (
-            <article key={index} className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+            <article key={index} id={`section-${index + 1}`} className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                 <span className="bg-primary-100 text-primary-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
                   {index + 1}
@@ -147,8 +182,20 @@ Our community platform helps identify which codes are most likely to work for yo
                 {section.title}
               </h2>
               <div className="prose prose-lg max-w-none">
-                <p className="text-gray-700 leading-relaxed">{section.content}</p>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line">{section.content}</div>
               </div>
+              {section.keywords && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-600 mb-2">Related Keywords:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {section.keywords.map((keyword, keyIndex) => (
+                      <span key={keyIndex} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </article>
           ))}
         </div>
@@ -175,22 +222,83 @@ Our community platform helps identify which codes are most likely to work for yo
           </div>
         </div>
 
-        {/* FAQ Section */}
+        {/* Enhanced FAQ Section */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="space-y-4">
-              <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About Sora 2 Invite Codes</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="space-y-6">
+              <div className="border-l-4 border-blue-500 pl-4">
                 <h4 className="font-semibold text-gray-900 mb-2">Q: How often are new codes added?</h4>
-                <p className="text-gray-600">A: New codes are added in real-time as community members share them. We recommend checking our platform regularly for the latest working codes.</p>
+                <p className="text-gray-600">A: New codes are added in real-time as community members share them. We recommend checking our platform regularly for the latest working codes. Our system automatically removes expired codes to ensure you only see active options.</p>
               </div>
-              <div>
+              <div className="border-l-4 border-green-500 pl-4">
                 <h4 className="font-semibold text-gray-900 mb-2">Q: Are all codes guaranteed to work?</h4>
-                <p className="text-gray-600">A: While we track success rates and remove expired codes, individual results may vary. Our platform shows success rates to help you choose the most reliable codes.</p>
+                <p className="text-gray-600">A: While we track success rates and remove expired codes, individual results may vary. Our platform shows success rates to help you choose the most reliable codes. We recommend trying multiple codes if one doesn't work.</p>
               </div>
-              <div>
+              <div className="border-l-4 border-purple-500 pl-4">
                 <h4 className="font-semibold text-gray-900 mb-2">Q: Can I share codes I receive?</h4>
-                <p className="text-gray-600">A: Yes! Sharing your invite codes helps the community. Use our submit form to share codes and help others access Sora 2.</p>
+                <p className="text-gray-600">A: Yes! Sharing your invite codes helps the community. Use our submit form to share codes and help others access Sora 2. Active contributors often get priority access to new codes.</p>
+              </div>
+              <div className="border-l-4 border-orange-500 pl-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Q: What if a code doesn't work for me?</h4>
+                <p className="text-gray-600">A: Try multiple codes from our platform. Each code has different usage limits and expiration times. Our community feedback system helps identify the most reliable codes for your specific situation.</p>
+              </div>
+              <div className="border-l-4 border-red-500 pl-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Q: Do I need a special account to use Sora 2?</h4>
+                <p className="text-gray-600">A: You need a valid OpenAI account to use Sora 2 invite codes. Make sure your account is verified and in good standing before attempting to use any invite codes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional SEO Content */}
+        <div className="mt-12 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-8 border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Our Sora 2 Invite Code Platform?</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Community Verified</h3>
+                  <p className="text-gray-600 text-sm">All codes are tested and verified by our active community members</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Real-time Updates</h3>
+                  <p className="text-gray-600 text-sm">New codes are added instantly as they become available</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Success Rate Tracking</h3>
+                  <p className="text-gray-600 text-sm">See which codes have the highest success rates</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Free to Use</h3>
+                  <p className="text-gray-600 text-sm">All invite codes are completely free for community members</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Easy Sharing</h3>
+                  <p className="text-gray-600 text-sm">Simple one-click copy functionality for all codes</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">✓</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Mobile Friendly</h3>
+                  <p className="text-gray-600 text-sm">Access codes from any device, anywhere</p>
+                </div>
               </div>
             </div>
           </div>

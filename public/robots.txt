@@ -1,3 +1,6 @@
+# Robots.txt for Sora 2 Invite Codes
+# Optimized for SEO and AI search engines
+
 User-agent: *
 Allow: /
 
@@ -9,6 +12,8 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
+Disallow: /private/
+Disallow: /test/
 
 # Allow important pages for SEO
 Allow: /
@@ -16,6 +21,36 @@ Allow: /how-it-works/
 Allow: /faq/
 Allow: /submit/
 Allow: /ai-seo-guide/
+Allow: /seo-monitor/
 
-# Normal crawl delay
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# AI search engines
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Normal crawl delay for other bots
 Crawl-delay: 1

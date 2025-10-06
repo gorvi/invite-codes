@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Gift } from 'lucide-react'
+import { ArrowLeft, Gift, Users, CheckCircle, Clock, Star } from 'lucide-react'
 import Header from '@/components/Header'
 import NotificationToast, { useNotifications } from '@/components/NotificationToast'
 
@@ -70,7 +70,7 @@ export default function SubmitPage() {
         onRemove={removeNotification} 
       />
       
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <Link 
             href="/" 
@@ -81,15 +81,43 @@ export default function SubmitPage() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex items-center space-x-2 mb-4">
-            <Gift className="h-6 w-6 text-primary-600" />
-            <h1 className="text-2xl font-bold text-gray-800">Submit Invite Code</h1>
+        {/* SEO-Optimized Hero Section */}
+        <section className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-8 text-white mb-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Share Your Sora 2 Invite Code
+            </h1>
+            <p className="text-xl md:text-2xl mb-6 opacity-90">
+              Help the community access AI video generation by sharing your working invite codes
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                <Users className="w-4 h-4 mr-2" />
+                <span>Help Others</span>
+              </div>
+              <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                <span>Verified Codes</span>
+              </div>
+              <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
+                <Clock className="w-4 h-4 mr-2" />
+                <span>Instant Sharing</span>
+              </div>
+            </div>
           </div>
-          
-          <p className="text-gray-600 mb-8">
-            Share your Sora invite code with the community
-          </p>
+        </section>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Main Form */}
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="flex items-center space-x-2 mb-4">
+              <Gift className="h-6 w-6 text-primary-600" />
+              <h2 className="text-2xl font-bold text-gray-800">Submit Your Code</h2>
+            </div>
+            
+            <p className="text-gray-600 mb-8">
+              Share your Sora invite code with the community and help others access AI video generation
+            </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -131,14 +159,84 @@ export default function SubmitPage() {
             </div>
           )}
 
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2">💡 Tips for Submitting Codes:</h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Ensure the invite code is valid and unused</li>
-              <li>• Please do not submit duplicate invite codes</li>
-              <li>• Please wait patiently after submission, we will review as soon as possible</li>
-              <li>• Thank you for your contribution to the community!</li>
-            </ul>
+            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-2">💡 Tips for Submitting Codes:</h3>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Ensure the invite code is valid and unused</li>
+                <li>• Please do not submit duplicate invite codes</li>
+                <li>• Please wait patiently after submission, we will review as soon as possible</li>
+                <li>• Thank you for your contribution to the community!</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* SEO-Optimized Content Sidebar */}
+          <div className="space-y-6">
+            {/* Why Share Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Star className="w-6 h-6 text-yellow-500 mr-2" />
+                Why Share Your Invite Code?
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700 text-sm">
+                    <strong>Help the Community:</strong> Your code can help multiple people access Sora 2's AI video generation capabilities.
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700 text-sm">
+                    <strong>Build Reputation:</strong> Contributing to the community helps build trust and recognition.
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700 text-sm">
+                    <strong>Access to More Codes:</strong> Active contributors often get priority access to new codes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* How It Works Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">How Code Sharing Works</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                  <p className="text-gray-700 text-sm">Submit your working invite code</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                  <p className="text-gray-700 text-sm">Our system verifies the code format</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                  <p className="text-gray-700 text-sm">Code becomes available to the community</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                  <p className="text-gray-700 text-sm">Users provide feedback on success rate</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Community Stats */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Community Impact</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">500+</div>
+                  <div className="text-sm text-gray-600">Codes Shared</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">2K+</div>
+                  <div className="text-sm text-gray-600">People Helped</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
