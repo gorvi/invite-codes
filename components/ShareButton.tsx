@@ -100,8 +100,8 @@ export default function ShareButton({
 
   return (
     <>
-      {/* Fixed Share Button */}
-      <div className="fixed top-24 right-6 z-50 md:top-6">
+      {/* Fixed Share Button - Repositioned to avoid conflict */}
+      <div className="fixed bottom-6 right-6 z-50 lg:top-6 lg:bottom-auto">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 shadow-lg hover:shadow-xl border border-gray-200 rounded-full p-3 transition-all duration-200 transform hover:scale-105"
@@ -125,7 +125,7 @@ export default function ShareButton({
           />
           
           {/* Share Panel */}
-          <div className="fixed top-32 right-6 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in slide-in-from-top-2 duration-200 md:top-20">
+          <div className="fixed bottom-20 right-6 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in slide-in-from-bottom-2 duration-200 lg:top-20 lg:bottom-auto lg:animate-in lg:slide-in-from-top-2">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Share</h3>
