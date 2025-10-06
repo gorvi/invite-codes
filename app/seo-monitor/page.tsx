@@ -78,7 +78,7 @@ export default function SEOMonitorPage() {
       const data = await response.json()
       setResults(data)
     } catch (err) {
-      setError('Failed to run SEO monitor: ' + err.message)
+      setError('Failed to run SEO monitor: ' + (err instanceof Error ? err.message : String(err)))
       // 如果API失败，使用模拟数据作为后备
       setResults(mockSEOData)
     } finally {
