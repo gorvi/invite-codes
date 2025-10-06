@@ -15,6 +15,7 @@ interface OptimisticUpdate {
   type: 'copy' | 'worked' | 'didntWork'
   originalValue: number
   optimisticValue: number
+  timestamp: number
 }
 
 export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeDisplayProps) {
@@ -63,10 +64,11 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   // 应用乐观更新
   const applyOptimisticUpdate = (codeId: string, type: 'copy' | 'worked' | 'didntWork', originalValue: number) => {
     const optimisticValue = originalValue + 1
+    const timestamp = Date.now()
     
     setOptimisticUpdates(prev => [
       ...prev.filter(update => !(update.codeId === codeId && update.type === type)),
-      { codeId, type, originalValue, optimisticValue }
+      { codeId, type, originalValue, optimisticValue, timestamp }
     ])
     
     return optimisticValue
@@ -104,8 +106,20 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
   // 当 codes 数据更新时，清理过期的乐观更新
   useEffect(() => {
     // 清理不再存在的邀请码的乐观更新
+    // 但保留最近 5 秒内的乐观更新，避免数据刷新时被清理
+    const now = Date.now()
     setOptimisticUpdates(prev => 
-      prev.filter(update => codes.some(code => code.id === update.codeId))
+      prev.filter(update => {
+        // 如果邀请码不存在了，清理
+        if (!codes.some(code => code.id === update.codeId)) {
+          return false
+        }
+        // 如果乐观更新超过 5 秒，清理
+        if (update.timestamp && now - update.timestamp > 5000) {
+          return false
+        }
+        return true
+      })
     )
   }, [codes])
 
