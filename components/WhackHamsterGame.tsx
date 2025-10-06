@@ -774,7 +774,7 @@ export default function WhackHamsterGame() {
           <p className="text-sm text-gray-600">Global Best: <span className="font-semibold">{gameState.globalBest > 0 ? gameState.globalBest : '--'}</span></p>
           {isNewGlobalRecord && (
             <div className="mt-2 p-2 bg-yellow-100 rounded-lg border border-yellow-300">
-              <p className="text-sm font-bold text-yellow-800">🏆 新全球记录！</p>
+              <p className="text-sm font-bold text-yellow-800">🏆 New Global Record!</p>
             </div>
           )}
         </div>

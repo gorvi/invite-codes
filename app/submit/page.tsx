@@ -42,19 +42,19 @@ export default function SubmitPage() {
           }),
         })
         
-        setSubmitMessage('✅ 邀请码提交成功！感谢您为社区做出的贡献！')
-        showSuccessNotification(`邀请码 "${inviteCode}" 已成功提交！`)
+        setSubmitMessage('✅ Invite code submitted successfully! Thank you for contributing to the community!')
+        showSuccessNotification(`Invite code "${inviteCode}" has been submitted successfully!`)
         setInviteCode('')
         
         // 🔥 触发统计数据刷新
         window.dispatchEvent(new CustomEvent('statsUpdate'))
       } else {
         const errorData = await response.json()
-        setSubmitMessage(`❌ ${errorData.error || '提交失败，请稍后重试'}`)
-        showErrorNotification(errorData.error || '提交失败，请稍后重试')
+        setSubmitMessage(`❌ ${errorData.error || 'Submission failed, please try again later'}`)
+        showErrorNotification(errorData.error || 'Submission failed, please try again later')
       }
     } catch (error) {
-      setSubmitMessage('❌ 提交失败，请稍后重试')
+      setSubmitMessage('❌ Submission failed, please try again later')
     } finally {
       setIsSubmitting(false)
     }
@@ -107,7 +107,7 @@ export default function SubmitPage() {
                 required
               />
               <p className="mt-2 text-sm text-gray-500">
-                请输入有效的 Sora 邀请码，帮助其他用户获得访问权限
+                Please enter a valid Sora invite code to help other users gain access
               </p>
             </div>
 
@@ -134,10 +134,10 @@ export default function SubmitPage() {
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
             <h3 className="font-semibold text-blue-800 mb-2">💡 Tips for Submitting Codes:</h3>
             <ul className="text-sm text-blue-700 space-y-1">
-              <li>• 确保邀请码是有效的且未被使用</li>
-              <li>• 请不要提交重复的邀请码</li>
-              <li>• 提交后请耐心等待，我们会尽快审核</li>
-              <li>• 感谢您为社区做出的贡献！</li>
+              <li>• Ensure the invite code is valid and unused</li>
+              <li>• Please do not submit duplicate invite codes</li>
+              <li>• Please wait patiently after submission, we will review as soon as possible</li>
+              <li>• Thank you for your contribution to the community!</li>
             </ul>
           </div>
         </div>

@@ -57,11 +57,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 })
     }
 
-    // 敏感词验证
+    // Validate against sensitive words
     const validation = await sensitiveWordValidator.validateInviteCode(code)
     if (!validation.isValid) {
       return NextResponse.json({ 
-        error: '邀请码包含不当内容，请提交有效的 Sora 2 邀请码',
+        error: 'Invalid invite code content. Please submit a valid Sora 2 invite code.',
         reason: validation.reason,
         matchedWords: validation.matchedWords
       }, { status: 400 })

@@ -106,7 +106,7 @@ export class SensitiveWordValidator {
     if (matchedWords.length > 0) {
       return {
         isValid: false,
-        reason: `邀请码包含敏感词: ${matchedWords.join(', ')}`,
+        reason: `Invite code contains sensitive words: ${matchedWords.join(', ')}`,
         matchedWords
       }
     }
@@ -127,14 +127,14 @@ export class SensitiveWordValidator {
     if (code.length === 0) {
       return {
         isValid: false,
-        reason: '邀请码不能为空'
+        reason: 'Invite code cannot be empty'
       }
     }
 
     if (code.length > 20) {
       return {
         isValid: false,
-        reason: `邀请码长度不能超过20个字符，当前长度: ${code.length}`
+        reason: `Invite code length cannot exceed 20 characters, current length: ${code.length}`
       }
     }
 
@@ -148,7 +148,7 @@ export class SensitiveWordValidator {
         const uniqueInvalidChars = Array.from(new Set(invalidChars))
         return {
           isValid: false,
-          reason: `邀请码只能包含英文字母和数字，不允许使用: ${uniqueInvalidChars.join(', ')}`
+          reason: `Invite code can only contain English letters and numbers, not allowed: ${uniqueInvalidChars.join(', ')}`
         }
       }
     }
@@ -167,32 +167,32 @@ export class SensitiveWordValidator {
     // 检查重复字符模式 (如 aaaa, 1111)
     const repeatPattern = /(.)\1{3,}/
     if (repeatPattern.test(code)) {
-      patterns.push('重复字符模式')
+      patterns.push('repeated character pattern')
     }
 
     // 检查连续数字模式 (如 1234, 5678)
     const sequentialPattern = /(?:0123|1234|2345|3456|4567|5678|6789|7890|9876|8765|7654|6543|5432|4321|3210)/
     if (sequentialPattern.test(code)) {
-      patterns.push('连续数字模式')
+      patterns.push('sequential number pattern')
     }
 
     // 检查纯数字且长度过短 (小于4位)
     const shortNumberPattern = /^\d{1,3}$/
     if (shortNumberPattern.test(code)) {
-      patterns.push('过短数字')
+      patterns.push('too short number')
     }
 
     // 检查纯字母且长度过短 (小于4位)
     const shortLetterPattern = /^[a-zA-Z]{1,3}$/
     if (shortLetterPattern.test(code)) {
-      patterns.push('过短字母')
+      patterns.push('too short letter')
     }
 
     // 检查常见键盘模式
     const keyboardPatterns = ['qwer', 'asdf', 'zxcv', 'qaz', 'wsx', 'edc', 'rfv', 'tgb', 'yhn', 'ujm']
     for (const pattern of keyboardPatterns) {
       if (code.includes(pattern)) {
-        patterns.push('键盘模式')
+        patterns.push('keyboard pattern')
         break
       }
     }
