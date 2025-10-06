@@ -19,6 +19,11 @@ export default function Footer() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link href="/ai-seo-guide" className="text-gray-600 hover:text-primary-600 transition-colors">
+                  AI SEO Guide
+                </Link>
+              </li>
             </ul>
           </div>
           
