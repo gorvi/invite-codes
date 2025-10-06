@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         mobileFriendly: $('meta[name="viewport"]').length > 0
       }
     } catch (error) {
-      console.warn('Failed to fetch real data, using fallback:', error.message)
+      console.warn('Failed to fetch real data, using fallback:', error instanceof Error ? error.message : String(error))
     }
     
     // 结合实际数据和模拟数据
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
             'free sora 2 codes'
           ]
           
-          const analysis = {}
-          targetKeywords.forEach(keyword => {
+          const analysis: Record<string, { exactMatches: number; density: string; totalWords: number }> = {}
+          targetKeywords.forEach((keyword: string) => {
             const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
             const matches = bodyText.match(regex) || []
             const density = totalWords > 0 ? ((matches.length / totalWords) * 100).toFixed(2) : '0.00'
