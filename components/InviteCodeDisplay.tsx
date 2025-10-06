@@ -103,24 +103,26 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
     }
   }, [onCopy])
 
-  // 当 codes 数据更新时，清理过期的乐观更新
+  // 定期清理过期的乐观更新，而不是在数据更新时清理
   useEffect(() => {
-    // 清理不再存在的邀请码的乐观更新
-    // 但保留最近 5 秒内的乐观更新，避免数据刷新时被清理
-    const now = Date.now()
-    setOptimisticUpdates(prev => 
-      prev.filter(update => {
-        // 如果邀请码不存在了，清理
-        if (!codes.some(code => code.id === update.codeId)) {
-          return false
-        }
-        // 如果乐观更新超过 5 秒，清理
-        if (update.timestamp && now - update.timestamp > 5000) {
-          return false
-        }
-        return true
-      })
-    )
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      setOptimisticUpdates(prev => 
+        prev.filter(update => {
+          // 如果邀请码不存在了，清理
+          if (!codes.some(code => code.id === update.codeId)) {
+            return false
+          }
+          // 如果乐观更新超过 10 秒，清理
+          if (update.timestamp && now - update.timestamp > 10000) {
+            return false
+          }
+          return true
+        })
+      )
+    }, 2000) // 每2秒检查一次
+    
+    return () => clearInterval(cleanupInterval)
   }, [codes])
 
   const handleCopyCode = async (code: string, codeId: string) => {
@@ -150,11 +152,9 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
       // 调用复制函数（包含剪贴板操作和 API 调用）
       await onCopy(code, codeId)
       
-      // API 调用成功，等待数据刷新完成后再移除乐观更新
-      // 给数据刷新一些时间，然后移除乐观更新
-      setTimeout(() => {
-        removeOptimisticUpdate(codeId, 'copy')
-      }, 1000)
+      // API 调用成功，不再自动移除乐观更新
+      // 让定期清理机制来处理乐观更新的移除
+      console.log(`[Copy] API success, keeping optimistic update for code ${codeId}`)
       
       // 2秒后清除复制状态
       setTimeout(() => setCopiedCode(null), 2000)
@@ -193,11 +193,9 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
       // 调用投票函数
       await onVote(id, type)
       
-      // API 调用成功，等待数据刷新完成后再移除乐观更新
-      // 给数据刷新一些时间，然后移除乐观更新
-      setTimeout(() => {
-        removeOptimisticUpdate(id, type)
-      }, 1000)
+      // API 调用成功，不再自动移除乐观更新
+      // 让定期清理机制来处理乐观更新的移除
+      console.log(`[Vote] API success, keeping optimistic update for code ${id}`)
     } catch (error) {
       console.error('Failed to vote:', error)
       // API 调用失败，移除乐观更新，恢复到原始状态
