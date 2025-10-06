@@ -94,7 +94,7 @@ export default function SEOMonitorPage() {
     }
   }
 
-  const getDensityColor = (density) => {
+  const getDensityColor = (density: string) => {
     const num = parseFloat(density)
     if (num >= 2) return 'text-green-600'
     if (num >= 1) return 'text-yellow-600'
