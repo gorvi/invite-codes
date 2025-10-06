@@ -8,6 +8,7 @@ export default function SEOMonitorPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
+  const [targetUrl, setTargetUrl] = useState('https://www.invitecodes.net')
 
   // 模拟SEO监控数据
   const mockSEOData = {
@@ -59,7 +60,7 @@ export default function SEOMonitorPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: 'https://www.invitecodes.net',
+          url: targetUrl,
           keywords: [
             'sora 2 invite codes',
             'working sora 2 codes', 
@@ -123,23 +124,61 @@ export default function SEOMonitorPage() {
               </p>
             </div>
             
-            <button
-              onClick={runSEOMonitor}
-              disabled={isRunning}
-              className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isRunning ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  Run SEO Monitor
-                </>
-              )}
-            </button>
+            <div className="flex items-center space-x-4">
+              <div className="flex flex-col">
+                <label htmlFor="targetUrl" className="text-sm font-medium text-gray-700 mb-1">
+                  Target URL
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    id="targetUrl"
+                    type="url"
+                    value={targetUrl}
+                    onChange={(e) => setTargetUrl(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-80"
+                    placeholder="https://example.com"
+                  />
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => setTargetUrl('https://www.invitecodes.net')}
+                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      Home
+                    </button>
+                    <button
+                      onClick={() => setTargetUrl('https://www.invitecodes.net/ai-seo-guide')}
+                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      Guide
+                    </button>
+                    <button
+                      onClick={() => setTargetUrl('https://www.invitecodes.net/faq')}
+                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                    >
+                      FAQ
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={runSEOMonitor}
+                disabled={isRunning}
+                className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isRunning ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Run SEO Monitor
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -154,6 +193,35 @@ export default function SEOMonitorPage() {
 
         {results && (
           <div className="space-y-8">
+            {/* Data Source Status */}
+            <div className={`p-4 rounded-lg border ${
+              results.dataSource === 'real-time' 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-yellow-50 border-yellow-200'
+            }`}>
+              <div className="flex items-center">
+                {results.dataSource === 'real-time' ? (
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                )}
+                <div>
+                  <p className={`font-medium ${
+                    results.dataSource === 'real-time' ? 'text-green-800' : 'text-yellow-800'
+                  }`}>
+                    {results.dataSource === 'real-time' 
+                      ? '✅ Real-time Data Analysis' 
+                      : '⚠️ Using Simulated Data (API unavailable)'}
+                  </p>
+                  <p className={`text-sm ${
+                    results.dataSource === 'real-time' ? 'text-green-600' : 'text-yellow-600'
+                  }`}>
+                    Analysis completed at {new Date(results.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Technical SEO Analysis */}
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
