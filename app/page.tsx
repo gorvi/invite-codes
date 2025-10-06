@@ -184,17 +184,38 @@ export default function Home() {
         <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl mx-auto">
           {/* Left main content area */}
           <div className="w-full lg:w-[70%] space-y-8">
-            <CreatorNote />
-            
-            {/* SEO-Optimized Hero Section */}
+            {/* Unified Hero Section - Combined Welcome + Main CTA */}
             <section className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white mb-8">
               <div className="max-w-4xl mx-auto text-center">
+                {/* Welcome Message */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-center space-x-2 mb-3">
+                    <span className="text-3xl">🎁</span>
+                    <h2 className="text-2xl md:text-3xl font-bold">Welcome to Sora 2 Invite Code Community</h2>
+                  </div>
+                  <p className="text-lg md:text-xl opacity-90 mb-4">
+                    Share your Sora 2 invite codes and help others access the latest AI video generation technology! 🎬✨
+                  </p>
+                </div>
+
+                {/* Main CTA */}
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                   Get Free Sora 2 Invite Codes
                 </h1>
                 <p className="text-xl md:text-2xl mb-6 opacity-90">
                   Access OpenAI's revolutionary AI video generation technology with working invite codes from our community
                 </p>
+
+                {/* Share Code Call-to-Action */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
+                  <p className="text-lg font-semibold mb-2">💡 Got 1 code to share?</p>
+                  <p className="text-sm opacity-90">
+                    After registering with Sora 2, you receive 1 invite code that can help 4 people join. 
+                    <span className="font-semibold text-yellow-200"> Share it here and help the community!</span>
+                  </p>
+                </div>
+
+                {/* Feature Badges */}
                 <div className="flex flex-wrap justify-center gap-4 text-sm">
                   <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
                     <CheckCircle className="w-4 h-4 mr-2" />
