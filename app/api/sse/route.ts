@@ -49,24 +49,17 @@ export async function GET(request: NextRequest) {
               encoder.encode(`data: ${data}\n\n`)
             )
             
-            console.log('[SSE] Initial data sent from Supabase:', formattedCodes.length, 'codes')
           } else {
-            console.error('[SSE] Failed to fetch initial data:', error)
-            // 发送空数据
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
             )
           }
         } else {
-          console.error('[SSE] Supabase client not available')
-          // 发送空数据
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
           )
         }
       } catch (error) {
-        console.error('[SSE] Error in start function:', error)
-        // 发送空数据
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({ type: 'initial', inviteCodes: [] })}\n\n`)
         )
@@ -79,8 +72,6 @@ export async function GET(request: NextRequest) {
         )
       }, 10000) // 每10秒发送一次心跳
 
-      // 正式版本：禁用随机邀请码生成
-      // 只保留心跳机制用于连接检测
 
       // 清理函数
       request.signal.addEventListener('abort', () => {

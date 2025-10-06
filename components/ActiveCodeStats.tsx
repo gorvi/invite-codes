@@ -24,7 +24,6 @@ export default function ActiveCodeStats() {
       }
       
       const dashboardData = await response.json()
-      console.log('[ActiveCodeStats] Data fetched:', dashboardData.activeCodeCount)
       setActiveCodeCount(dashboardData.activeCodeCount || 0)
       setLoading(false)
     } catch (error) {
@@ -37,21 +36,16 @@ export default function ActiveCodeStats() {
     // 立即获取数据
     fetchData()
 
-    // 🔥 监听手动刷新事件
     const handleManualRefresh = () => {
-      console.log('[ActiveCodeStats] Manual refresh triggered')
       fetchData()
     }
     window.addEventListener('statsUpdate', handleManualRefresh)
     
-    // 🔥 定期刷新（每30秒）
     const refreshInterval = setInterval(() => {
-      console.log('[ActiveCodeStats] Periodic refresh triggered')
       fetchData()
     }, 30000)
     
     return () => {
-      console.log('[ActiveCodeStats] Cleanup')
       clearInterval(refreshInterval)
       window.removeEventListener('statsUpdate', handleManualRefresh)
     }

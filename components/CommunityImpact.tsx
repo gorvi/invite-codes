@@ -26,11 +26,6 @@ export default function CommunityImpact() {
       }
       
       const dashboardData = await response.json()
-      console.log('[CommunityImpact] Data fetched:', {
-        submitCount: dashboardData.submitCount,
-        totalCodeCount: dashboardData.totalCodeCount,
-        activeCodeCount: dashboardData.activeCodeCount
-      })
       setTotalSubmissions(dashboardData.submitCount || 0)
       setTotalCodes(dashboardData.totalCodeCount || 0)
       setActiveCodes(dashboardData.activeCodeCount || 0)
@@ -45,21 +40,16 @@ export default function CommunityImpact() {
     // 立即获取数据
     fetchData()
 
-    // 🔥 监听手动刷新事件
     const handleManualRefresh = () => {
-      console.log('[CommunityImpact] Manual refresh triggered')
       fetchData()
     }
     window.addEventListener('statsUpdate', handleManualRefresh)
     
-    // 🔥 定期刷新（每30秒）
     const refreshInterval = setInterval(() => {
-      console.log('[CommunityImpact] Periodic refresh triggered')
       fetchData()
     }, 30000)
     
     return () => {
-      console.log('[CommunityImpact] Cleanup')
       clearInterval(refreshInterval)
       window.removeEventListener('statsUpdate', handleManualRefresh)
     }

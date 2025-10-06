@@ -27,16 +27,8 @@ export default function Home() {
    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
    const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-   // 🔥 添加渲染调试信息
-   console.log('[Page] 🔍 Component render:', {
-     inviteCodesLength: inviteCodes.length,
-     loading: loading,
-     timestamp: new Date().toISOString()
-   })
 
-   // 🔥 手动刷新函数 - 直接刷新页面数据，同时触发其他组件刷新
    const handleManualRefresh = async () => {
-     console.log('[Page] 🔄 Manual refresh triggered')
      setLoading(true)
      try {
        const timestamp = Date.now()
@@ -54,13 +46,11 @@ export default function Home() {
        
        const dashboardData = await response.json()
        const activeInviteCodes = dashboardData.activeInviteCodes || []
-       console.log('[Page] 🔄 Manual refresh result:', activeInviteCodes.length, 'codes')
        setInviteCodes(activeInviteCodes)
        
-       // 🔥 触发其他组件刷新
        window.dispatchEvent(new CustomEvent('statsUpdate'))
      } catch (error) {
-       console.error('[Page] ❌ Manual refresh error:', error)
+       console.error('Manual refresh error:', error)
      } finally {
        setLoading(false)
      }
@@ -79,8 +69,6 @@ export default function Home() {
       })
       
       if (response.ok) {
-        console.log(`[Vote] ${type} vote recorded successfully for code ${id}`)
-        // 🔥 刷新数据并触发其他组件刷新
         handleManualRefresh()
       } else {
         console.error('Failed to vote:', response.statusText)
@@ -90,14 +78,10 @@ export default function Home() {
     }
   }
 
-  // Handle copying invite code
   const handleCopyCode = async (code: string, codeId: string) => {
     try {
-      // 立即复制到剪贴板
       await navigator.clipboard.writeText(code)
-      console.log(`[Copy] Code "${code}" copied to clipboard`)
       
-      // 🔥 异步记录复制事件，不阻塞用户体验
       fetch('/api/analytics', {
         method: 'POST',
         headers: {
@@ -107,38 +91,31 @@ export default function Home() {
           action: 'copy', 
           inviteCodeId: codeId 
         }),
-           }).then(response => {
-             if (response.ok) {
-               console.log('[Copy] Copy event recorded successfully')
-               // 延迟刷新，确保数据已保存
-               setTimeout(() => {
-                 handleManualRefresh()
-               }, 500)
-             } else {
-               console.error('[Copy] Failed to record copy event:', response.status)
-             }
-           }).catch(error => {
-             console.error('[Copy] Error recording copy event:', error)
-           })
+      }).then(response => {
+        if (response.ok) {
+          setTimeout(() => {
+            handleManualRefresh()
+          }, 500)
+        } else {
+          console.error('Failed to record copy event:', response.status)
+        }
+      }).catch(error => {
+        console.error('Error recording copy event:', error)
+      })
       
     } catch (error) {
-      console.error('[Copy] Failed to copy code to clipboard:', error)
-      throw error // 重新抛出错误，让组件知道复制失败
+      console.error('Failed to copy code to clipboard:', error)
+      throw error
     }
   }
 
 
    useEffect(() => {
-     // 🔥 延迟初始数据加载，避免与 SSE 连接冲突
-     console.log('[Page] 🔄 Initial load scheduled with delay')
      const initialLoadTimeout = setTimeout(() => {
-       console.log('[Page] 🔄 Initial load executing after delay')
        handleManualRefresh()
-     }, 100) // 100ms 延迟，确保组件完全初始化
+     }, 100)
      
-     // 🔥 添加定期刷新机制（每30秒检查一次）
      const refreshInterval = setInterval(() => {
-       console.log('[Page] 🔄 Periodic refresh triggered')
        handleManualRefresh()
      }, 30000)
 
@@ -150,19 +127,13 @@ export default function Home() {
         const data = JSON.parse(event.data)
         
         if (data.type === 'new_code') {
-          console.log('[SSE] New code received:', data.inviteCode.code)
           setInviteCodes(prev => [data.inviteCode, ...prev])
-          // Show new invite code notification
           showNewCodeNotification(data.inviteCode.code)
-          // 🔥 触发其他组件刷新
           window.dispatchEvent(new CustomEvent('statsUpdate'))
         } else if (data.type === 'initial') {
-          console.log('[SSE] Initial data received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
         } else if (data.type === 'update') {
-          console.log('[SSE] Update received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
-          // 🔥 触发其他组件刷新
           window.dispatchEvent(new CustomEvent('statsUpdate'))
         }
       } catch (error) {
@@ -182,13 +153,12 @@ export default function Home() {
     window.addEventListener('openSubmitModal', handleOpenSubmitModal)
 
      return () => {
-       console.log('[Page] 🔍 Cleaning up...')
        clearTimeout(initialLoadTimeout)
        clearInterval(refreshInterval)
        eventSource.close()
        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
      }
-   }, []) // 🔥 保持空依赖数组，因为 fetchData 现在在组件外部定义
+   }, [])
 
   return (
     <ErrorBoundary>
@@ -219,26 +189,6 @@ export default function Home() {
             {/* Available invite codes stats */}
             <ActiveCodeStats />
             
-            {/* 🔥 临时调试和手动刷新按钮 */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-blue-800">Debug Info</h3>
-                  <p className="text-xs text-blue-600 mt-1">
-                    Codes loaded: {inviteCodes.length} | 
-                    Active: {inviteCodes.filter(code => code.status === 'active').length} |
-                    Loading: {loading ? 'Yes' : 'No'}
-                  </p>
-                </div>
-                <button
-                  onClick={handleManualRefresh}
-                  disabled={loading}
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {loading ? 'Refreshing...' : 'Manual Refresh'}
-                </button>
-              </div>
-            </div>
             
             {/* Action buttons area - sticky */}
             <div className="sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4">
