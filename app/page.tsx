@@ -127,63 +127,16 @@ export default function Home() {
     }
   }
 
-  // 🔥 将 fetchData 移到 useEffect 外部，确保每次都能正确访问最新的状态设置函数
-  const fetchData = async () => {
-    console.log('[Page] 🔄 fetchData called, loading:', loading)
-    try {
-      // 🔥 添加缓存破坏参数
-      const timestamp = Date.now()
-      console.log('[Page] 🔄 Making API call to /api/dashboard with timestamp:', timestamp)
-      
-      const response = await fetch(`/api/dashboard?t=${timestamp}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      })
-      
-      console.log('[Page] 🔄 API response status:', response.status, response.statusText)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      
-      const dashboardData = await response.json()
-      console.log('[Page] 🔍 API Response received:', {
-        hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
-        activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
-        sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map((c: any) => c.code),
-        timestamp: new Date().toISOString(),
-        fullResponse: dashboardData
-      })
-      
-      const activeInviteCodes = dashboardData.activeInviteCodes || []
-      console.log('[Page] 🔍 About to set invite codes state:', {
-        codesLength: activeInviteCodes.length,
-        codes: activeInviteCodes,
-        currentLoading: loading
-      })
-      
-      setInviteCodes(activeInviteCodes)
-      setLoading(false)
-      
-      console.log('[Page] ✅ State updated successfully')
-      
-    } catch (error) {
-      console.error('[Page] ❌ Fetch error:', error)
-      setLoading(false)
-    }
-  }
 
    useEffect(() => {
-     // 立即获取数据
-     fetchData()
+     // 🔥 使用手动刷新方法获取初始数据
+     console.log('[Page] 🔄 Initial load using manual refresh method')
+     handleManualRefresh()
      
      // 🔥 添加定期刷新机制（每30秒检查一次）
      const refreshInterval = setInterval(() => {
        console.log('[Page] 🔄 Periodic refresh triggered')
-       fetchData()
+       handleManualRefresh()
      }, 30000)
 
     // Set up SSE connection for real-time updates
