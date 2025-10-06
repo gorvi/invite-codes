@@ -136,8 +136,11 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
       // 调用复制函数（包含剪贴板操作和 API 调用）
       await onCopy(code, codeId)
       
-      // API 调用成功，移除乐观更新（真实数据会通过页面刷新获取）
-      removeOptimisticUpdate(codeId, 'copy')
+      // API 调用成功，等待数据刷新完成后再移除乐观更新
+      // 给数据刷新一些时间，然后移除乐观更新
+      setTimeout(() => {
+        removeOptimisticUpdate(codeId, 'copy')
+      }, 1000)
       
       // 2秒后清除复制状态
       setTimeout(() => setCopiedCode(null), 2000)
@@ -176,8 +179,11 @@ export default function InviteCodeDisplay({ codes, onVote, onCopy }: InviteCodeD
       // 调用投票函数
       await onVote(id, type)
       
-      // API 调用成功，移除乐观更新（真实数据会通过页面刷新获取）
-      removeOptimisticUpdate(id, type)
+      // API 调用成功，等待数据刷新完成后再移除乐观更新
+      // 给数据刷新一些时间，然后移除乐观更新
+      setTimeout(() => {
+        removeOptimisticUpdate(id, type)
+      }, 1000)
     } catch (error) {
       console.error('Failed to vote:', error)
       // API 调用失败，移除乐观更新，恢复到原始状态
