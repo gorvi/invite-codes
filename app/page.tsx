@@ -71,12 +71,17 @@ export default function Home() {
       })
       
       if (response.ok) {
+        // 立即刷新数据以显示更新后的投票数字
         handleManualRefresh()
+        console.log(`[Vote] Vote recorded successfully: ${type} for code ${id}`)
       } else {
-        console.error('Failed to vote:', response.statusText)
+        const errorText = await response.text()
+        console.error('Failed to vote:', response.status, errorText)
+        throw new Error(`Failed to vote: ${response.status} ${errorText}`)
       }
     } catch (error) {
       console.error('Error voting:', error)
+      throw error
     }
   }
 
@@ -84,7 +89,7 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(code)
       
-      fetch('/api/analytics', {
+      const response = await fetch('/api/analytics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,17 +98,15 @@ export default function Home() {
           action: 'copy', 
           inviteCodeId: codeId 
         }),
-      }).then(response => {
-        if (response.ok) {
-          setTimeout(() => {
-            handleManualRefresh()
-          }, 500)
-        } else {
-          console.error('Failed to record copy event:', response.status)
-        }
-      }).catch(error => {
-        console.error('Error recording copy event:', error)
       })
+      
+      if (response.ok) {
+        // 立即刷新数据以显示更新后的数字
+        handleManualRefresh()
+      } else {
+        console.error('Failed to record copy event:', response.status)
+        throw new Error(`Failed to record copy event: ${response.status}`)
+      }
       
     } catch (error) {
       console.error('Failed to copy code to clipboard:', error)
