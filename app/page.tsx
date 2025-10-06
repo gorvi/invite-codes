@@ -27,6 +27,13 @@ export default function Home() {
    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
    const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
+   // 🔥 添加渲染调试信息
+   console.log('[Page] 🔍 Component render:', {
+     inviteCodesLength: inviteCodes.length,
+     loading: loading,
+     timestamp: new Date().toISOString()
+   })
+
    // 🔥 手动刷新函数 - 直接刷新页面数据，同时触发其他组件刷新
    const handleManualRefresh = async () => {
      console.log('[Page] 🔄 Manual refresh triggered')
@@ -120,43 +127,56 @@ export default function Home() {
     }
   }
 
+  // 🔥 将 fetchData 移到 useEffect 外部，确保每次都能正确访问最新的状态设置函数
+  const fetchData = async () => {
+    console.log('[Page] 🔄 fetchData called, loading:', loading)
+    try {
+      // 🔥 添加缓存破坏参数
+      const timestamp = Date.now()
+      console.log('[Page] 🔄 Making API call to /api/dashboard with timestamp:', timestamp)
+      
+      const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
+      
+      console.log('[Page] 🔄 API response status:', response.status, response.statusText)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const dashboardData = await response.json()
+      console.log('[Page] 🔍 API Response received:', {
+        hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
+        activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
+        sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map((c: any) => c.code),
+        timestamp: new Date().toISOString(),
+        fullResponse: dashboardData
+      })
+      
+      const activeInviteCodes = dashboardData.activeInviteCodes || []
+      console.log('[Page] 🔍 About to set invite codes state:', {
+        codesLength: activeInviteCodes.length,
+        codes: activeInviteCodes,
+        currentLoading: loading
+      })
+      
+      setInviteCodes(activeInviteCodes)
+      setLoading(false)
+      
+      console.log('[Page] ✅ State updated successfully')
+      
+    } catch (error) {
+      console.error('[Page] ❌ Fetch error:', error)
+      setLoading(false)
+    }
+  }
+
    useEffect(() => {
-     // 直接获取数据
-     const fetchData = async () => {
-       try {
-         // 🔥 添加缓存破坏参数
-         const timestamp = Date.now()
-         const response = await fetch(`/api/dashboard?t=${timestamp}`, {
-           cache: 'no-store',
-           headers: {
-             'Cache-Control': 'no-cache, no-store, must-revalidate',
-             'Pragma': 'no-cache'
-           }
-         })
-         
-         if (!response.ok) {
-           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-         }
-         
-         const dashboardData = await response.json()
-         console.log('[Page] 🔍 API Response received:', {
-           hasActiveInviteCodes: !!dashboardData.activeInviteCodes,
-           activeInviteCodesLength: dashboardData.activeInviteCodes?.length,
-           sampleCodes: dashboardData.activeInviteCodes?.slice(0, 3).map((c: any) => c.code),
-           timestamp: new Date().toISOString()
-         })
-         
-         const activeInviteCodes = dashboardData.activeInviteCodes || []
-         console.log('[Page] 🔍 Setting invite codes state:', activeInviteCodes.length, 'codes')
-         setInviteCodes(activeInviteCodes)
-         setLoading(false)
-         
-       } catch (error) {
-         console.error('[Page] ❌ Fetch error:', error)
-         setLoading(false)
-       }
-     }
-     
      // 立即获取数据
      fetchData()
      
@@ -211,7 +231,7 @@ export default function Home() {
        eventSource.close()
        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
      }
-  }, [])
+   }, []) // 🔥 保持空依赖数组，因为 fetchData 现在在组件外部定义
 
   return (
     <ErrorBoundary>
