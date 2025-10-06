@@ -268,34 +268,17 @@ export default function Home() {
               onCopy={handleCopyCode}
             />
 
-            {/* SEO-Optimized Content Section - Moved after code list */}
-            <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">What is Sora 2 and Why Use Invite Codes?</h2>
-              <div className="prose prose-lg max-w-none text-gray-700">
-                <p className="mb-4">
-                  Sora 2 is OpenAI's cutting-edge AI video generation model that creates stunning videos from text descriptions. 
-                  Due to its advanced capabilities and high demand, access is currently limited through an invite-only system.
-                </p>
-                <p className="mb-4">
-                  Our community platform provides verified, working invite codes that give you instant access to this revolutionary technology. 
-                  Each code is tested and verified by our community members to ensure maximum success rates.
-                </p>
-                <div className="grid md:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
-                      <Star className="w-5 h-5 mr-2" />
-                      High Success Rate
-                    </h3>
-                    <p className="text-blue-800 text-sm">Our codes have an 85%+ success rate, verified by community feedback</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-green-900 mb-2 flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      Real-time Updates
-                    </h3>
-                    <p className="text-green-800 text-sm">New codes are added instantly as they become available</p>
-                  </div>
-                </div>
+            {/* Simplified Sora 2 Info Section */}
+            <section className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 mb-8 border border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">About Sora 2 Invite Codes</h2>
+              <p className="text-gray-700 mb-4">
+                Sora 2 is OpenAI's AI video generation model. Due to high demand, access is invite-only. 
+                Our community shares verified codes with 85%+ success rate.
+              </p>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">✓ Community Verified</span>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">✓ Real-time Updates</span>
+                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">✓ 85%+ Success Rate</span>
               </div>
             </section>
             
