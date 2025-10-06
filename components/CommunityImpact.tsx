@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, Gift } from 'lucide-react'
-import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function CommunityImpact() {
   const [totalSubmissions, setTotalSubmissions] = useState<number>(0)
@@ -10,33 +9,58 @@ export default function CommunityImpact() {
   const [activeCodes, setActiveCodes] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // 🔥 使用全局数据管理器，避免重复 API 调用
-    const handleDataUpdate = (data: GlobalData) => {
-      console.log('[CommunityImpact] Data updated via DataManager:', {
-        submitCount: data.submitCount,
-        totalCodeCount: data.totalCodeCount,
-        activeCodeCount: data.activeCodeCount
+  // 🔥 直接获取数据的函数
+  const fetchData = async () => {
+    try {
+      const timestamp = Date.now()
+      const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
       })
-      setTotalSubmissions(data.submitCount)
-      setTotalCodes(data.totalCodeCount) // 所有代码数量（包括活跃、已使用、无效）
-      setActiveCodes(data.activeCodeCount) // 活跃代码数量
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const dashboardData = await response.json()
+      console.log('[CommunityImpact] Data fetched:', {
+        submitCount: dashboardData.submitCount,
+        totalCodeCount: dashboardData.totalCodeCount,
+        activeCodeCount: dashboardData.activeCodeCount
+      })
+      setTotalSubmissions(dashboardData.submitCount || 0)
+      setTotalCodes(dashboardData.totalCodeCount || 0)
+      setActiveCodes(dashboardData.activeCodeCount || 0)
+      setLoading(false)
+    } catch (error) {
+      console.error('[CommunityImpact] Fetch error:', error)
       setLoading(false)
     }
+  }
 
-    // 注册数据监听器（会自动触发数据加载）
-    dataManager.addListener(handleDataUpdate)
+  useEffect(() => {
+    // 立即获取数据
+    fetchData()
 
     // 🔥 监听手动刷新事件
     const handleManualRefresh = () => {
       console.log('[CommunityImpact] Manual refresh triggered')
-      dataManager.triggerRefresh()
+      fetchData()
     }
     window.addEventListener('statsUpdate', handleManualRefresh)
     
+    // 🔥 定期刷新（每30秒）
+    const refreshInterval = setInterval(() => {
+      console.log('[CommunityImpact] Periodic refresh triggered')
+      fetchData()
+    }, 30000)
+    
     return () => {
       console.log('[CommunityImpact] Cleanup')
-      dataManager.removeListener(handleDataUpdate)
+      clearInterval(refreshInterval)
       window.removeEventListener('statsUpdate', handleManualRefresh)
     }
   }, [])

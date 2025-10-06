@@ -20,7 +20,6 @@ import ErrorBoundary from '@/components/ErrorBoundary'
 import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
 
 import { InviteCode } from '@/lib/data'
-import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function Home() {
    const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
@@ -28,14 +27,11 @@ export default function Home() {
    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
    const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-   // 🔥 手动刷新函数 - 同时刷新 dataManager 和页面数据
+   // 🔥 手动刷新函数 - 直接刷新页面数据，同时触发其他组件刷新
    const handleManualRefresh = async () => {
      console.log('[Page] 🔄 Manual refresh triggered')
      setLoading(true)
      try {
-       // 同时触发 dataManager 刷新（这会更新 ActiveCodeStats）
-       await dataManager.triggerRefresh()
-       
        const timestamp = Date.now()
        const response = await fetch(`/api/dashboard?t=${timestamp}`, {
          cache: 'no-store',
@@ -53,6 +49,9 @@ export default function Home() {
        const activeInviteCodes = dashboardData.activeInviteCodes || []
        console.log('[Page] 🔄 Manual refresh result:', activeInviteCodes.length, 'codes')
        setInviteCodes(activeInviteCodes)
+       
+       // 🔥 触发其他组件刷新
+       window.dispatchEvent(new CustomEvent('statsUpdate'))
      } catch (error) {
        console.error('[Page] ❌ Manual refresh error:', error)
      } finally {
@@ -60,11 +59,6 @@ export default function Home() {
      }
    }
 
-  // Manually refresh invite codes data - 使用全局数据管理器
-  const handleRefresh = async () => {
-    console.log('[Page] Manual refresh triggered')
-    await dataManager.triggerRefresh()
-  }
 
   // Handle voting
   const handleVote = async (id: string, type: 'worked' | 'didntWork') => {
@@ -79,8 +73,8 @@ export default function Home() {
       
       if (response.ok) {
         console.log(`[Vote] ${type} vote recorded successfully for code ${id}`)
-        // 🔥 使用数据管理器统一刷新所有数据
-        await dataManager.triggerRefresh()
+        // 🔥 刷新数据并触发其他组件刷新
+        handleManualRefresh()
       } else {
         console.error('Failed to vote:', response.statusText)
       }
@@ -106,17 +100,19 @@ export default function Home() {
           action: 'copy', 
           inviteCodeId: codeId 
         }),
-      }).then(response => {
-        if (response.ok) {
-          console.log('[Copy] Copy event recorded successfully')
-          // 延迟刷新，确保数据已保存
-          setTimeout(() => dataManager.triggerRefresh(), 500)
-        } else {
-          console.error('[Copy] Failed to record copy event:', response.status)
-        }
-      }).catch(error => {
-        console.error('[Copy] Error recording copy event:', error)
-      })
+           }).then(response => {
+             if (response.ok) {
+               console.log('[Copy] Copy event recorded successfully')
+               // 延迟刷新，确保数据已保存
+               setTimeout(() => {
+                 handleManualRefresh()
+               }, 500)
+             } else {
+               console.error('[Copy] Failed to record copy event:', response.status)
+             }
+           }).catch(error => {
+             console.error('[Copy] Error recording copy event:', error)
+           })
       
     } catch (error) {
       console.error('[Copy] Failed to copy code to clipboard:', error)
@@ -125,7 +121,7 @@ export default function Home() {
   }
 
    useEffect(() => {
-     // 直接获取数据，不依赖 dataManager
+     // 直接获取数据
      const fetchData = async () => {
        try {
          // 🔥 添加缓存破坏参数
@@ -161,36 +157,14 @@ export default function Home() {
        }
      }
      
-     // 立即获取数据 - 同时刷新 dataManager
-     const initialLoad = async () => {
-       // 先触发 dataManager 刷新，确保 ActiveCodeStats 获取正确数据
-       await dataManager.triggerRefresh()
-       // 然后获取页面数据
-       await fetchData()
-     }
-     initialLoad()
+     // 立即获取数据
+     fetchData()
      
      // 🔥 添加定期刷新机制（每30秒检查一次）
-     const refreshInterval = setInterval(async () => {
+     const refreshInterval = setInterval(() => {
        console.log('[Page] 🔄 Periodic refresh triggered')
-       // 同时刷新两个数据源
-       await dataManager.triggerRefresh()
-       await fetchData()
+       fetchData()
      }, 30000)
-     
-     // 备用：使用 dataManager（如果直接获取失败）
-     const handleDataUpdate = (data: GlobalData) => {
-       console.log('[Page] 🔍 DataManager backup triggered:', data.inviteCodes.length, 'codes')
-       // 只有当直接获取的数据为空时才使用 dataManager 的数据
-       if (inviteCodes.length === 0) {
-         console.log('[Page] 🔄 Using DataManager backup data')
-         setInviteCodes(data.inviteCodes)
-         setLoading(false)
-       }
-     }
-
-     // 注册数据监听器作为备用
-     dataManager.addListener(handleDataUpdate)
 
     // Set up SSE connection for real-time updates
     const eventSource = new EventSource('/api/sse')
@@ -204,16 +178,16 @@ export default function Home() {
           setInviteCodes(prev => [data.inviteCode, ...prev])
           // Show new invite code notification
           showNewCodeNotification(data.inviteCode.code)
-          // 🔥 使用数据管理器统一刷新
-          dataManager.triggerRefresh()
+          // 🔥 触发其他组件刷新
+          window.dispatchEvent(new CustomEvent('statsUpdate'))
         } else if (data.type === 'initial') {
           console.log('[SSE] Initial data received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
         } else if (data.type === 'update') {
           console.log('[SSE] Update received:', data.inviteCodes.length, 'codes')
           setInviteCodes(data.inviteCodes)
-          // 🔥 使用数据管理器统一刷新
-          dataManager.triggerRefresh()
+          // 🔥 触发其他组件刷新
+          window.dispatchEvent(new CustomEvent('statsUpdate'))
         }
       } catch (error) {
         console.error('[SSE] Parse error:', error)
@@ -235,7 +209,6 @@ export default function Home() {
        console.log('[Page] 🔍 Cleaning up...')
        clearInterval(refreshInterval)
        eventSource.close()
-       dataManager.removeListener(handleDataUpdate)
        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
      }
   }, [])
@@ -371,7 +344,7 @@ export default function Home() {
         <SubmitCodeModal
           isOpen={isSubmitModalOpen}
           onClose={() => setIsSubmitModalOpen(false)}
-          onSuccess={handleRefresh}
+          onSuccess={handleManualRefresh}
         />
         
       </main>

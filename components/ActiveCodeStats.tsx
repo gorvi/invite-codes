@@ -2,33 +2,57 @@
 
 import { useState, useEffect } from 'react'
 import { Gift, TrendingUp } from 'lucide-react'
-import { dataManager, GlobalData } from '@/lib/dataManager'
 
 export default function ActiveCodeStats() {
   const [activeCodeCount, setActiveCodeCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // 🔥 使用全局数据管理器，避免重复 API 调用
-    const handleDataUpdate = (data: GlobalData) => {
-      console.log('[ActiveCodeStats] Data updated via DataManager:', data.activeCodeCount)
-      setActiveCodeCount(data.activeCodeCount)
+  // 🔥 直接获取数据的函数
+  const fetchData = async () => {
+    try {
+      const timestamp = Date.now()
+      const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const dashboardData = await response.json()
+      console.log('[ActiveCodeStats] Data fetched:', dashboardData.activeCodeCount)
+      setActiveCodeCount(dashboardData.activeCodeCount || 0)
+      setLoading(false)
+    } catch (error) {
+      console.error('[ActiveCodeStats] Fetch error:', error)
       setLoading(false)
     }
+  }
 
-    // 注册数据监听器（会自动触发数据加载）
-    dataManager.addListener(handleDataUpdate)
+  useEffect(() => {
+    // 立即获取数据
+    fetchData()
 
     // 🔥 监听手动刷新事件
     const handleManualRefresh = () => {
       console.log('[ActiveCodeStats] Manual refresh triggered')
-      dataManager.triggerRefresh()
+      fetchData()
     }
     window.addEventListener('statsUpdate', handleManualRefresh)
     
+    // 🔥 定期刷新（每30秒）
+    const refreshInterval = setInterval(() => {
+      console.log('[ActiveCodeStats] Periodic refresh triggered')
+      fetchData()
+    }, 30000)
+    
     return () => {
       console.log('[ActiveCodeStats] Cleanup')
-      dataManager.removeListener(handleDataUpdate)
+      clearInterval(refreshInterval)
       window.removeEventListener('statsUpdate', handleManualRefresh)
     }
   }, [])
