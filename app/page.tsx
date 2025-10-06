@@ -28,11 +28,14 @@ export default function Home() {
    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
    const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
 
-   // 🔥 手动刷新函数
+   // 🔥 手动刷新函数 - 同时刷新 dataManager 和页面数据
    const handleManualRefresh = async () => {
      console.log('[Page] 🔄 Manual refresh triggered')
      setLoading(true)
      try {
+       // 同时触发 dataManager 刷新（这会更新 ActiveCodeStats）
+       await dataManager.triggerRefresh()
+       
        const timestamp = Date.now()
        const response = await fetch(`/api/dashboard?t=${timestamp}`, {
          cache: 'no-store',
@@ -158,13 +161,21 @@ export default function Home() {
        }
      }
      
-     // 立即获取数据
-     fetchData()
+     // 立即获取数据 - 同时刷新 dataManager
+     const initialLoad = async () => {
+       // 先触发 dataManager 刷新，确保 ActiveCodeStats 获取正确数据
+       await dataManager.triggerRefresh()
+       // 然后获取页面数据
+       await fetchData()
+     }
+     initialLoad()
      
      // 🔥 添加定期刷新机制（每30秒检查一次）
-     const refreshInterval = setInterval(() => {
+     const refreshInterval = setInterval(async () => {
        console.log('[Page] 🔄 Periodic refresh triggered')
-       fetchData()
+       // 同时刷新两个数据源
+       await dataManager.triggerRefresh()
+       await fetchData()
      }, 30000)
      
      // 备用：使用 dataManager（如果直接获取失败）

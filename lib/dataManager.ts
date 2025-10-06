@@ -115,8 +115,15 @@ class DataManager {
     this.isRefreshing = true
 
     try {
-      // 🔥 使用统一的仪表板接口，一次性获取所有数据
-      const response = await fetch('/api/dashboard')
+      // 🔥 使用统一的仪表板接口，一次性获取所有数据，添加缓存破坏
+      const timestamp = Date.now()
+      const response = await fetch(`/api/dashboard?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
