@@ -86,7 +86,7 @@ export default function SEOMonitorPage() {
     }
   }
 
-  const getStatusIcon = (value, threshold) => {
+  const getStatusIcon = (value: number, threshold: number) => {
     if (value >= threshold) {
       return <CheckCircle className="w-5 h-5 text-green-500" />
     } else {
