@@ -136,10 +136,11 @@ export default function Home() {
            showNewCodeNotification(data.inviteCode.code)
            window.dispatchEvent(new CustomEvent('statsUpdate'))
          } else if (data.type === 'initial') {
-           setInviteCodes(data.inviteCodes)
+           // 只在初始加载时使用 SSE 数据，避免覆盖手动刷新的数据
+           console.log('[SSE] Initial data received, but using manual refresh data instead')
          } else if (data.type === 'update') {
-           setInviteCodes(data.inviteCodes)
-           window.dispatchEvent(new CustomEvent('statsUpdate'))
+           // 忽略 SSE 的 update 事件，只使用手动刷新的数据
+           console.log('[SSE] Update event received, but using manual refresh data instead')
          }
        } catch (error) {
          console.error('[SSE] Parse error:', error)
