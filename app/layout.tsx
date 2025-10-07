@@ -130,7 +130,13 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" title="Sora 2 Invite Codes App Icon" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" title="Sora 2 Invite Codes 32x32 Icon" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" title="Sora 2 Invite Codes 16x16 Icon" />
-        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#1e40af" title="Sora 2 Invite Codes Safari Icon" />
+        
+        {/* Enhanced Image SEO */}
+        <meta name="image" content="https://www.invitecodes.net/logo-web.png" />
+        <meta property="og:image" content="https://www.invitecodes.net/logo-web.png" />
+        <meta property="og:image:alt" content="Sora 2 Invite Codes Logo - Modern blue and silver design for AI video generation platform" />
+        <meta name="twitter:image" content="https://www.invitecodes.net/logo-web.png" />
+        <meta name="twitter:image:alt" content="Sora 2 Invite Codes Logo - Access Free AI Video Generation" />
         
         {/* SEO and Performance */}
         <meta name="theme-color" content="#1e40af" />
