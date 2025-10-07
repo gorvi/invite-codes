@@ -78,10 +78,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'This invite code already exists' }, { status: 409 })
     }
 
+    // 生成唯一的 ID
+    const uniqueId = `${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+
     // 添加新的邀请码到 Supabase
     const { data: newCode, error } = await supabase
       .from('sora2_invite_codes')
       .insert({
+        id: uniqueId,
         code: code,
         status: 'active',
         submitter_name: submitterName || 'Anonymous',
