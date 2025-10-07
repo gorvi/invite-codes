@@ -1,0 +1,108 @@
+[33mcommit 292dc6f073f46ec155dc13a1391bcb4520745742[m
+Author: gorvi <gorvi@163.com>
+Date:   Tue Oct 7 19:55:48 2025 +0800
+
+    Fix layout and reduce API calls: Restore left-right layout and eliminate frequent API requests
+    
+    Layout fixes:
+    - Restore original left-right layout with sidebar
+    - Move ActiveCodeStats, CommunityImpact, and WhackHamsterGame to right sidebar
+    - Maintain responsive design with grid layout
+    
+    API optimization:
+    - Remove immediate refresh calls after vote and copy operations
+    - Remove automatic refresh on stats update events
+    - Keep only 5-minute interval refresh to prevent resource overuse
+    - Eliminate frequent API calls that were causing 1000+ requests
+    
+    This should significantly reduce the continuous API logging in npm run dev
+
+[1mdiff --git a/app/page.tsx b/app/page.tsx[m
+[1mindex c6caa47..104b4df 100644[m
+[1m--- a/app/page.tsx[m
+[1m+++ b/app/page.tsx[m
+[36m@@ -67,8 +67,7 @@[m [mexport default function HomePage() {[m
+       })[m
+       [m
+       if (response.ok) {[m
+[31m-        // 立即刷新数据以显示更新后的投票数字[m
+[31m-        handleManualRefresh()[m
+[32m+[m[32m        // 不再立即刷新，让乐观更新和定时刷新处理[m
+         console.log(`[Vote] Vote recorded successfully: ${type} for code ${id}`)[m
+       } else {[m
+         const errorText = await response.text()[m
+[36m@@ -97,10 +96,10 @@[m [mexport default function HomePage() {[m
+         }),[m
+       })[m
+       [m
+[31m-      if (response.ok) {[m
+[31m-        // 立即刷新数据以显示更新后的数字[m
+[31m-        handleManualRefresh()[m
+[31m-      } else {[m
+[32m+[m[32m           if (response.ok) {[m
+[32m+[m[32m             // 不再立即刷新，让乐观更新和定时刷新处理[m
+[32m+[m[32m             console.log('Copy event recorded successfully')[m
+[32m+[m[32m           } else {[m
+         console.error('Failed to record copy event:', response.status)[m
+         throw new Error(`Failed to record copy event: ${response.status}`)[m
+       }[m
+[36m@@ -125,10 +124,11 @@[m [mexport default function HomePage() {[m
+     return () => clearInterval(interval)[m
+   }, [])[m
+ [m
+[31m-  // 监听统计更新事件[m
+[32m+[m[32m  // 监听统计更新事件（移除自动刷新，减少API调用）[m
+   useEffect(() => {[m
+     const handleStatsUpdate = () => {[m
+[31m-      handleManualRefresh()[m
+[32m+[m[32m      // 不再自动刷新，让定时器处理[m
+[32m+[m[32m      console.log('Stats update event received')[m
+     }[m
+ [m
+     window.addEventListener('statsUpdate', handleStatsUpdate)[m
+[36m@@ -201,8 +201,11 @@[m [mexport default function HomePage() {[m
+       <Header />[m
+       [m
+       <main className="container mx-auto px-4 py-8">[m
+[31m-        {/* SEO优化的英雄区域 */}[m
+[31m-        <section className="text-center mb-12">[m
+[32m+[m[32m        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">[m
+[32m+[m[32m          {/* 左侧内容区域 */}[m
+[32m+[m[32m          <div className="lg:col-span-2">[m
+[32m+[m[32m            {/* SEO优化的英雄区域 */}[m
+[32m+[m[32m            <section className="text-center mb-12">[m
+           <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">[m
+             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">[m
+               Get Free Sora 2 Invite Codes[m
+[36m@@ -264,6 +267,31 @@[m [mexport default function HomePage() {[m
+             onCopy={handleCopyCode}[m
+           />[m
+         </section>[m
+[32m+[m[32m          </div>[m
+[32m+[m
+[32m+[m[32m          {/* 右侧边栏 */}[m
+[32m+[m[32m          <div className="lg:col-span-1">[m
+[32m+[m[32m            <div className="sticky top-8 space-y-6">[m
+[32m+[m[32m              {/* 活跃代码统计 */}[m
+[32m+[m[32m              <div className="bg-white rounded-xl shadow-lg p-6">[m
+[32m+[m[32m                <h3 className="text-xl font-bold text-gray-800 mb-4">Active Codes</h3>[m
+[32m+[m[32m                <ActiveCodeStats />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              {/* 社区影响 */}[m
+[32m+[m[32m              <div className="bg-white rounded-xl shadow-lg p-6">[m
+[32m+[m[32m                <h3 className="text-xl font-bold text-gray-800 mb-4">Community Impact</h3>[m
+[32m+[m[32m                <CommunityImpact />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              {/* 游戏区域 */}[m
+[32m+[m[32m              <div className="bg-white rounded-xl shadow-lg p-6">[m
+[32m+[m[32m                <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Game</h3>[m
+[32m+[m[32m                <WhackHamsterGame />[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m        </div>[m
+ [m
+         {/* SEO优化的内容区域 - 什么是 Sora 2 以及为什么使用邀请码 */}[m
+         <section className="mb-12">[m

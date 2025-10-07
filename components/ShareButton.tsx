@@ -100,8 +100,8 @@ export default function ShareButton({
 
   return (
     <>
-      {/* Fixed Share Button - Repositioned to avoid conflict */}
-      <div className="fixed bottom-6 right-6 z-50 lg:top-6 lg:bottom-auto">
+      {/* Fixed Share Button */}
+      <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 shadow-lg hover:shadow-xl border border-gray-200 rounded-full p-3 transition-all duration-200 transform hover:scale-105"
