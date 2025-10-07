@@ -1,33 +1,24 @@
-'use client'
-
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Plus, Users, Clock, CheckCircle, Star, TrendingUp } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Plus } from 'lucide-react'
 import Header from '@/components/Header'
-import ShareButton from '@/components/ShareButton'
-import InviteCodeDisplay from '@/components/InviteCodeDisplay'
-import CreatorNote from '@/components/CreatorNote'
-import WhackHamsterGame from '@/components/WhackHamsterGame'
-import FAQ from '@/components/FAQ'
-import HowItWorks from '@/components/HowItWorks'
-import CommunityImpact from '@/components/CommunityImpact'
 import Footer from '@/components/Footer'
 import ActiveCodeStats from '@/components/ActiveCodeStats'
-import NotificationToast, { useNotifications } from '@/components/NotificationToast'
+import CommunityImpact from '@/components/CommunityImpact'
+import InviteCodeDisplay from '@/components/InviteCodeDisplay'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
-import UnifiedGuidance from '@/components/UnifiedGuidance'
-import ErrorBoundary from '@/components/ErrorBoundary'
-import { WebsiteStructuredData, OrganizationStructuredData, WebPageStructuredData } from '@/components/StructuredData'
-
+import WhackHamsterGame from '@/components/WhackHamsterGame'
+import ShareButton from '@/components/ShareButton'
+import { useNotifications } from '@/hooks/useNotifications'
 import { InviteCode } from '@/lib/data'
 
-export default function Home() {
-   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
-   const [loading, setLoading] = useState(true)
-   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
-   const [showFloatingButton, setShowFloatingButton] = useState(false)
-   const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
-   const gameSectionRef = useRef<HTMLDivElement>(null)
+// 游戏相关状态管理
+export default function HomePage() {
+  const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([])
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [showFloatingButton, setShowFloatingButton] = useState(false)
+  const { notifications, removeNotification, showNewCodeNotification } = useNotifications()
+  const gameSectionRef = useRef<HTMLDivElement>(null)
 
 
   const handleManualRefresh = async () => {
@@ -88,6 +79,7 @@ export default function Home() {
     }
   }
 
+  // Handle copy code
   const handleCopyCode = async (code: string, codeId: string) => {
     try {
       await navigator.clipboard.writeText(code)
@@ -117,318 +109,322 @@ export default function Home() {
     }
   }
 
+  // 初始数据加载
+  useEffect(() => {
+    handleManualRefresh()
+  }, [])
 
-    useEffect(() => {
-      const initialLoadTimeout = setTimeout(() => {
-        handleManualRefresh()
-      }, 100)
+  // 定期刷新数据（每30秒）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleManualRefresh()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // 监听统计更新事件
+  useEffect(() => {
+    const handleStatsUpdate = () => {
+      handleManualRefresh()
+    }
+
+    window.addEventListener('statsUpdate', handleStatsUpdate)
+    return () => window.removeEventListener('statsUpdate', handleStatsUpdate)
+  }, [])
+
+  // 移动端浮动按钮逻辑
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!gameSectionRef.current) return
       
-      const refreshInterval = setInterval(() => {
-        handleManualRefresh()
-      }, 30000)
+      const gameSectionTop = gameSectionRef.current.offsetTop
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      // 当滚动超过游戏区域时显示浮动按钮
+      setShowFloatingButton(scrollTop > gameSectionTop)
+    }
 
-     // Set up SSE connection for real-time updates
-     const eventSource = new EventSource('/api/sse')
-     
-     eventSource.onmessage = (event) => {
-       try {
-         const data = JSON.parse(event.data)
-         
-         if (data.type === 'new_code') {
-           setInviteCodes(prev => [data.inviteCode, ...prev])
-           showNewCodeNotification(data.inviteCode.code)
-           window.dispatchEvent(new CustomEvent('statsUpdate'))
-         } else if (data.type === 'initial') {
-           // 只在初始加载时使用 SSE 数据，避免覆盖手动刷新的数据
-           console.log('[SSE] Initial data received, but using manual refresh data instead')
-         } else if (data.type === 'update') {
-           // 忽略 SSE 的 update 事件，只使用手动刷新的数据
-           console.log('[SSE] Update event received, but using manual refresh data instead')
-         }
-       } catch (error) {
-         console.error('[SSE] Parse error:', error)
-       }
-     }
-
-     eventSource.onerror = (error) => {
-       console.error('SSE connection error:', error)
-     }
-
-     // Listen for guidance component events
-     const handleOpenSubmitModal = () => {
-       setIsSubmitModalOpen(true)
-     }
-     
-     window.addEventListener('openSubmitModal', handleOpenSubmitModal)
-
-     // Scroll listener for floating button (mobile only)
-     const handleScroll = () => {
-       if (window.innerWidth >= 1024) return // Desktop only
-       
-       const gameSection = gameSectionRef.current
-       if (gameSection) {
-         const rect = gameSection.getBoundingClientRect()
-         const isGameVisible = rect.top <= window.innerHeight * 0.8
-         setShowFloatingButton(isGameVisible)
-       }
-     }
-     
-     window.addEventListener('scroll', handleScroll)
-     window.addEventListener('resize', handleScroll)
-
-      return () => {
-        clearTimeout(initialLoadTimeout)
-        clearInterval(refreshInterval)
-        eventSource.close()
-        window.removeEventListener('openSubmitModal', handleOpenSubmitModal)
-        window.removeEventListener('scroll', handleScroll)
-        window.removeEventListener('resize', handleScroll)
+    const handleResize = () => {
+      // 在大屏幕上隐藏浮动按钮
+      if (window.innerWidth >= 1024) {
+        setShowFloatingButton(false)
       }
-    }, [])
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleResize)
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  // SSE 连接用于实时更新
+  useEffect(() => {
+    const eventSource = new EventSource('/api/sse')
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        
+        if (data.type === 'new_code') {
+          setInviteCodes(prev => [data.inviteCode, ...prev])
+          showNewCodeNotification(data.inviteCode.code)
+          window.dispatchEvent(new CustomEvent('statsUpdate'))
+        } else if (data.type === 'initial') {
+          // 只在初始加载时使用 SSE 数据，避免覆盖手动刷新的数据
+          console.log('[SSE] Initial data received, but using manual refresh data instead')
+        } else if (data.type === 'update') {
+          // 忽略 SSE 的 update 事件，只使用手动刷新的数据
+          console.log('[SSE] Update event received, but using manual refresh data instead')
+        }
+      } catch (error) {
+        console.error('[SSE] Parse error:', error)
+      }
+    }
+
+    eventSource.onerror = (error) => {
+      console.error('[SSE] Connection error:', error)
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [showNewCodeNotification])
 
   return (
-    <ErrorBoundary>
-      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-        {/* SEO Structured Data */}
-        <WebsiteStructuredData />
-        <OrganizationStructuredData />
-        <WebPageStructuredData />
-        
-        <Header />
-        
-        {/* Notification component */}
-        <NotificationToast 
-          notifications={notifications} 
-          onRemove={removeNotification} 
-        />
-        
-        {/* Unified guidance component */}
-        <UnifiedGuidance />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Header />
       
-      <div className="container mx-auto px-4 py-8">
-        {/* Mobile: vertical layout, Desktop: left-right layout (left 70%, right 30%) */}
-        <div className="flex flex-col lg:flex-row lg:gap-6 max-w-7xl mx-auto">
-          {/* Left main content area */}
-          <div className="w-full lg:w-[70%] space-y-8">
-            {/* Simplified Hero Section - Clean and Focused */}
-            <section className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white mb-8">
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                  Get Free Sora 2 Invite Codes
-                </h1>
-                <p className="text-xl md:text-2xl mb-6 opacity-90">
-                  Access OpenAI's revolutionary AI video generation technology with working invite codes from our community
-                </p>
-                
-                {/* Simplified Feature Badges */}
-                <div className="flex flex-wrap justify-center gap-4 text-sm">
-                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    <span>100% Free Access</span>
-                  </div>
-                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
-                    <Users className="w-4 h-4 mr-2" />
-                    <span>Community Verified</span>
-                  </div>
-                  <div className="flex items-center bg-white/20 rounded-full px-4 py-2">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>Real-time Updates</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Available invite codes stats */}
-            <ActiveCodeStats />
+      <main className="container mx-auto px-4 py-8">
+        {/* SEO优化的英雄区域 */}
+        <section className="text-center mb-12">
+          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+              Get Free Sora 2 Invite Codes
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed">
+              Access the latest AI video generation technology from OpenAI. Join thousands of creators using Sora 2 for amazing video content.
+            </p>
             
-            
-            {/* Clear Share Button - Obviously Clickable */}
-            <div className={`sticky top-4 z-10 bg-gradient-to-b from-gray-50 to-white pb-4 transition-all duration-500 ${showFloatingButton ? 'lg:block hidden' : 'block'}`}>
-              {/* Main Share Button - Clear button appearance */}
-              <button onClick={() => setIsSubmitModalOpen(true)} className="w-full group">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer border-2 border-green-400 hover:border-green-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {/* Clear button icon */}
-                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
-                        <Plus className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <div className="text-left">
-                        <div className="font-bold text-xl mb-1 flex items-center">
-                          <span className="mr-2">🎁</span>
-                          Share Your Sora 2 Code
-                        </div>
-                        <div className="text-green-100 text-sm">
-                          Help 4 people access Sora 2! 🚀
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Clear button indicator */}
-                    <div className="flex items-center space-x-2">
-                      <span className="text-white font-semibold text-sm">SHARE NOW</span>
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
-                        <span className="text-white text-lg">→</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {/* 主要行动号召 */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <button
+                onClick={() => setIsSubmitModalOpen(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3 group relative overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                  <span className="group-hover:rotate-12 transition-transform duration-300">🎁</span>
+                  Share Your Sora 2 Code
+                  <span className="group-hover:rotate-12 transition-transform duration-300">✨</span>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
               </button>
-              
-              {/* Secondary info card - not clickable */}
-              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between text-sm text-blue-800">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4" />
-                    <span>Codes expire quickly - share yours now!</span>
-                  </div>
-                  <div className="text-blue-600 font-medium">
-                    Be a community hero! ✨
-                  </div>
-                </div>
-              </div>
-              
-              {/* Support Creator button is hidden */}
             </div>
             
-            
-            
-            <InviteCodeDisplay 
-              codes={inviteCodes
-                .filter(code => code.status === 'active')
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              } 
-              onVote={handleVote}
-              onCopy={handleCopyCode}
-            />
-
-            {/* SEO-Optimized Content Section - Moved after code list */}
-            <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">What is Sora 2 and Why Use Invite Codes?</h2>
-              <div className="prose prose-lg max-w-none text-gray-700">
-                <p className="mb-4">
-                  Sora 2 is OpenAI's cutting-edge AI video generation model that creates stunning videos from text descriptions. 
-                  Due to its advanced capabilities and high demand, access is currently limited through an invite-only system.
-                </p>
-                <p className="mb-4">
-                  Our community platform provides verified, working invite codes that give you instant access to this revolutionary technology. 
-                  Each code is tested and verified by our community members to ensure maximum success rates.
-                </p>
-                <div className="grid md:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
-                      <Star className="w-5 h-5 mr-2" />
-                      High Success Rate
-                    </h3>
-                    <p className="text-blue-800 text-sm">Our codes have an 85%+ success rate, verified by community feedback</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-green-900 mb-2 flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      Real-time Updates
-                    </h3>
-                    <p className="text-green-800 text-sm">New codes are added instantly as they become available</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-            
-            {/* Mobile game display */}
-            <div className="lg:hidden" ref={gameSectionRef}>
-              <WhackHamsterGame />
-            </div>
-            
-            <FAQ />
-            
-            <div className="grid md:grid-cols-2 gap-8 mt-12">
-              <HowItWorks />
-              <CommunityImpact />
-            </div>
-            
-            {/* SEO-Optimized FAQ Section */}
-            <section className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About Sora 2 Invite Codes</h2>
-              <div className="space-y-6">
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">How do I use a Sora 2 invite code?</h3>
-                  <p className="text-gray-700">Simply copy the invite code from our platform and paste it into the Sora 2 access form on OpenAI's website. Make sure you have a valid OpenAI account first.</p>
-                </div>
-                <div className="border-l-4 border-green-500 pl-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Are these invite codes free to use?</h3>
-                  <p className="text-gray-700">Yes, all invite codes on our platform are completely free. We're a community-driven platform dedicated to helping people access Sora 2.</p>
-                </div>
-                <div className="border-l-4 border-purple-500 pl-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">How often are new codes added?</h3>
-                  <p className="text-gray-700">New codes are added in real-time as community members share them. We recommend checking our platform regularly for the latest working codes.</p>
-                </div>
-                <div className="border-l-4 border-orange-500 pl-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">What if a code doesn't work?</h3>
-                  <p className="text-gray-700">Try multiple codes from our platform. Each code has different usage limits and expiration times. Our community feedback system helps identify the most reliable codes.</p>
-                </div>
-              </div>
-            </section>
-
-            {/* SEO Pages Navigation */}
-            <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Learn More</h3>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link 
-                  href="/how-it-works" 
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors border border-primary-200 shadow-sm"
-                >
-                  📖 How It Works
-                </Link>
-                <Link 
-                  href="/faq" 
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors border border-primary-200 shadow-sm"
-                >
-                  ❓ FAQ
-                </Link>
-                <Link 
-                  href="/ai-seo-guide" 
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors border border-primary-200 shadow-sm"
-                >
-                  📚 Complete Guide
-                </Link>
-              </div>
+            {/* 特色徽章 */}
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">✅ Free Access</span>
+              <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">🚀 Real-time Updates</span>
+              <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">🤝 Community Driven</span>
+              <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">🔒 Secure & Verified</span>
             </div>
           </div>
-          
-          {/* Right game area (desktop only, fixed on right) */}
-          <div className="hidden lg:block lg:w-[30%]">
-            <div className="sticky top-4">
-              <WhackHamsterGame />
-            </div>
-          </div>
-        </div>
-      </div>
-      
-        <Footer />
-        
-        {/* Fixed Share Button */}
-        <ShareButton />
-        
-        {/* Floating Mobile Share Button - Appears when scrolling past game */}
-        {showFloatingButton && (
-          <div className="fixed top-4 right-4 z-50 lg:hidden">
+        </section>
+
+        {/* 活跃邀请码统计 */}
+        <section className="mb-8">
+          <ActiveCodeStats />
+        </section>
+
+        {/* 社区影响力统计 */}
+        <section className="mb-12">
+          <CommunityImpact />
+        </section>
+
+        {/* 邀请码列表 */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Active Sora 2 Codes</h2>
             <button
-              onClick={() => setIsSubmitModalOpen(true)}
-              className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+              onClick={handleManualRefresh}
+              disabled={loading}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
-              <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
+              {loading ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
-        )}
-        
-        {/* Submit Code Modal */}
-        <SubmitCodeModal
-          isOpen={isSubmitModalOpen}
-          onClose={() => setIsSubmitModalOpen(false)}
-          onSuccess={handleManualRefresh}
-        />
-        
+          <InviteCodeDisplay 
+            codes={inviteCodes} 
+            onVote={handleVote}
+            onCopyCode={handleCopyCode}
+          />
+        </section>
+
+        {/* SEO优化的内容区域 - 什么是 Sora 2 以及为什么使用邀请码 */}
+        <section className="mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">What is Sora 2 and Why Use Invite Codes?</h2>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">About Sora 2</h3>
+                <p className="text-gray-600 mb-4">
+                  Sora 2 is OpenAI's advanced AI video generation model that creates realistic, high-quality videos from text prompts. 
+                  It represents the cutting edge of AI video technology, capable of generating complex scenes with multiple characters, 
+                  specific types of motion, and accurate details of the subject and background.
+                </p>
+                <p className="text-gray-600">
+                  With Sora 2, creators can produce professional-quality videos without expensive equipment or extensive video editing skills, 
+                  making it a game-changer for content creators, marketers, and filmmakers.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">Why Use Invite Codes?</h3>
+                <p className="text-gray-600 mb-4">
+                  Sora 2 is currently in limited access, requiring invite codes for early access. These codes allow users to:
+                </p>
+                <ul className="list-disc list-inside text-gray-600 space-y-2">
+                  <li>Access Sora 2 before general release</li>
+                  <li>Test the latest AI video generation features</li>
+                  <li>Create content with cutting-edge technology</li>
+                  <li>Provide feedback to improve the platform</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 游戏区域 */}
+        <section ref={gameSectionRef} className="mb-12">
+          <WhackHamsterGame />
+        </section>
+
+        {/* SEO优化的FAQ区域 */}
+        <section className="mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">Frequently Asked Questions</h2>
+            
+            <div className="space-y-6">
+              <div className="border-l-4 border-blue-500 pl-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">How do I get Sora 2 invite codes?</h3>
+                <p className="text-gray-600">
+                  You can get free Sora 2 invite codes from our community platform. We provide verified, working codes that are shared by community members. 
+                  Simply browse our active codes list and use any available code to access Sora 2.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-green-500 pl-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Are Sora 2 invite codes free?</h3>
+                <p className="text-gray-600">
+                  Yes, all invite codes on our platform are completely free. We're a community-driven platform dedicated to helping people access Sora 2. 
+                  There are no hidden fees or charges for using our invite codes.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-purple-500 pl-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">How often are new Sora 2 codes added?</h3>
+                <p className="text-gray-600">
+                  New codes are added in real-time as community members share them. We recommend checking our platform regularly for the latest working codes, 
+                  as codes can become inactive when they reach their usage limit.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-orange-500 pl-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">What should I do if a code doesn't work?</h3>
+                <p className="text-gray-600">
+                  If a code doesn't work, it may have reached its usage limit or expired. Try using a different code from our active list. 
+                  You can also report non-working codes using the "Didn't Work" button to help other users.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-red-500 pl-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Can I share my own Sora 2 invite code?</h3>
+                <p className="text-gray-600">
+                  Absolutely! If you have a Sora 2 invite code to share, use the "Share Your Code" button to contribute to our community. 
+                  Sharing codes helps others access Sora 2 and strengthens our community-driven platform.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 了解更多区域 */}
+        <section className="text-center mb-12">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Learn More About Sora 2</h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Discover tips, tricks, and best practices for creating amazing videos with Sora 2.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <a 
+                href="/ai-seo-guide" 
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
+              >
+                📚 Complete Guide
+              </a>
+              <a 
+                href="/submit" 
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors"
+              >
+                ➕ Share Your Code
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
-    </ErrorBoundary>
+
+      {/* 移动端浮动提交按钮 */}
+      {showFloatingButton && (
+        <div className="fixed top-4 right-4 z-50 lg:hidden">
+          <button
+            onClick={() => setIsSubmitModalOpen(true)}
+            className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+          >
+            <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
+          </button>
+        </div>
+      )}
+
+      <SubmitCodeModal 
+        isOpen={isSubmitModalOpen} 
+        onClose={() => setIsSubmitModalOpen(false)} 
+        onSuccess={() => {
+          handleManualRefresh()
+          showNewCodeNotification('New code shared!')
+        }} 
+      />
+      
+      <ShareButton />
+      
+      <Footer />
+      
+      {/* 通知系统 */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ${
+              notification.type === 'success' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-red-500 text-white'
+            }`}
+          >
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium">{notification.message}</p>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className="ml-2 text-white hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
