@@ -154,10 +154,13 @@ export async function GET() {
 
     const response = NextResponse.json(dashboardData)
     
-    // 🔥 添加缓存控制头，确保数据是最新的
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    // 🔥 添加强力缓存控制头，确保数据是最新的
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('Last-Modified', new Date().toUTCString())
+    response.headers.set('ETag', `"${Date.now()}"`)
+    response.headers.set('Vary', 'Accept-Encoding, User-Agent')
     
     return response
     

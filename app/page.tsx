@@ -30,17 +30,20 @@ export default function Home() {
    const gameSectionRef = useRef<HTMLDivElement>(null)
 
 
-   const handleManualRefresh = async () => {
-     setLoading(true)
-     try {
-       const timestamp = Date.now()
-       const response = await fetch(`/api/dashboard?t=${timestamp}`, {
-         cache: 'no-store',
-         headers: {
-           'Cache-Control': 'no-cache, no-store, must-revalidate',
-           'Pragma': 'no-cache'
-         }
-       })
+  const handleManualRefresh = async () => {
+    setLoading(true)
+    try {
+      const timestamp = Date.now()
+      const response = await fetch(`/api/dashboard?t=${timestamp}&_bust=${Math.random()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'If-None-Match': '*',
+          'If-Modified-Since': '0'
+        }
+      })
        
        if (!response.ok) {
          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
