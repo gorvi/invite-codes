@@ -505,6 +505,17 @@ Body参数:
 
 **显示位置**: 首页顶部统计卡片
 
+**实际数据示例**（生产环境验证 - DAQF7K）:
+```
+前端显示: 3, 0, 2
+数据来源:
+- 3 (copied) ← sora2_invite_codes.unique_copied_count
+- 0 (worked) ← sora2_invite_codes.unique_worked_count  
+- 2 (didn't work) ← sora2_invite_codes.unique_didnt_work_count
+
+数据库记录 ID: 17595618393401c4vaoq6n
+```
+
 ---
 
 ### 2. Community Impact (社区影响统计)
