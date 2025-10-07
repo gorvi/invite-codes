@@ -261,7 +261,7 @@ export default function HomePage() {
           <InviteCodeDisplay 
             codes={inviteCodes} 
             onVote={handleVote}
-            onCopyCode={handleCopyCode}
+            onCopy={handleCopyCode}
           />
         </section>
 
