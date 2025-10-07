@@ -91,8 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         unique_didnt_work_count: 0,
         copy_count: 0,
         unique_copied_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       })
       .select()
       .single()
