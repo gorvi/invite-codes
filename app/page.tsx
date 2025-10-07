@@ -10,7 +10,7 @@ import InviteCodeDisplay from '@/components/InviteCodeDisplay'
 import SubmitCodeModal from '@/components/SubmitCodeModal'
 import WhackHamsterGame from '@/components/WhackHamsterGame'
 import ShareButton from '@/components/ShareButton'
-import { useNotifications } from '@/hooks/useNotifications'
+import { useNotifications } from '@/components/NotificationToast'
 import { InviteCode } from '@/lib/data'
 
 // 游戏相关状态管理
