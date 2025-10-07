@@ -364,12 +364,14 @@ export default function HomePage() {
             <div className="flex flex-wrap justify-center gap-4">
               <a 
                 href="/ai-seo-guide" 
+                title="Complete Guide to Sora 2 Invite Codes - Learn Everything About AI Video Generation"
                 className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
               >
                 📚 Complete Guide
               </a>
               <a 
                 href="/submit" 
+                title="Share Your Sora 2 Invite Code - Help Others Access AI Video Generation"
                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors"
               >
                 ➕ Share Your Code
@@ -419,6 +421,8 @@ export default function HomePage() {
               <p className="text-sm font-medium">{notification.message}</p>
               <button
                 onClick={() => removeNotification(notification.id)}
+                title="Close notification"
+                aria-label="Close notification"
                 className="ml-2 text-white hover:text-gray-200"
               >
                 ✕

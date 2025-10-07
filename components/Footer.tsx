@@ -10,17 +10,29 @@ export default function Footer() {
             <h3 className="font-semibold text-gray-800 mb-3">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/how-it-works" className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link 
+                  href="/how-it-works" 
+                  title="How Sora 2 Invite Codes Work - Step by Step Guide"
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
                   How It Works
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link 
+                  href="/faq" 
+                  title="Frequently Asked Questions About Sora 2 Invite Codes"
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/ai-seo-guide" className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link 
+                  href="/ai-seo-guide" 
+                  title="Complete Guide to Sora 2 Invite Codes and AI Video Generation"
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
                   Complete Guide
                 </Link>
               </li>
@@ -58,7 +70,13 @@ export default function Footer() {
             © 2025 Sora 2 Invite Codes. All rights reserved. Unauthorized copying or reproduction is prohibited.
           </p>
           <p className="text-gray-500 text-xs mt-1">
-            Contact: <a href="mailto:wecesoft@gmail.com" className="text-primary-600 hover:text-primary-700 transition-colors">wecesoft@gmail.com</a>
+            Contact: <a 
+              href="mailto:wecesoft@gmail.com" 
+              title="Contact Sora 2 Invite Codes Support - Email Support"
+              className="text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              wecesoft@gmail.com
+            </a>
           </p>
         </div>
       </div>

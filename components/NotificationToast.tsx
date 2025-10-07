@@ -105,6 +105,8 @@ function NotificationItem({ notification, onRemove }: { notification: Notificati
               setIsVisible(false)
               setTimeout(() => onRemove(notification.id), 300)
             }}
+            title="Close notification"
+            aria-label="Close notification"
             className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <X className="h-4 w-4" />

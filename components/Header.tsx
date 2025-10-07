@@ -7,7 +7,12 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
-        <Link href="/" className="flex items-center space-x-3" data-protected>
+        <Link 
+          href="/" 
+          title="Sora 2 Invite Codes - Free AI Video Generation Access"
+          className="flex items-center space-x-3" 
+          data-protected
+        >
           <Image 
             src="/logo-web.png" 
             alt="Sora 2 Invite Codes - Modern blue and silver iC logo for AI video generation platform"
