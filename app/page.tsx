@@ -201,6 +201,14 @@ export default function HomePage() {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
+        {/* 小游戏模块 - 放在最上面 */}
+        <section className="mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Quick Game</h2>
+            <WhackHamsterGame />
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左侧内容区域 */}
           <div className="lg:col-span-2">
@@ -267,28 +275,28 @@ export default function HomePage() {
             onCopy={handleCopyCode}
           />
         </section>
-          </div>
 
-          {/* 右侧边栏 */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
-              {/* 活跃代码统计 */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Active Codes</h3>
+            {/* 活跃代码统计 - 移到左侧 */}
+            <section className="mb-12">
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Active Codes</h2>
                 <ActiveCodeStats />
               </div>
+            </section>
 
-              {/* 社区影响 */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Community Impact</h3>
+            {/* 社区影响 - 移到左侧 */}
+            <section className="mb-12">
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Community Impact</h2>
                 <CommunityImpact />
               </div>
+            </section>
+          </div>
 
-              {/* 游戏区域 */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Game</h3>
-                <WhackHamsterGame />
-              </div>
+          {/* 右侧边栏 - 只保留空白区域 */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              {/* 可以在这里添加其他内容 */}
             </div>
           </div>
         </div>
@@ -409,17 +417,15 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* 移动端浮动提交按钮 */}
-      {showFloatingButton && (
-        <div className="fixed top-4 right-4 z-50 lg:hidden">
-          <button
-            onClick={() => setIsSubmitModalOpen(true)}
-            className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
-          >
-            <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
-          </button>
-        </div>
-      )}
+      {/* 悬浮提交按钮 - 移动端和桌面端 */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={() => setIsSubmitModalOpen(true)}
+          className="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+        >
+          <Plus className="h-6 w-6 lg:h-7 lg:w-7 text-white group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      </div>
 
       <SubmitCodeModal 
         isOpen={isSubmitModalOpen} 
