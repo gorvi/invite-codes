@@ -67,8 +67,7 @@ export default function HomePage() {
       })
       
       if (response.ok) {
-        // 立即刷新数据以显示更新后的投票数字
-        handleManualRefresh()
+        // 不再立即刷新，让乐观更新和定时刷新处理
         console.log(`[Vote] Vote recorded successfully: ${type} for code ${id}`)
       } else {
         const errorText = await response.text()
@@ -97,10 +96,10 @@ export default function HomePage() {
         }),
       })
       
-      if (response.ok) {
-        // 立即刷新数据以显示更新后的数字
-        handleManualRefresh()
-      } else {
+           if (response.ok) {
+             // 不再立即刷新，让乐观更新和定时刷新处理
+             console.log('Copy event recorded successfully')
+           } else {
         console.error('Failed to record copy event:', response.status)
         throw new Error(`Failed to record copy event: ${response.status}`)
       }
@@ -125,10 +124,11 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
-  // 监听统计更新事件
+  // 监听统计更新事件（移除自动刷新，减少API调用）
   useEffect(() => {
     const handleStatsUpdate = () => {
-      handleManualRefresh()
+      // 不再自动刷新，让定时器处理
+      console.log('Stats update event received')
     }
 
     window.addEventListener('statsUpdate', handleStatsUpdate)
@@ -201,8 +201,11 @@ export default function HomePage() {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        {/* SEO优化的英雄区域 */}
-        <section className="text-center mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 左侧内容区域 */}
+          <div className="lg:col-span-2">
+            {/* SEO优化的英雄区域 */}
+            <section className="text-center mb-12">
           <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
               Get Free Sora 2 Invite Codes
@@ -264,6 +267,31 @@ export default function HomePage() {
             onCopy={handleCopyCode}
           />
         </section>
+          </div>
+
+          {/* 右侧边栏 */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-6">
+              {/* 活跃代码统计 */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Active Codes</h3>
+                <ActiveCodeStats />
+              </div>
+
+              {/* 社区影响 */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Community Impact</h3>
+                <CommunityImpact />
+              </div>
+
+              {/* 游戏区域 */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Game</h3>
+                <WhackHamsterGame />
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* SEO优化的内容区域 - 什么是 Sora 2 以及为什么使用邀请码 */}
         <section className="mb-12">
