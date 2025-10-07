@@ -47,7 +47,7 @@ export default function CommunityImpact() {
     
     const refreshInterval = setInterval(() => {
       fetchData()
-    }, 30000)
+    }, 300000) // 改为5分钟，减少资源消耗
     
     return () => {
       clearInterval(refreshInterval)

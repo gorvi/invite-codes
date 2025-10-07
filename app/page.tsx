@@ -116,11 +116,11 @@ export default function HomePage() {
     handleManualRefresh()
   }, [])
 
-  // 定期刷新数据（每30秒）
+  // 定期刷新数据（每5分钟，减少资源消耗）
   useEffect(() => {
     const interval = setInterval(() => {
       handleManualRefresh()
-    }, 30000)
+    }, 300000) // 改为5分钟，减少API调用频率
 
     return () => clearInterval(interval)
   }, [])
