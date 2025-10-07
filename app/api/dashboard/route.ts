@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sora2DataManager } from '@/lib/sora2DataManager'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 /**
- * 统一的仪表板接口
- * 一次性返回所有邀请码相关的数据，避免多次 API 调用
+ * 统一的 Dashboard API - 获取所有仪表板数据
+ * 包括邀请码、统计数据、用户统计等
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // 直接从数据库查询所有需要的数据
-    const supabase = sora2DataManager.getSupabaseClient()
+    console.log('[Dashboard] Fetching unified dashboard data...')
     
-    if (!supabase) {
-      throw new Error('Supabase client not initialized')
-    }
-    
-    // 并行查询所有需要的数据
+    // 并行查询所有数据
     const [
       inviteCodesResult,
       userStatsResult,
@@ -77,16 +81,15 @@ export async function GET() {
       dailyStatsResult.data.forEach(day => {
         dailyStats[day.date] = {
           date: day.date,
-          copyClicks: day.copy_clicks || 0,
-          workedVotes: day.worked_votes || 0,
-          didntWorkVotes: day.didnt_work_votes || 0,
-          submitCount: day.submit_count || 0,
-          uniqueVisitors: day.unique_submitters || 0
+          totalSubmits: day.total_submits || 0,
+          totalCopies: day.total_copies || 0,
+          totalVotes: day.total_votes || 0,
+          uniqueUsers: day.unique_users || 0
         }
       })
     }
 
-    // 🔥 转换邀请码数据格式，确保包含所有必要字段
+    // 🔥 格式化邀请码数据，确保与前端组件兼容
     const formattedInviteCodes = allInviteCodes.map((row: any) => ({
       id: row.id,
       code: row.code,
@@ -127,37 +130,33 @@ export async function GET() {
       dailyStats,
       
       // 数据一致性检查
-      dataConsistency: {
-        isConsistent: true,
-        actualActiveCount: activeCodes.length,
-        reportedActiveCount: activeCodes.length
-      },
+      timestamp: new Date().toISOString(),
       
-      // 元数据
-      lastUpdated: new Date().toISOString(),
-      dataSource: 'supabase_direct_query'
+      // 调试信息（生产环境可以移除）
+      debug: {
+        totalCodes: allInviteCodes.length,
+        activeCodes: activeCodes.length,
+        usedCodes: usedCodes.length,
+        invalidCodes: invalidCodes.length,
+        successfullyUsedCodes: successfullyUsedCodes.length,
+        rawInviteCodes: allInviteCodes.map((code: any) => ({
+          id: code.id,
+          code: code.code,
+          uniqueCopiedCount: code.unique_copied_count,
+          status: code.status
+        }))
+      }
     }
-
-    console.log('[Dashboard] ✅ Unified data fetched:', {
-      totalCodes: allInviteCodes.length,
-      activeCodes: activeCodes.length,
-      totalCopyCount,
-      totalUniqueCopyCount,
-      // 🔥 调试信息：显示前几个邀请码的统计
-      sampleCodes: formattedInviteCodes.slice(0, 3).map(code => ({
-        code: code.code,
-        copiedCount: code.copiedCount,
-        uniqueCopiedCount: code.uniqueCopiedCount,
-        status: code.status
-      }))
-    })
 
     const response = NextResponse.json(dashboardData)
     
-    // 🔥 添加缓存控制头，确保数据是最新的
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    // 🔥 添加强力缓存控制头，确保数据是最新的
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('Last-Modified', new Date().toUTCString())
+    response.headers.set('ETag', `"${Date.now()}"`)
+    response.headers.set('Vary', 'Accept-Encoding, User-Agent')
     
     return response
     
