@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
       realData = {
         title: $('title').text() || '',
         metaDescription: $('meta[name="description"]').attr('content') || '',
-        h1Tags: $('h1').map((i, el) => $(el).text()).get(),
-        h2Tags: $('h2').map((i, el) => $(el).text()).get(),
+        h1Tags: $('h1').map((i: number, el: any) => $(el).text()).get(),
+        h2Tags: $('h2').map((i: number, el: any) => $(el).text()).get(),
         internalLinks: $('a[href^="/"]').length + $('a[href*="' + (url || 'invitecodes.net') + '"]').length,
         externalLinks: $('a[href^="http"]').not(`a[href*="${new URL(url || 'https://www.invitecodes.net').hostname}"]`).length,
         images: $('img').length,
