@@ -5,7 +5,7 @@ const nextConfig = {
   
   // 图片优化配置
   images: {
-    unoptimized: process.env.NODE_ENV === 'production' && process.env.GITHUB_ACTIONS === '1'
+    unoptimized: process.env.NODE_ENV === 'production' && (process.env.GITHUB_ACTIONS === '1' || process.env.EDGEONE === '1')
   },
 
   // 条件性配置：仅在 GitHub Actions 构建时应用 GitHub Pages 相关设置
