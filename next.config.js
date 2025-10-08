@@ -24,6 +24,12 @@ const nextConfig = {
     },
   }),
 
+  // EdgeOne 部署配置
+  ...(process.env.EDGEONE === '1' && {
+    output: 'standalone',
+    distDir: '.next',
+  }),
+
   // 环境变量配置
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
