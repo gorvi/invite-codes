@@ -3,14 +3,14 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "nodeVersion": "18.x",
+  "nodeVersion": "20.x",
   "environment": {
     "NODE_ENV": "production",
     "EDGEONE": "1"
   },
   "functions": {
     "app/api/**": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs20.x"
     }
   }
 }

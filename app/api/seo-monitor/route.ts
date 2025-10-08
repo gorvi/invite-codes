@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sora2DataManager } from '@/lib/sora2DataManager'
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+
+// 动态导入 cheerio 和 axios 以避免构建时问题
+let axios: any = null
+let cheerio: any = null
+
+async function loadDependencies() {
+  if (!axios) {
+    axios = (await import('axios')).default
+  }
+  if (!cheerio) {
+    cheerio = await import('cheerio')
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +21,8 @@ export async function POST(request: NextRequest) {
     // 获取实际网站数据
     let realData = null
     try {
+      await loadDependencies()
+      
       const response = await axios.get(url || 'https://www.invitecodes.net', {
         timeout: 10000,
         headers: {
